@@ -4,7 +4,7 @@ project(common_test)
 
 set (SOURCES
    test.cpp
-   TestFaceTest.h
+   TestFaceTest.cpp
 )
 
 include_directories(
