@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-project ( cmake )
+project ( corelib )
 enable_testing()
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
@@ -20,7 +20,7 @@ set (PROJECTS
 )
 
 include_directories(
-	${cmake_SOURCE_DIR}/src/lib
+	${corelib_SOURCE_DIR}/src/lib
 )
 
 foreach(proj ${PROJECTS})

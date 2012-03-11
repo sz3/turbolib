@@ -14,6 +14,5 @@ public:
 protected:
 	mutable std::mutex _mutex;
 	mutable std::condition_variable _cond;
-	bool _set;
 };
 
