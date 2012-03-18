@@ -1,27 +1,27 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(common_test)
+project(event_test)
 
 set (SOURCES
 	test.cpp
-	TestFaceTest.cpp
+	EventTest.cpp
 )
 
 include_directories(
 	${corelib_SOURCE_DIR}/test
 	${corelib_SOURCE_DIR}/test/lib
-	${corelib_SOURCE_DIR}/src/lib/common
+	${corelib_SOURCE_DIR}/src/lib/event
 )
 
 add_executable (
-	common_test
+	event_test
 	${SOURCES}
 )
 
-add_test(common_test common_test)
+add_test(event_test event_test)
 
-target_link_libraries(common_test
-	common
+target_link_libraries(event_test
+	event
 	
 	pthread
 )
