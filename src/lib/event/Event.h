@@ -9,7 +9,7 @@ public:
 	Event();
 
 	void set();
-	bool wait() const;
+	bool wait(unsigned millis = ~0) const;
 
 protected:
 	mutable std::mutex _mutex;
