@@ -4,6 +4,8 @@ project(common_test)
 
 set (SOURCES
 	test.cpp
+	FixedPointNumberTest.cpp
+	FixedPointPerformanceTest.cpp
 	TestFaceTest.cpp
 )
 
@@ -22,6 +24,7 @@ add_test(common_test common_test)
 
 target_link_libraries(common_test
 	common
+	event
 	
 	pthread
 )
