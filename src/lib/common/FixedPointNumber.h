@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 // fixnum
 //#define fixfloat
 //#define fixdouble
@@ -53,7 +54,11 @@ public:
 	{
 		BaseType newval = (_value << ShiftDigits) / rhs._value;
 		if (newval == 0)
-			newval = _value / (rhs._value >> ShiftDigits);
+		{
+			BaseType temp = (rhs._value >> ShiftDigits);
+			if (temp != 0)
+				newval = _value / temp;
+		}
 		_value = newval;
 		return *this;
 	}
@@ -90,3 +95,10 @@ protected:
 
 typedef FixedPointNumber<long,      10> fixfloat;
 typedef FixedPointNumber<long long, 20> fixdouble;
+
+template <class BaseType, unsigned ShiftDigits>
+std::ostream& operator<<(std::ostream& os, const FixedPointNumber<BaseType,ShiftDigits>& val)
+{
+	os << val.asDouble();
+	return os;
+}

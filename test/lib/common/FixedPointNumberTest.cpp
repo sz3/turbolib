@@ -28,6 +28,8 @@ TEST_CASE( "FixedPointNumberTest/testDefault", "description" )
 	fixdouble dub;
 	dub = 100.5;
 	REQUIRE( dub.rawvalue() == longnum.rawvalue() );
+
+	std::cerr << dub << std::endl;
 }
 
 TEST_CASE( "FixedPointNumberTest/testNegative", "description" )
@@ -91,5 +93,9 @@ TEST_CASE( "FixedPointNumberTest/testDivision", "description" )
 	num = 0x80000; // 2^19
 	num /= 8;
 	REQUIRE( num.asInt() == 0x10000 );
+
+	num = 0;
+	num /= 0.0001;
+	REQUIRE( num.rawvalue() == 0 );
 }
 
