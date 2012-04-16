@@ -17,9 +17,9 @@ public:
 	{
 	}
 
-	FixedPointNumber(double num)
+	FixedPointNumber(BaseType num)
 	{
-		operator=(num);
+		_value = num << ShiftDigits;
 	}
 
 	FixedPointNumber& operator=(double num)
