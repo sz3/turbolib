@@ -16,9 +16,9 @@ public:
 	{
 	}
 
-	FixedPointNumber(BaseType num)
+	FixedPointNumber(double num)
 	{
-		_value = num << ShiftDigits;
+		operator=(num);
 	}
 
 	FixedPointNumber& operator=(double num)
@@ -39,15 +39,22 @@ public:
 		return *this;
 	}
 
+	// need to make effort to keep extra digits -- probably need to do two multiplies and combine the results
 	FixedPointNumber& operator *=(const FixedPointNumber& rhs)
 	{
-		_value *= rhs._value;
+		BaseType newval = _value * rhs.asInt();
+		newval += (_value * rhs.remainder()) >> ShiftDigits;
+		_value = newval;
 		return *this;
 	}
 
+	// like multiply, probably need to do two division ops and combine the results
 	FixedPointNumber& operator /=(const FixedPointNumber& rhs)
 	{
-		_value /= rhs._value;
+		BaseType newval = (_value << ShiftDigits) / rhs._value;
+		if (newval == 0)
+			newval = _value / (rhs._value >> ShiftDigits);
+		_value = newval;
 		return *this;
 	}
 
@@ -56,9 +63,14 @@ public:
 		return _value == rhs._value;
 	}
 
-	BaseType whole() const
+	BaseType asInt() const
 	{
 		return _value >> ShiftDigits;
+	}
+
+	double asDouble() const
+	{
+		return static_cast<double>(remainder())/_factor + asInt();
 	}
 
 	BaseType remainder() const
