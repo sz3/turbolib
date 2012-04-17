@@ -68,14 +68,14 @@ public:
 		return _value == rhs._value;
 	}
 
-	BaseType asInt() const
-	{
-		return _value >> ShiftDigits;
-	}
-
 	double asDouble() const
 	{
 		return static_cast<double>(remainder())/_factor + asInt();
+	}
+
+	BaseType asInt() const
+	{
+		return _value >> ShiftDigits;
 	}
 
 	BaseType remainder() const
