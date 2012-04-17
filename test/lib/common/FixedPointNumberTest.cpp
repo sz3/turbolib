@@ -9,24 +9,24 @@ TEST_CASE( "FixedPointNumberTest/testDefault", "description" )
 	REQUIRE( num.asInt() == 4 );
 	REQUIRE( num.remainder() == 0 );
 
-	num = 12.25;
+	num.fromFloat(12.25);
 	REQUIRE( num.asInt() == 12 );
 	REQUIRE( num.remainder() == 256 );
 	REQUIRE( num.asDouble() == 12.25 );
 
 	fixfloat flow;
-	flow = 12.25;
+	flow.fromFloat(12.25);
 	REQUIRE( flow.rawvalue() == num.rawvalue() );
 
 
 	FixedPointNumber<long long, 20> longnum;
-	longnum = 100.5;
+	longnum.fromFloat(100.5);
 	REQUIRE( longnum.asInt() == 100 );
 	REQUIRE( longnum.remainder() == 524288 );
 	REQUIRE( longnum.asDouble() == 100.5 );
 
 	fixdouble dub;
-	dub = 100.5;
+	dub.fromFloat(100.5);
 	REQUIRE( dub.rawvalue() == longnum.rawvalue() );
 
 	std::cerr << dub << std::endl;
@@ -40,7 +40,7 @@ TEST_CASE( "FixedPointNumberTest/testNegative", "description" )
 	REQUIRE( neg.remainder() == 0 );
 	REQUIRE( neg.asDouble() == -2 );
 
-	neg = -0.5;
+	neg.fromFloat(-0.5);
 	REQUIRE( neg.rawvalue() == -512 );
 	REQUIRE( neg.asInt() == -1 ); // truncates down to the lower digit.
 	REQUIRE( neg.remainder() == 512 );
@@ -65,16 +65,16 @@ TEST_CASE( "FixedPointNumberTest/testMultiplication", "description" )
 	num *= 1024;
 	REQUIRE( num.asInt() == 2096128 );
 
-	num = 1.41;
-	num *= 1.42;
+	num.fromFloat(1.41);
+	num *= FixedPointNumber<>().fromFloat(1.42);
 	REQUIRE( num.asDouble() == 2 );
 }
 
 TEST_CASE( "FixedPointNumberTest/testDivision", "description" )
 {
-	FixedPointNumber<> num(6.0);
+	FixedPointNumber<> num(6);
 
-	num /= 1.5;
+	num /= FixedPointNumber<>().fromFloat(1.5);
 	REQUIRE( num.rawvalue() == 4096 );
 	REQUIRE( num.asInt() == 4 );
 	REQUIRE( num.remainder() == 0 );
@@ -95,7 +95,7 @@ TEST_CASE( "FixedPointNumberTest/testDivision", "description" )
 	REQUIRE( num.asInt() == 0x10000 );
 
 	num = 0;
-	num /= 0.0001;
+	num /= FixedPointNumber<>().fromFloat(0.0001);
 	REQUIRE( num.rawvalue() == 0 );
 }
 

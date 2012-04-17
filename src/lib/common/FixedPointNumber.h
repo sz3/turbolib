@@ -22,7 +22,7 @@ public:
 		_value = num << ShiftDigits;
 	}
 
-	FixedPointNumber& operator=(double num)
+	FixedPointNumber& fromFloat(double num)
 	{
 		_value = static_cast<BaseType>(num*_factor);
 		return *this;

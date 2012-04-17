@@ -43,7 +43,7 @@ namespace {
 	void looper(const std::function<void()>& fun, const string& what)
 	{
 		Timer t;
-		const unsigned iterations = 1000;
+		const unsigned iterations = 10;
 		for (int i = 0; i < iterations; ++i)
 			fun();
 		std::cerr << what << ": " << t.micros() << " us (" << t.millis() << " ms)" << std::endl;
