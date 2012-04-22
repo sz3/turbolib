@@ -60,6 +60,7 @@ TEST_CASE( "FixedPointPerformanceTest/testBenchmark", "description" )
 	looper(std::bind(&add<fixfloat>, count), "fixfloat addition");
 	looper(std::bind(&add<double>, count), "double addition");
 	looper(std::bind(&add<fixdouble>, count), "fixdouble addition");
+	looper(std::bind(&add<fastdouble>, count), "fastdouble addition");
 
 	looper(std::bind(&multiply<unsigned>, count), "unsigned multiply");
 	looper(std::bind(&multiply<unsigned long long>, count), "ull multiply");
@@ -67,6 +68,7 @@ TEST_CASE( "FixedPointPerformanceTest/testBenchmark", "description" )
 	//looper(std::bind(&multiply<fixfloat>, count), "fixfloat multiply");
 	looper(std::bind(&multiply<double>, count), "double multiply");
 	looper(std::bind(&multiply<fixdouble>, count), "fixdouble multiply");
+	looper(std::bind(&multiply<fastdouble>, count), "fastdouble multiply");
 
 	looper(std::bind(&divide<unsigned>, count), "unsigned divide");
 	looper(std::bind(&divide<unsigned long long>, count), "ull divide");
@@ -74,6 +76,7 @@ TEST_CASE( "FixedPointPerformanceTest/testBenchmark", "description" )
 	//looper(std::bind(&divide<fixfloat>, count), "fixfloat divide");
 	looper(std::bind(&divide<double>, count), "double divide");
 	looper(std::bind(&divide<fixdouble>, count), "fixdouble divide");
+	looper(std::bind(&divide<fastdouble>, count), "fastdouble divide");
 	//*/
 }
 
