@@ -1,13 +1,9 @@
 #pragma once
 
 #include <string>
-#include <arpa/inet.h>
 #include <netinet/in.h>
-#include <stdio.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <unistd.h>
 
+// maybe more a "UdpClient"...
 class UdpSocket
 {
 public:
