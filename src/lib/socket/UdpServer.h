@@ -7,7 +7,7 @@
 class UdpServer
 {
 public:
-	UdpServer(); // IPacketHandler&
+	UdpServer(short port); // IPacketHandler&
 	~UdpServer();
 
 	bool start();

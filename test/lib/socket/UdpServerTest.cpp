@@ -7,7 +7,7 @@ using namespace std;
 
 TEST_CASE( "UdpServerTest/testDefault", "default" )
 {
-	UdpServer server;
+	UdpServer server(8487);
 	REQUIRE( server.start() );
 
 	UdpSocket sock("127.0.0.1", 8487);

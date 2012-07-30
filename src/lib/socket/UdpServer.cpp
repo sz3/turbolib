@@ -4,9 +4,9 @@
 #include <netinet/in.h>
 #include <string.h>
 
-UdpServer::UdpServer()
+UdpServer::UdpServer(short port)
 	: _running(false)
-	, _port(8487)
+	, _port(port)
 {
 }
 
