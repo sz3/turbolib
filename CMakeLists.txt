@@ -14,11 +14,15 @@ endif()
 
 set (PROJECTS
    src/exe/pdevkit
+
    src/lib/common
-   src/lib/event
-   src/lib/graphics
    test/lib/common
+   src/lib/event
    test/lib/event
+   src/lib/socket
+   test/lib/socket
+
+   src/lib/graphics
 )
 
 include_directories(
