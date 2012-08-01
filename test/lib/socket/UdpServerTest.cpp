@@ -11,8 +11,12 @@ TEST_CASE( "UdpServerTest/testDefault", "default" )
 	REQUIRE( server.start() );
 
 	UdpSocket sock("127.0.0.1", 8487);
+	REQUIRE( sock.send("hi dudes") == 8 );
 
-	sock.send("hi dudes");
+	std::string buff;
+	buff.resize(100);
+	REQUIRE( sock.recv(buff) == 8 );
+
 	sock.send("hi dudettes");
 	sock.send("good evening, commissioner");
 
@@ -20,6 +24,6 @@ TEST_CASE( "UdpServerTest/testDefault", "default" )
 
 	sock.send("laters");
 
-
+	REQUIRE( buff == "hi dudes" );
 }
 

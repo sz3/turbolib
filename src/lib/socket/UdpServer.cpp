@@ -62,11 +62,14 @@ void UdpServer::run()
 	char buf[buflen];
 	while (_running)
 	{
-		if (recvfrom(sock, buf, buflen, 0, (struct sockaddr*)&si_other, &slen)==-1)
+		int bytes = recvfrom(sock, buf, buflen, 0, (sockaddr*)&si_other, &slen);
+		if (bytes == -1)
 			continue;
 
 		printf("Received packet from %s:%d\nData: %s\n\n",
 			   inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port), buf);
+
+		sendto(sock, buf, bytes, 0, (const sockaddr*)&si_other, sizeof(si_other));
 	}
 	close(sock);
 }

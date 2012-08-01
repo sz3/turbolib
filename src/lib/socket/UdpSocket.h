@@ -13,7 +13,8 @@ public:
 	bool isGood() const;
 	bool setTarget(const std::string& ip, short port);
 
-	bool send(const std::string& data);
+	int send(const std::string& data);
+	int recv(std::string& buffer);
 
 protected:
 	int _sock;

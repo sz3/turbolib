@@ -1,6 +1,7 @@
 #include "UdpSocket.h"
 
 #include <arpa/inet.h>
+#include <iostream>
 
 /*namespace {
 	int sockaddr_in_size()
@@ -34,7 +35,16 @@ bool UdpSocket::setTarget(const std::string& ip, short port)
 	return inet_aton(ip.c_str(), &_target.sin_addr) != 0;
 }
 
-bool UdpSocket::send(const std::string& data)
+int UdpSocket::send(const std::string& data)
 {
-	return sendto(_sock, &data[0], data.size(), 0, (const sockaddr*)&_target, sizeof(_target)) != -1;
+	return sendto(_sock, &data[0], data.size(), 0, (const sockaddr*)&_target, sizeof(_target));
+}
+
+int UdpSocket::recv(std::string& buffer)
+{
+	socklen_t slen = sizeof(_target);
+	int bytes = recvfrom(_sock, &buffer[0], buffer.capacity(), 0, (sockaddr*)&_target, &slen);
+	if (bytes != -1)
+		buffer.resize(bytes);
+	return bytes;
 }
