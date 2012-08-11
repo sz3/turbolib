@@ -7,6 +7,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2")
 	# -ftime-report
+	# -ffast-math
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX)
     set(CMAKE_CXX_FLAGS "-std=c++0x")
