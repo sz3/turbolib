@@ -42,6 +42,7 @@ int UdpSocket::send(const std::string& data)
 
 int UdpSocket::recv(std::string& buffer)
 {
+	// TODO: recvfrom clobbers _target with new information, need to be aware of this when doing successive sends/recvs to different machines
 	socklen_t slen = sizeof(_target);
 	int bytes = recvfrom(_sock, &buffer[0], buffer.capacity(), 0, (sockaddr*)&_target, &slen);
 	if (bytes != -1)
