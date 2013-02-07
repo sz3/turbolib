@@ -54,7 +54,7 @@ void UdpServer::run()
 		return;
 	}
 
-	_waitForRunning.set();
+	_waitForRunning.signal();
 
 	struct sockaddr_in si_other;
 	socklen_t slen = sizeof(si_other);
@@ -88,5 +88,5 @@ void UdpServer::fatalError(const std::string& error)
 {
 	_lastError = error;
 	_running = false;
-	_waitForRunning.set();
+	_waitForRunning.signal();
 }

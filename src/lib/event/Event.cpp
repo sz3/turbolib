@@ -10,7 +10,7 @@ Event::Event()
 {
 }
 
-void Event::set()
+void Event::signal()
 {
 	lock_guard<mutex> myLock(_mutex);
 	_cond.notify_all();
@@ -22,3 +22,4 @@ bool Event::wait(unsigned millis) const
 	std::cv_status res = _cond.wait_for(myLock, milliseconds(millis));
 	return res != std::cv_status::timeout; // false would be if we hit our timeout
 }
+//*/

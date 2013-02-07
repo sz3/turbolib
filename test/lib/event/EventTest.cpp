@@ -70,7 +70,7 @@ TEST_CASE( "EventTest/testDefault", "default" )
 	science1.setTimer(&t);
 	science2.setTimer(&t);
 	science3.setTimer(&t);
-	event.set();
+	event.signal();
 
 	science1.stop_and_wait();
 	science2.stop_and_wait();

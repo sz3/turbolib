@@ -15,6 +15,7 @@ endif()
 
 set (PROJECTS
    src/exe/pdevkit
+   src/exe/threadlock
 
    src/lib/common
    test/lib/common
