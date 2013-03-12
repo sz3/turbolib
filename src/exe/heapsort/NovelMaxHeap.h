@@ -20,8 +20,7 @@ public:
 		{
 			--i;
 			heapify(i);
-			std::cout << "did buildHeap on " << i << std::endl;
-			debugPrint();
+			//debugPrint();
 		}
 	}
 
@@ -35,11 +34,12 @@ public:
 	{
 		if (_size == 0)
 			return false;
-		// else...
-		++_buffer;
+
+		swap(0, _size-1);
 		--_size;
 
-		heapify(0);
+		if (_size > 1)
+			heapify(0);
 		return true;
 	}
 
@@ -47,12 +47,11 @@ public:
 	{
 		unsigned index = i;
 		while ( heapifyOnce(index) );
-		debugPrint();
+		//debugPrint();
 	}
 
 	bool heapifyOnce(unsigned& index)
 	{
-		std::cout << "heapifyOnce on " << index << ":" << _buffer[index] << std::endl;
 		// bounds check?
 		unsigned left = (index<<1)+1;
 		unsigned right = left+1;
@@ -62,10 +61,6 @@ public:
 			largest = left;
 		if (right < _size && _buffer[right] > _buffer[largest])
 			largest = right;
-
-		std::cout << "heapifyOnce on " << index << ":" << _buffer[index]
-				  << ". children: " << left << ":" << _buffer[left] << " and "
-				  << right << ":" << _buffer[right] << std::endl;
 
 		if (largest == index)
 			return false;

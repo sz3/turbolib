@@ -12,10 +12,10 @@ void heapsort(SortableType* buffer, unsigned long long size)
 
 	NovelMaxHeap<SortableType> heap(buffer, size);
 
-	/*unsigned loop = 0;
+	unsigned loop = 0;
 	while (heap.pop())
 	{
 		//loop++;
 		//std::cout << "loop " << loop << "!" << std::endl;
-	}*/
+	}
 }
