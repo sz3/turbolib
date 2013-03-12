@@ -14,6 +14,7 @@ if(CMAKE_COMPILER_IS_GNUCXX)
 endif()
 
 set (PROJECTS
+   src/exe/heapsort
    src/exe/pdevkit
    src/exe/threadlock
 
