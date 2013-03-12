@@ -13,3 +13,7 @@ add_executable (
 	${SOURCES}
 )
 
+target_link_libraries(heapsort
+	event
+)
+
