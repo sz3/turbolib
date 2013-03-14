@@ -41,6 +41,7 @@ void doMerge(SortableType* data, unsigned left, unsigned right, unsigned end, So
 template <class SortableType>
 void mergesort(SortableType* buffer, SortableType* workBuffer, unsigned size)
 {
+	::memcpy(workBuffer, buffer, sizeof(SortableType)*size);
 	unsigned run = 1;
 	for (unsigned run = 1; run < size; run *= 2)
 	{
@@ -53,7 +54,7 @@ void mergesort(SortableType* buffer, SortableType* workBuffer, unsigned size)
 
 			doMerge(buffer, i, std::min(i+run, size), std::min(i+2*run, size), workBuffer);
 		}
-		::memcpy(buffer, workBuffer, size);
+		::memcpy(buffer, workBuffer, sizeof(SortableType)*size);
 	}
 }
 
