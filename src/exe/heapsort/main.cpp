@@ -1,12 +1,12 @@
-#include "heapsort.h"
-#include "mergesort.h"
+#include "algorithm/heapsort.h"
+#include "algorithm/mergesort.h"
 
 #include "event/Timer.h"
 #include <cstring>
 #include <iostream>
 using namespace std;
 
-#define BUFSIZE 3000000
+#define BUFSIZE 300000
 
 int compareMyType(const void* a, const void* b)
 {

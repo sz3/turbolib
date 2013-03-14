@@ -18,6 +18,7 @@ set (PROJECTS
    src/exe/pdevkit
    src/exe/threadlock
 
+   src/lib/algorithm
    src/lib/common
    test/lib/common
    src/lib/event
