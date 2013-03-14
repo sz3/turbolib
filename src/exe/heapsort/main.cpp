@@ -6,7 +6,7 @@
 #include <iostream>
 using namespace std;
 
-#define BUFSIZE 100
+#define BUFSIZE 10000000
 
 int compareMyType(const void* a, const void* b)
 {
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
 	long long el3 = t3.micros();
 	cout << "merge: " << el3 << "us" << endl;
 
-	for (unsigned i = 0; i < BUFSIZE; ++i)
+	/*for (unsigned i = 0; i < BUFSIZE; ++i)
 	{
 		if (i % 20 == 0)
 			cout << endl;
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
 			cout << ",";
 		cout << buffer[i];
 	}
-	cout << endl;
+	cout << endl;*/
 
 
 	delete[] buffer;
