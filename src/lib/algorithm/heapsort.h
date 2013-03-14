@@ -5,7 +5,7 @@
 #include <iostream>
 
 template <class SortableType>
-void heapsort(SortableType* buffer, unsigned long long size)
+void heapsort(SortableType* buffer, unsigned size)
 {
 	if (buffer == NULL)
 		return;

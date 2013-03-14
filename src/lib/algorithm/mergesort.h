@@ -66,7 +66,6 @@ void mergesort_index_based(SortableType* buffer, SortableType* workBuffer, unsig
 template <class SortableType>
 void mergesort(SortableType* buffer, SortableType* workBuffer, unsigned size)
 {
-	::memcpy(workBuffer, buffer, sizeof(SortableType)*size);
 	unsigned run = 1;
 	for (unsigned run = 1; run < size; run *= 2)
 	{
@@ -77,7 +76,11 @@ void mergesort(SortableType* buffer, SortableType* workBuffer, unsigned size)
 			SortableType* end = buffer + std::min(i+2*run, size);
 			doMerge(left, right, right, end, workBuffer+i);
 		}
-		::memcpy(buffer, workBuffer, sizeof(SortableType)*size);
+		//::memcpy(buffer, workBuffer, sizeof(SortableType)*size);
+
+		SortableType* temp = buffer;
+		buffer = workBuffer;
+		workBuffer = temp;
 	}
 }
 
