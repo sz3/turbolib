@@ -36,7 +36,7 @@ public:
 		if (_size == 0)
 			return false;
 
-		swap(0, _size-1);
+		swap(*_buffer, _buffer[_size-1]);
 		--_size;
 
 		if (_size > 1)
@@ -44,9 +44,8 @@ public:
 		return true;
 	}
 
-	void heapify(unsigned i)
+	void heapify(unsigned index)
 	{
-		unsigned index = i;
 		while ( heapifyOnce(index) );
 		//debugPrint();
 	}
@@ -66,16 +65,16 @@ public:
 		if (largest == index)
 			return false;
 		// else
-		swap(index, largest);
+		swap(_buffer[index], _buffer[largest]);
 		index = largest;
 		return true;
 	}
 
-	void swap(unsigned index, unsigned other)
+	void swap(SortableType& one, SortableType& other)
 	{
-		_temp = _buffer[index];
-		_buffer[index] = _buffer[other];
-		_buffer[other] = _temp;
+		_temp = one;
+		one = other;
+		other = _temp;
 	}
 
 	void debugPrint()
