@@ -15,7 +15,7 @@ public:
 
 	void buildHeap()
 	{
-		unsigned i = _size>>1;
+		unsigned i = _size >> 1;
 		while (i != 0)
 		{
 			--i;

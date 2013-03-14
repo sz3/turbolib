@@ -5,6 +5,7 @@ project(heapsort)
 set (SOURCES
 	NovelMaxHeap.h
 	heapsort.h
+	mergesort.h
 	main.cpp
 )
 
