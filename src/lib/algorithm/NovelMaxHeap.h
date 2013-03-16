@@ -9,6 +9,8 @@ public:
 	NovelMaxHeap(SortableType* buffer, unsigned size)
 		: _buffer(buffer)
 		, _size(size)
+		, _heapifyCount(0)
+		, _buildHeapCount(0)
 	{
 		buildHeap();
 	}
@@ -20,8 +22,11 @@ public:
 		{
 			--i;
 			heapify(i);
-			//debugPrint();
 		}
+#ifdef SOOPER_DEBUG
+		_buildHeapCount = _heapifyCount;
+		_heapifyCount = 0;
+#endif
 	}
 
 	const SortableType* peek() const
@@ -51,6 +56,9 @@ public:
 
 	bool heapifyOnce(unsigned& index)
 	{
+#ifdef SOOPER_DEBUG
+		++_heapifyCount;
+#endif
 		// bounds check?
 		unsigned left = (index<<1)+1;
 		unsigned right = left+1;
@@ -90,5 +98,9 @@ public:
 protected:
 	SortableType* _buffer;
 	unsigned _size;
+
+public:
+	int _buildHeapCount;
+	int _heapifyCount;
 };
 

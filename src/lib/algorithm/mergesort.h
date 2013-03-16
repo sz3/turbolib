@@ -85,6 +85,9 @@ SortableType* mergesort(SortableType* buffer, SortableType* workBuffer, unsigned
 template <class SortableType>
 bool mergesort(SortableType* buffer, unsigned size)
 {
+	if (buffer == NULL)
+		return false;
+
 	SortableType* workBuffer = new (std::nothrow) SortableType[size];
 	if (workBuffer == NULL)
 		return false;

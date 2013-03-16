@@ -1,5 +1,6 @@
 #include "catch.hpp"
 
+#define SOOPER_DEBUG
 #include "heapsort.h"
 #include "mergesort.h"
 #include "event/Timer.h"
@@ -47,14 +48,19 @@ namespace {
 
 TEST_CASE( "SortCompareTest/testDefault", "default" )
 {
-	int BUFSIZE = 500000;
-	int rounds = 4;
+	int BUFSIZE = 5000;
+	int rounds = 6;
 	for (int r = 1; r <= rounds; ++r)
 	{
 		std::cout << std::endl;
 		std::cout << " **** run " << r << " ****" << std::endl;
 
-		vector<int> base = generateRandomBuffer(BUFSIZE*r);
+		// make buffer 4 times bigger each time through
+		int iterbuffsize = BUFSIZE;
+		for (int i = 1; i < r; ++i)
+			iterbuffsize *= 4;
+
+		vector<int> base = generateRandomBuffer(iterbuffsize);
 		/*for (int i = 0; i < base.size(); ++i)
 		{
 			if (i%20 == 0)
