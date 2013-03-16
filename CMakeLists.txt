@@ -15,6 +15,7 @@ endif()
 
 set (PROJECTS
    src/exe/heapsort
+   src/exe/indexer
    src/exe/pdevkit
    src/exe/threadlock
 
