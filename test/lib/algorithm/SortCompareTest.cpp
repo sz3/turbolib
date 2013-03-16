@@ -47,11 +47,13 @@ namespace {
 
 TEST_CASE( "SortCompareTest/testDefault", "default" )
 {
-	//int BUFSIZE = 500000;
-	int BUFSIZE = 20;
+	int BUFSIZE = 500000;
 	int rounds = 4;
 	for (int r = 1; r <= rounds; ++r)
 	{
+		std::cout << std::endl;
+		std::cout << " **** run " << r << " ****" << std::endl;
+
 		vector<int> base = generateRandomBuffer(BUFSIZE*r);
 		/*for (int i = 0; i < base.size(); ++i)
 		{
@@ -63,26 +65,29 @@ TEST_CASE( "SortCompareTest/testDefault", "default" )
 		}
 		std::cout << std::endl;*/
 
-		vector<int> heapBuff(base);
-		Timer tH;
-		heapsort(&heapBuff[0], base.size());
-		std::cout << "heapsort  elapsed: " << tH.micros() << std::endl;
-
-		vector<int> mergeBuff(base);
-		Timer tM1;
-		vector<int> mergeWorkBuff;
-		mergeWorkBuff.resize(base.size());
-		Timer tM2;
-		mergesort(&mergeBuff[0], &mergeWorkBuff[0], base.size());
-		std::cout << "mergesort elapsed: " << tM1.micros() << " , " << tM2.micros() << std::endl;
-
 		vector<int> qsortBuff(base);
 		Timer tQ;
 		qsort(&qsortBuff[0], base.size(), sizeof(int), &compareMyType);
 		std::cout << "qsort     elapsed: " << tQ.micros() << std::endl;
 
-		REQUIRE( stl_join(heapBuff) == stl_join(qsortBuff) );
-		REQUIRE( stl_join(mergeBuff) == stl_join(qsortBuff) );
+		{
+			vector<int> heapBuff(base);
+			Timer tH;
+			heapsort(&heapBuff[0], base.size());
+			std::cout << "heapsort  elapsed: " << tH.micros() << std::endl;
+
+			REQUIRE( stl_join(heapBuff) == stl_join(qsortBuff) );
+		}
+
+		{
+			vector<int> mergeBuff(base);
+			Timer tM;
+			bool mergeResult = mergesort(&mergeBuff[0], base.size());
+			std::cout << "mergesort elapsed: " << tM.micros() << std::endl;
+
+			REQUIRE( mergeResult );
+			REQUIRE( stl_join(mergeBuff) == stl_join(qsortBuff) );
+		}
 	}
 }
 

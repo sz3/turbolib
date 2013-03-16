@@ -9,7 +9,6 @@ public:
 	NovelMaxHeap(SortableType* buffer, unsigned size)
 		: _buffer(buffer)
 		, _size(size)
-		, _temp(0)
 	{
 		buildHeap();
 	}
@@ -72,9 +71,9 @@ public:
 
 	void swap(SortableType& one, SortableType& other)
 	{
-		_temp = one;
+		SortableType temp = one;
 		one = other;
-		other = _temp;
+		other = temp;
 	}
 
 	void debugPrint()
@@ -91,6 +90,5 @@ public:
 protected:
 	SortableType* _buffer;
 	unsigned _size;
-	SortableType _temp;
 };
 

@@ -6,7 +6,7 @@
 #include <iostream>
 using namespace std;
 
-#define BUFSIZE 10000000
+#define BUFSIZE 1000000
 
 int compareMyType(const void* a, const void* b)
 {
@@ -21,17 +21,27 @@ int main(int argc, char** argv)
 
 	// HEAP
 	for (unsigned i = 0; i < BUFSIZE; ++i)
-		buffer[i] = i;
+		buffer[i] = BUFSIZE-i;
 
 	Timer t;
 	heapsort(buffer, BUFSIZE);
 	long long elapsed = t.micros();
 	cout << "heap : " << elapsed << "us" << endl;
 
+	/*for (unsigned i = 0; i < BUFSIZE; ++i)
+	{
+		if (i % 20 == 0)
+			cout << endl;
+		else
+			cout << ",";
+		cout << buffer[i];
+	}
+	cout << endl;*/
+
 
 	// QUICK (built in)
 	for (unsigned i = 0; i < BUFSIZE; ++i)
-		buffer[i] = i;
+		buffer[i] = BUFSIZE-i;
 
 	Timer t2;
 	qsort(buffer, BUFSIZE, sizeof(unsigned), &compareMyType);

@@ -54,7 +54,6 @@ template <class SortableType>
 void mergesort_index_based(SortableType* buffer, SortableType* workBuffer, unsigned size)
 {
 	::memcpy(workBuffer, buffer, sizeof(SortableType)*size);
-	unsigned run = 1;
 	for (unsigned run = 1; run < size; run *= 2)
 	{
 		for (unsigned i = 0; i < size; i += 2*run)
@@ -64,9 +63,8 @@ void mergesort_index_based(SortableType* buffer, SortableType* workBuffer, unsig
 }
 
 template <class SortableType>
-void mergesort(SortableType* buffer, SortableType* workBuffer, unsigned size)
+SortableType* mergesort(SortableType* buffer, SortableType* workBuffer, unsigned size)
 {
-	unsigned run = 1;
 	for (unsigned run = 1; run < size; run *= 2)
 	{
 		for (unsigned i = 0; i < size; i += 2*run)
@@ -76,11 +74,23 @@ void mergesort(SortableType* buffer, SortableType* workBuffer, unsigned size)
 			SortableType* end = buffer + std::min(i+2*run, size);
 			doMerge(left, right, right, end, workBuffer+i);
 		}
-		//::memcpy(buffer, workBuffer, sizeof(SortableType)*size);
 
 		SortableType* temp = buffer;
 		buffer = workBuffer;
 		workBuffer = temp;
 	}
+	return buffer;
 }
 
+template <class SortableType>
+bool mergesort(SortableType* buffer, unsigned size)
+{
+	SortableType* workBuffer = new (std::nothrow) SortableType[size];
+	if (workBuffer == NULL)
+		return false;
+
+	SortableType* resbuffer = mergesort(buffer, workBuffer, size);
+	if (resbuffer != buffer)
+		::memcpy(buffer, workBuffer, sizeof(SortableType)*size);
+	return true;
+}
