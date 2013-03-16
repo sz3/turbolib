@@ -19,6 +19,7 @@ set (PROJECTS
    src/exe/threadlock
 
    src/lib/algorithm
+   test/lib/algorithm
    src/lib/common
    test/lib/common
    src/lib/event
