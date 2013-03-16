@@ -1,3 +1,4 @@
+//#define SOOPER_DEBUG
 #include "algorithm/heapsort.h"
 #include "algorithm/mergesort.h"
 
@@ -6,7 +7,7 @@
 #include <iostream>
 using namespace std;
 
-#define BUFSIZE 1000000
+#define BUFSIZE 480000
 
 int compareMyType(const void* a, const void* b)
 {
@@ -17,16 +18,18 @@ int compareMyType(const void* a, const void* b)
 
 int main(int argc, char** argv)
 {
+	std::cout << "*** buffer size : " << BUFSIZE << " ***" << std::endl;
+
 	unsigned* buffer = new unsigned[BUFSIZE];
 
 	// HEAP
 	for (unsigned i = 0; i < BUFSIZE; ++i)
-		buffer[i] = BUFSIZE-i;
+		buffer[i] = i;
 
 	Timer t;
 	heapsort(buffer, BUFSIZE);
-	long long elapsed = t.micros();
-	cout << "heap : " << elapsed << "us" << endl;
+	cout << "heap : " << t.micros() << "us (" << t.micros()*100.0/BUFSIZE << ")" << endl;
+	cout << "       " << t.millis() << "ms" << endl;
 
 	/*for (unsigned i = 0; i < BUFSIZE; ++i)
 	{
@@ -41,23 +44,21 @@ int main(int argc, char** argv)
 
 	// QUICK (built in)
 	for (unsigned i = 0; i < BUFSIZE; ++i)
-		buffer[i] = BUFSIZE-i;
+		buffer[i] = i;
 
 	Timer t2;
 	qsort(buffer, BUFSIZE, sizeof(unsigned), &compareMyType);
-	long long el2 = t2.micros();
-	cout << "qsort: " << el2 << "us" << endl;
+	cout << "qsort: " << t2.micros() << "us (" << t2.micros()*100.0/BUFSIZE << ")" << endl;
+	cout << "       " << t2.millis() << "ms" << endl;
 
 	// MERGE
 	for (unsigned i = 0; i < BUFSIZE; ++i)
-		buffer[i] = BUFSIZE-i;
-	unsigned* workBuffer = new unsigned[BUFSIZE];
-	::memset(workBuffer, 0, sizeof(workBuffer)*BUFSIZE);
+		buffer[i] = i;
 
 	Timer t3;
-	mergesort(buffer, workBuffer, BUFSIZE);
-	long long el3 = t3.micros();
-	cout << "merge: " << el3 << "us" << endl;
+	mergesort(buffer, BUFSIZE);
+	cout << "merge: " << t3.micros() << "us (" << t3.micros()*100.0/BUFSIZE << ")" << endl;
+	cout << "       " << t3.millis() << "ms" << endl;
 
 	/*for (unsigned i = 0; i < BUFSIZE; ++i)
 	{
@@ -71,6 +72,5 @@ int main(int argc, char** argv)
 
 
 	delete[] buffer;
-	delete[] workBuffer;
 	return 0;
 }

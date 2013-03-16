@@ -1,6 +1,6 @@
 #include "catch.hpp"
 
-#define SOOPER_DEBUG
+//#define SOOPER_DEBUG
 #include "heapsort.h"
 #include "mergesort.h"
 #include "event/Timer.h"
@@ -52,13 +52,14 @@ TEST_CASE( "SortCompareTest/testDefault", "default" )
 	int rounds = 6;
 	for (int r = 1; r <= rounds; ++r)
 	{
-		std::cout << std::endl;
-		std::cout << " **** run " << r << " ****" << std::endl;
-
 		// make buffer 4 times bigger each time through
 		int iterbuffsize = BUFSIZE;
 		for (int i = 1; i < r; ++i)
 			iterbuffsize *= 4;
+
+		std::cout << std::endl;
+		std::cout << " **** run " << r << " ****" << std::endl;
+		std::cout << "      buffer size is " << iterbuffsize << std::endl;
 
 		vector<int> base = generateRandomBuffer(iterbuffsize);
 		/*for (int i = 0; i < base.size(); ++i)
@@ -74,13 +75,13 @@ TEST_CASE( "SortCompareTest/testDefault", "default" )
 		vector<int> qsortBuff(base);
 		Timer tQ;
 		qsort(&qsortBuff[0], base.size(), sizeof(int), &compareMyType);
-		std::cout << "qsort     elapsed: " << tQ.micros() << std::endl;
+		std::cout << "qsort     elapsed: " << tQ.millis() << std::endl;
 
 		{
 			vector<int> heapBuff(base);
 			Timer tH;
 			heapsort(&heapBuff[0], base.size());
-			std::cout << "heapsort  elapsed: " << tH.micros() << std::endl;
+			std::cout << "heapsort  elapsed: " << tH.millis() << std::endl;
 
 			REQUIRE( stl_join(heapBuff) == stl_join(qsortBuff) );
 		}
@@ -89,7 +90,7 @@ TEST_CASE( "SortCompareTest/testDefault", "default" )
 			vector<int> mergeBuff(base);
 			Timer tM;
 			bool mergeResult = mergesort(&mergeBuff[0], base.size());
-			std::cout << "mergesort elapsed: " << tM.micros() << std::endl;
+			std::cout << "mergesort elapsed: " << tM.millis() << std::endl;
 
 			REQUIRE( mergeResult );
 			REQUIRE( stl_join(mergeBuff) == stl_join(qsortBuff) );

@@ -95,5 +95,7 @@ bool mergesort(SortableType* buffer, unsigned size)
 	SortableType* resbuffer = mergesort(buffer, workBuffer, size);
 	if (resbuffer != buffer)
 		::memcpy(buffer, workBuffer, sizeof(SortableType)*size);
+
+	delete[] workBuffer;
 	return true;
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "NovelMaxHeap.h"
+#include <cmath>
 #include <cstddef>
 #include <iostream>
 
@@ -14,6 +15,6 @@ void heapsort(SortableType* buffer, unsigned size)
 	while (heap.pop());
 
 #ifdef SOOPER_DEBUG
-	std::cout << "log2(" << size << "), build heap: " << (heap._buildHeapCount*1.0/size) << ", heapify: " << (heap._heapifyCount*1.0/size) << std::endl;
+	std::cout << "log2(" << size << ") = " << log2(size) << ", build heap: " << (heap._buildHeapCount*1.0/size) << ", heapify: " << (heap._heapifyCount*1.0/size) << std::endl;
 #endif
 }
