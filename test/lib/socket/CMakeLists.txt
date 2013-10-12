@@ -24,6 +24,8 @@ add_test(socket_test socket_test)
 target_link_libraries(socket_test
 	socket
 
+	common
+
 	pthread
 )
 

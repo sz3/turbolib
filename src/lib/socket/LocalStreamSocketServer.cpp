@@ -8,9 +8,10 @@
 using std::string;
 
 // TODO: something to limit size of name. tied to "UNIX_PATH_MAX", which is defined in a mystery location, about ~108 chars
-LocalStreamSocketServer::LocalStreamSocketServer(const string& name, unsigned numThreads/*=1*/)
+LocalStreamSocketServer::LocalStreamSocketServer(const string& name, const std::function<void(int)>& onConnect, unsigned numThreads/*=1*/)
 	: _running(false)
 	, _name(name)
+	, _onConnect(onConnect)
 	, _numThreads(numThreads)
 	, _sock(-1)
 {
@@ -83,28 +84,11 @@ void LocalStreamSocketServer::run()
 
 	int connection;
 	while (_running && (connection = ::accept(_sock, (struct sockaddr*)&si_other, &slen)) > -1)
-		onConnect(connection);
-	close(_sock);
-}
-
-void LocalStreamSocketServer::onConnect(int fd)
-{
-	int nbytes;
-	const int buflen = 1024;
-	char buf[buflen];
-
-	nbytes = recv(fd, buf, buflen, 0);
-	if (nbytes < 0)
-		perror("recv");
-	else
 	{
-		string message = "back at you: " + string(buf);
-		std::cerr << "got a message from the client! " << message << std::endl;
-		if (send(fd, message.c_str(), message.size(), 0) < 0)
-			perror("send");
+		_onConnect(connection);
+		close(connection);
 	}
-
-	close(fd);
+	close(_sock);
 }
 
 bool LocalStreamSocketServer::isRunning() const

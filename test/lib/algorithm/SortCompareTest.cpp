@@ -48,7 +48,7 @@ namespace {
 
 TEST_CASE( "SortCompareTest/testDefault", "default" )
 {
-	int BUFSIZE = 5000;
+	int BUFSIZE = 500;
 	int rounds = 6;
 	for (int r = 1; r <= rounds; ++r)
 	{
