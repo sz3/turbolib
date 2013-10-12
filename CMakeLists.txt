@@ -16,7 +16,6 @@ endif()
 set (PROJECTS
    src/exe/heapsort
    src/exe/indexer
-   src/exe/pdevkit
    src/exe/threadlock
 
    src/lib/algorithm
@@ -27,8 +26,6 @@ set (PROJECTS
    test/lib/event
    src/lib/socket
    test/lib/socket
-
-   src/lib/graphics
 )
 
 include_directories(

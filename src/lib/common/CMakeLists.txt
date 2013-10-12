@@ -4,8 +4,6 @@ set(SOURCES
 	CommandLine.cpp
 	CommandLine.h
 	FixedPointNumber.h
-	TestFace.cpp
-	TestFace.h
 )
 
 include_directories(

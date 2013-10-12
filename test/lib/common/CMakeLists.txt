@@ -4,9 +4,9 @@ project(common_test)
 
 set (SOURCES
 	test.cpp
+	CommandLineTest.cpp
 	FixedPointNumberTest.cpp
 	FixedPointPerformanceTest.cpp
-	TestFaceTest.cpp
 )
 
 include_directories(
