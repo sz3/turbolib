@@ -4,6 +4,7 @@ set(SOURCES
 	CommandLine.cpp
 	CommandLine.h
 	FixedPointNumber.h
+	StringUtil.h
 )
 
 include_directories(

@@ -7,6 +7,7 @@ set (SOURCES
 	CommandLineTest.cpp
 	FixedPointNumberTest.cpp
 	FixedPointPerformanceTest.cpp
+	StringUtilTest.cpp
 )
 
 include_directories(

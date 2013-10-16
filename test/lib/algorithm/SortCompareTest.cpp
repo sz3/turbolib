@@ -3,6 +3,7 @@
 //#define SOOPER_DEBUG
 #include "heapsort.h"
 #include "mergesort.h"
+#include "common/StringUtil.h"
 #include "event/Timer.h"
 #include <chrono>
 #include <random>
@@ -29,20 +30,6 @@ namespace {
 		for (int i = 0; i < size; ++i)
 			result[i] = distribution(generator);
 		return result;
-	}
-
-	std::ostream& operator<<(std::ostream& outstream, const vector<int>& vec)
-	{
-		for (vector<int>::const_iterator it = vec.begin(); it != vec.end(); ++it)
-			outstream << *it << ",";
-		return outstream;
-	}
-
-	std::string stl_join(const vector<int>& vec)
-	{
-		std::stringstream str;
-		str << vec;
-		return str.str();
 	}
 }
 
@@ -83,7 +70,7 @@ TEST_CASE( "SortCompareTest/testDefault", "default" )
 			heapsort(&heapBuff[0], base.size());
 			std::cout << "heapsort  elapsed: " << tH.millis() << std::endl;
 
-			REQUIRE( stl_join(heapBuff) == stl_join(qsortBuff) );
+			REQUIRE( StringUtil::stlJoin(heapBuff) == StringUtil::stlJoin(qsortBuff) );
 		}
 
 		{
@@ -93,7 +80,7 @@ TEST_CASE( "SortCompareTest/testDefault", "default" )
 			std::cout << "mergesort elapsed: " << tM.millis() << std::endl;
 
 			REQUIRE( mergeResult );
-			REQUIRE( stl_join(mergeBuff) == stl_join(qsortBuff) );
+			REQUIRE( StringUtil::stlJoin(mergeBuff) == StringUtil::stlJoin(qsortBuff) );
 		}
 	}
 }
