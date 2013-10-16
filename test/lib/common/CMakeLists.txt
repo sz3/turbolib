@@ -5,6 +5,7 @@ project(common_test)
 set (SOURCES
 	test.cpp
 	CommandLineTest.cpp
+	StringUtilTest.cpp
 )
 
 include_directories(

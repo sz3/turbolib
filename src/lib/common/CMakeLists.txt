@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 set(SOURCES
 	CommandLine.cpp
 	CommandLine.h
+	StringUtil.h
 )
 
 include_directories(
