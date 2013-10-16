@@ -1,4 +1,4 @@
-#include "catch.hpp"
+#include "unittest.h"
 
 #include "LocalStreamSocketServer.h"
 #include "common/CommandLine.h"
@@ -30,10 +30,7 @@ namespace {
 TEST_CASE( "LocalStreamSocketServerTest/testDefault", "default" )
 {
 	LocalStreamSocketServer server("/tmp/iamthebestserver", &onConnect, 4);
-	bool res = server.start();
-	if (!res)
-		cerr << "are things bad? : " << server.lastError() << endl;
-	REQUIRE( res == true );
+	assertMsg( server.start(), server.lastError() );
 
 	{
 		string response = CommandLine::run("echo 'stfu' | nc -U /tmp/iamthebestserver");
