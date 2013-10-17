@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
+	ConnectionByteStream.cpp
+	ConnectionByteStream.h
+	IByteStream.h
 	LocalStreamSocketServer.cpp
 	LocalStreamSocketServer.h
 	UdpServer.cpp

@@ -1,5 +1,6 @@
 #include "unittest.h"
 
+#include "ConnectionByteStream.h"
 #include "LocalStreamSocketServer.h"
 #include "common/CommandLine.h"
 
@@ -14,19 +15,16 @@ namespace {
 		const int buflen = 1024;
 		char buf[buflen];
 
-		int nbytes = recv(fd, buf, buflen, 0);
-		if (nbytes < 0)
-			perror("recv");
-		else
+		ConnectionByteStream stream(fd);
+		if (stream.read(buf, buflen) >= 0)
 		{
 			string message = "back at you: " + string(buf);
-			if (send(fd, message.c_str(), message.size(), 0) < 0)
-				perror("send");
+			stream.write(message.c_str(), message.size());
 		}
 	}
 }
 
-TEST_CASE( "LocalStreamSocketServerTest/testDefault", "default" )
+TEST_CASE( "ConnectionByteStreamTest/testWithServer", "default" )
 {
 	LocalStreamSocketServer server("/tmp/iamthebestserver", &onConnect, 4);
 	assertMsg( server.start(), server.lastError() );

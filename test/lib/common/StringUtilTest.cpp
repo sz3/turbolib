@@ -41,6 +41,6 @@ TEST_CASE( "StringUtilTest/testStlJoinMap", "description" )
 		grid[i] = i*10;
 
 	string toStr = StringUtil::stlJoin(grid);
-	assertEquals( "0:0 1:10 2:20 3:30 4:40", toStr );
+	assertEquals( "0=0 1=10 2=20 3=30 4=40", toStr );
 }
 
