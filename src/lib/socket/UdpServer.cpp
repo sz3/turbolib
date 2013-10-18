@@ -51,6 +51,7 @@ void UdpServer::stop()
 {
 	_running = false;
 	::shutdown(_sock, SHUT_RDWR);
+	::close(_sock);
 	if (_thread.joinable())
 		_thread.join();
 }
@@ -69,7 +70,6 @@ void UdpServer::run()
 		_onPacket(udp, buffer);
 		// TODO: when crypto + membership becomes a thing, we'll need to check the client knows what he's doing
 		// to avoid DOS. But for now, just make sure there's a connection...
-
 	}
 }
 
