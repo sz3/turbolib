@@ -25,11 +25,11 @@ protected:
 
 protected:
 	bool _running;
+	int _sock;
 	std::string _name;
 	std::function<void(int)> _onConnect;
 	unsigned _numThreads;
 
 	std::list<std::thread> _threads;
-	int _sock;
 	std::string _lastError;
 };

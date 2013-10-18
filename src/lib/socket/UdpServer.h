@@ -1,6 +1,5 @@
 #pragma once
 
-#include "event/Event.h"
 #include <functional>
 #include <string>
 #include <thread>
@@ -24,12 +23,12 @@ protected:
 	void fatalError(const std::string& error);
 
 protected:
+	bool _running;
+	int _sock;
 	short _port;
 	std::function<void(UdpSocket&, std::string&)> _onPacket;
 
-	Event _waitForRunning;
 	std::thread  _thread;
-	bool _running;
 	std::string _lastError;
 };
 

@@ -27,6 +27,11 @@ public:
 		return ss.str();
 	}
 
+	void clear()
+	{
+		_calls.clear();
+	}
+
 protected:
 	class InternalCall
 	{
