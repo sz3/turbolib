@@ -2,7 +2,7 @@
 
 #include "ConnectionByteStream.h"
 #include "LocalStreamSocketServer.h"
-#include "common/CommandLine.h"
+#include "command_line/CommandLine.h"
 
 #include <functional>
 #include <iostream>
