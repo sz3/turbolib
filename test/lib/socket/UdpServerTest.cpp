@@ -2,8 +2,8 @@
 
 #include "UdpServer.h"
 #include "UdpClientSocket.h"
-#include "common/CallHistory.h"
-#include "common/CommandLine.h"
+#include "command_line/CommandLine.h"
+#include "util/CallHistory.h"
 
 #include <iostream>
 using namespace std;

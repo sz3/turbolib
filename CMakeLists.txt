@@ -20,12 +20,14 @@ set (PROJECTS
 
    src/lib/algorithm
    test/lib/algorithm
-   src/lib/common
-   test/lib/common
+   src/lib/command_line
+   test/lib/command_line
    src/lib/event
    test/lib/event
    src/lib/socket
    test/lib/socket
+   src/lib/util
+   test/lib/util
 )
 
 include_directories(
