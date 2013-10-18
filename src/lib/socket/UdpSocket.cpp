@@ -3,6 +3,7 @@
 #include <arpa/inet.h>
 #include <iostream>
 #include <sstream>
+#include <cstring>
 
 /*namespace {
 	int sockaddr_in_size()
@@ -16,6 +17,7 @@ UdpSocket::UdpSocket(int sock)
 	: _sock(sock)
 	, _good(_sock != -1)
 {
+	::memset(&_target, 0, sizeof(_target));
 }
 
 UdpSocket::UdpSocket(const std::string& ip, short port)
@@ -61,5 +63,7 @@ int UdpSocket::recv(std::string& buffer)
 	int bytes = recvfrom(_sock, &buffer[0], buffer.capacity(), 0, (sockaddr*)&_target, &slen);
 	if (bytes != -1)
 		buffer.resize(bytes);
+	else
+		::perror("recvfrom failed");
 	return bytes;
 }

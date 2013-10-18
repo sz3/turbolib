@@ -10,10 +10,10 @@ using std::string;
 // TODO: something to limit size of name. tied to "UNIX_PATH_MAX", which is defined in a mystery location, about ~108 chars
 LocalStreamSocketServer::LocalStreamSocketServer(const string& name, const std::function<void(int)>& onConnect, unsigned numThreads/*=1*/)
 	: _running(false)
+	, _sock(-1)
 	, _name(name)
 	, _onConnect(onConnect)
 	, _numThreads(numThreads)
-	, _sock(-1)
 {
 }
 

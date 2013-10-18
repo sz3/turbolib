@@ -10,8 +10,8 @@ string CommandLine::run(const string& command)
 		return "";
 
 	char buffer[1024];
-	string result = fgets(buffer, sizeof(buffer), file);
+	char* result = fgets(buffer, sizeof(buffer), file);
 	pclose(file);
 
-	return result;
+	return result == NULL? "" : string(result);
 }

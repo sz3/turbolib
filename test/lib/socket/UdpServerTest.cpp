@@ -9,11 +9,11 @@
 using namespace std;
 
 namespace {
+	CallHistory _serverHistory;
+
 	void onPacket(UdpSocket& sock, std::string& buffer)
 	{
-		std::cerr << "Received packet from " << sock.getTarget() << std::endl;
-		std::cerr << "Data: " << buffer << std::endl;
-
+		_serverHistory.call("onPacket", buffer);
 		sock.send(buffer);
 	}
 }
@@ -21,42 +21,41 @@ namespace {
 TEST_CASE( "UdpServerTest/testDefault", "default" )
 {
 	UdpServer server(8487, &onPacket);
-	REQUIRE( server.start() );
+	assertMsg( server.start(), server.lastError() );
 
 	UdpSocket sock("127.0.0.1", 8487);
-	REQUIRE( sock.send("hi dudes") == 8 );
 
+	assertEquals( 8, sock.send("hi dudes") );
 	std::string buff;
 	buff.resize(100);
-	REQUIRE( sock.recv(buff) == 8 );
+	assertEquals( 8, sock.recv(buff) );
+	assertEquals( "hi dudes", buff );
 
-	sock.send("hi dudettes");
-	sock.send("good evening, commissioner");
+	assertEquals( 11, sock.send("hi dudettes") );
+	buff.resize(100);
+	assertEquals( 11, sock.recv(buff) );
+	assertEquals( "hi dudettes", buff );
+
+	assertEquals( 26, sock.send("good evening, commissioner") );
+	buff.resize(100);
+	assertEquals( 26, sock.recv(buff) );
+	assertEquals( "good evening, commissioner", buff );
 
 	server.stop();
 
-	sock.send("laters");
+	// TODO: what?
+	assertEquals( 6, sock.send("laters") );
 
-	REQUIRE( buff == "hi dudes" );
+	assertEquals( "onPacket(hi dudes)|onPacket(hi dudettes)|onPacket(good evening, commissioner)", _serverHistory.calls() );
 }
 
-/*
 TEST_CASE( "UdpServerTest/testExternalClient", "default" )
 {
-	UdpServer server(8487);
+	_serverHistory.clear();
+	UdpServer server(8487, &onPacket);
 	assertMsg( server.start(), server.lastError() );
 
-	std::cerr << "hello" << std::endl;
-	getchar();
-	std::cerr << "goodbye" << std::endl;
-	{
-		string response = CommandLine::run("echo 'stfu' | nc -U /tmp/iamthebestserver");
-		REQUIRE( response == "back at you: stfu\n" );
-	}
-
-	std::string buff;
-	buff.resize(100);
-	REQUIRE( sock.recv(buff) == 8 );
-	REQUIRE( buff == "hi dudes" );
+	// -w 0 option makes nc go away immediately. So don't listen for a response, lulz!
+	CommandLine::run("echo 'stfu' | nc -u 127.0.0.1 8487 -w 0");
+	assertEquals( "onPacket(stfu\n)", _serverHistory.calls() );
 }
-//*/

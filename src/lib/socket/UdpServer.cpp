@@ -9,6 +9,7 @@
 
 UdpServer::UdpServer(short port, std::function<void(UdpSocket&, std::string&)> onPacket)
 	: _running(false)
+	, _sock(-1)
 	, _port(port)
 	, _onPacket(onPacket)
 {
@@ -22,27 +23,11 @@ UdpServer::~UdpServer()
 bool UdpServer::start()
 {
 	_running = true;
-	_thread = std::thread( std::bind(&UdpServer::run, this) );
-
-	if (!_waitForRunning.wait(5000))
-		return false;
-	return _running;
-}
-
-void UdpServer::stop()
-{
-	_running = false;
-	if (_thread.joinable())
-		_thread.join();
-}
-
-void UdpServer::run()
-{
-	int sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-	if (sock == -1)
+	_sock = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (_sock == -1)
 	{
 		fatalError("couldn't create socket!");
-		return;
+		return _running = false;
 	}
 
 	struct sockaddr_in si_me;
@@ -51,31 +36,41 @@ void UdpServer::run()
 	si_me.sin_family = AF_INET;
 	si_me.sin_port = htons(_port);
 	si_me.sin_addr.s_addr = htonl(INADDR_ANY);
-	if (bind(sock, (struct sockaddr*)&si_me, sizeof(si_me)) == -1)
+	if (bind(_sock, (struct sockaddr*)&si_me, sizeof(si_me)) == -1)
 	{
 		fatalError("couldn't bind to port!");
-		close(sock);
-		return;
+		close(_sock);
+		return _running = false;
 	}
 
-	_waitForRunning.signal();
+	_thread = std::thread( std::bind(&UdpServer::run, this) );
+	return _running;
+}
 
+void UdpServer::stop()
+{
+	_running = false;
+	::shutdown(_sock, SHUT_RDWR);
+	if (_thread.joinable())
+		_thread.join();
+}
+
+void UdpServer::run()
+{
+	UdpSocket udp(_sock);
 	std::string buffer;
-	buffer.resize(1024);
 	while (_running)
 	{
-		UdpSocket udp(sock);
-		if (udp.recv(buffer) == -1)
+		buffer.clear();
+		buffer.resize(1024);
+		if (udp.recv(buffer) <= 0)
 			continue;
 
 		_onPacket(udp, buffer);
 		// TODO: when crypto + membership becomes a thing, we'll need to check the client knows what he's doing
-		// to avoid DOS. But for now,
-
-
+		// to avoid DOS. But for now, just make sure there's a connection...
 
 	}
-	close(sock);
 }
 
 bool UdpServer::isRunning() const
@@ -91,6 +86,4 @@ std::string UdpServer::lastError() const
 void UdpServer::fatalError(const std::string& error)
 {
 	_lastError = error;
-	_running = false;
-	_waitForRunning.signal();
 }

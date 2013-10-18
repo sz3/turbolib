@@ -10,4 +10,7 @@ TEST_CASE( "CallHistoryTest/testCalls", "description" )
 	history.call("bar", "rab");
 	history.call("go", "for", 2, true);
 	assertEquals("foo()|bar(rab)|go(for,2,1)", history.calls());
+
+	history.clear();
+	assertEquals("", history.calls());
 }
