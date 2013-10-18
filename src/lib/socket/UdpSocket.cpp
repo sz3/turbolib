@@ -5,31 +5,11 @@
 #include <sstream>
 #include <cstring>
 
-/*namespace {
-	int sockaddr_in_size()
-	{
-		static int size = sizeof(struct sockaddr_in);
-		return size;
-	}
-};*/
-
 UdpSocket::UdpSocket(int sock)
 	: _sock(sock)
 	, _good(_sock != -1)
 {
 	::memset(&_target, 0, sizeof(_target));
-}
-
-UdpSocket::UdpSocket(const std::string& ip, short port)
-	: _sock( socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) )
-	, _good(_sock != -1)
-{
-	setTarget(ip, port);
-}
-
-UdpSocket::~UdpSocket()
-{
-	close(_sock);
 }
 
 bool UdpSocket::isGood() const

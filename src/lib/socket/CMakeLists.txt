@@ -6,6 +6,8 @@ set(SOURCES
 	IByteStream.h
 	LocalStreamSocketServer.cpp
 	LocalStreamSocketServer.h
+	UdpClientSocket.cpp
+	UdpClientSocket.h
 	UdpServer.cpp
 	UdpServer.h
 	UdpSocket.cpp
