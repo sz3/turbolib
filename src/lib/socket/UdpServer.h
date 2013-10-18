@@ -1,13 +1,16 @@
 #pragma once
 
 #include "event/Event.h"
+#include <functional>
 #include <string>
 #include <thread>
+
+class UdpSocket;
 
 class UdpServer
 {
 public:
-	UdpServer(short port); // IPacketHandler&
+	UdpServer(short port, std::function<void(UdpSocket&, std::string&)> onPacket);
 	~UdpServer();
 
 	bool start();
@@ -22,6 +25,7 @@ protected:
 
 protected:
 	short _port;
+	std::function<void(UdpSocket&, std::string&)> _onPacket;
 
 	Event _waitForRunning;
 	std::thread  _thread;

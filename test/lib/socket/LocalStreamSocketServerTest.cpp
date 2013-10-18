@@ -40,6 +40,5 @@ TEST_CASE( "LocalStreamSocketServerTest/testDefault", "default" )
 		string response = CommandLine::run("echo 'again' | nc -U /tmp/iamthebestserver");
 		REQUIRE( response == "back at you: again\n" );
 	}
-
 }
 
