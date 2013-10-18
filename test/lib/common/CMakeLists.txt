@@ -4,6 +4,7 @@ project(common_test)
 
 set (SOURCES
 	test.cpp
+	CallHistoryTest.cpp
 	CommandLineTest.cpp
 	StringUtilTest.cpp
 )

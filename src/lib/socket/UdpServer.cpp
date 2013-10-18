@@ -1,12 +1,16 @@
 #include "UdpServer.h"
 
+#include "UdpSocket.h"
+#include <iostream>
+
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
 
-UdpServer::UdpServer(short port)
+UdpServer::UdpServer(short port, std::function<void(UdpSocket&, std::string&)> onPacket)
 	: _running(false)
 	, _port(port)
+	, _onPacket(onPacket)
 {
 }
 
@@ -56,20 +60,20 @@ void UdpServer::run()
 
 	_waitForRunning.signal();
 
-	struct sockaddr_in si_other;
-	socklen_t slen = sizeof(si_other);
-	const int buflen = 1024;
-	char buf[buflen];
+	std::string buffer;
+	buffer.resize(1024);
 	while (_running)
 	{
-		int bytes = recvfrom(sock, buf, buflen, 0, (sockaddr*)&si_other, &slen);
-		if (bytes == -1)
+		UdpSocket udp(sock);
+		if (udp.recv(buffer) == -1)
 			continue;
 
-		printf("Received packet from %s:%d\nData: %s\n\n",
-			   inet_ntoa(si_other.sin_addr), ntohs(si_other.sin_port), buf);
+		_onPacket(udp, buffer);
+		// TODO: when crypto + membership becomes a thing, we'll need to check the client knows what he's doing
+		// to avoid DOS. But for now,
 
-		sendto(sock, buf, bytes, 0, (const sockaddr*)&si_other, sizeof(si_other));
+
+
 	}
 	close(sock);
 }

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
+	CallHistory.h
 	CommandLine.cpp
 	CommandLine.h
 	StringUtil.h
