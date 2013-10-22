@@ -9,7 +9,7 @@ class UdpSocket;
 class UdpServer
 {
 public:
-	UdpServer(short port, std::function<void(UdpSocket&, std::string&)> onPacket);
+	UdpServer(short port, std::function<void(UdpSocket&, const std::string&)> onPacket);
 	~UdpServer();
 
 	bool start();
