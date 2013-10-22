@@ -11,7 +11,7 @@ using namespace std;
 namespace {
 	CallHistory _serverHistory;
 
-	void onPacket(UdpSocket& sock, std::string& buffer)
+	void onPacket(UdpSocket& sock, const std::string& buffer)
 	{
 		_serverHistory.call("onPacket", buffer);
 		sock.send(buffer);
