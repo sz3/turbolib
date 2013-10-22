@@ -12,7 +12,7 @@ public:
 	bool setTarget(const std::string& ip, short port);
 	std::string getTarget() const;
 
-	int send(const std::string& data);
+	int send(const std::string& data) const;
 	int recv(std::string& buffer);
 
 protected:

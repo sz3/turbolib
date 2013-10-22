@@ -31,7 +31,7 @@ std::string UdpSocket::getTarget() const
 	return ss.str();
 }
 
-int UdpSocket::send(const std::string& data)
+int UdpSocket::send(const std::string& data) const
 {
 	return sendto(_sock, &data[0], data.size(), 0, (const sockaddr*)&_target, sizeof(_target));
 }
