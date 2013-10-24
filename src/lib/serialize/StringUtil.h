@@ -1,6 +1,8 @@
+#pragma once
+
 #include <sstream>
 #include <string>
-#include <utility>
+#include <vector>
 
 namespace StringUtil
 {
@@ -21,11 +23,6 @@ namespace StringUtil
 	{
 		return stlJoin(container.begin(), container.end(), delim);
 	}
-};
 
-template <class T1, class T2>
-std::ostream& operator<<(std::ostream& outstream, const std::pair<T1,T2>& pear)
-{
-	outstream << pear.first << "=" << pear.second;
-	return outstream;
+	std::vector<std::string> split(const std::string& input, char delim=' ');
 }

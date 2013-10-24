@@ -20,6 +20,3 @@ include_directories(
 
 add_library(socket STATIC ${SOURCES})
 
-target_link_libraries(socket
-	event
-)

@@ -8,6 +8,15 @@
 using std::map;
 using std::string;
 
+namespace {
+	template <class T1, class T2>
+	std::ostream& operator<<(std::ostream& outstream, const std::pair<T1,T2>& pear)
+	{
+		outstream << pear.first << "=" << pear.second;
+		return outstream;
+	}
+}
+
 TEST_CASE( "StringUtilTest/testStlJoinPrimitive", "description" )
 {
 	std::vector<int> numbers;
