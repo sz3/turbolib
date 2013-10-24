@@ -18,6 +18,10 @@ set (PROJECTS
    test/lib/command_line
    src/lib/event
    test/lib/event
+   src/lib/file
+   test/lib/file
+   src/lib/serialize
+   test/lib/serialize
    src/lib/socket
    test/lib/socket
    src/lib/util

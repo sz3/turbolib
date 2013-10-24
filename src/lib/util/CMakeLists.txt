@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
 	CallHistory.h
-	StringUtil.h
 )
 
 include_directories(
