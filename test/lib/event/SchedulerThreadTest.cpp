@@ -1,0 +1,48 @@
+#include "unittest.h"
+
+#include "SchedulerThread.h"
+
+#include "Event.h"
+#include "Timer.h"
+#include "serialize/StringUtil.h"
+#include <vector>
+using std::bind;
+using std::vector;
+
+TEST_CASE( "SchedulerThreadTest/testDefault", "default" )
+{
+	SchedulerThread scheduler;
+
+	Timer time;
+	vector<unsigned> results;
+	vector<unsigned> timing;
+	Event midway;
+	Event finished;
+
+	scheduler.schedule( bind(&Event::signal, &finished), 150 );
+	scheduler.schedule( [&] () { results.push_back(5); }, 5 );
+	scheduler.schedule( [&] () { timing.push_back(time.millis()); }, 5 );
+	scheduler.schedule( [&] () { results.push_back(50); }, 50 );
+	scheduler.schedule( [&] () { timing.push_back(time.millis()); }, 50 );
+	scheduler.schedule( bind(&Event::signal, &midway), 70 );
+	scheduler.schedule( [&] () { results.push_back(100); }, 100 );
+	scheduler.schedule( [&] () { timing.push_back(time.millis()); }, 100 );
+
+	assertTrue( midway.wait(700) );
+
+	scheduler.schedule( [&] () { results.push_back(100); }, 30 );
+	scheduler.schedule( [&] () { timing.push_back(time.millis()); }, 30 );
+	scheduler.schedule( [&] () { results.push_back(130); }, 60 );
+	scheduler.schedule( [&] () { timing.push_back(time.millis()); }, 60 );
+
+	assertTrue( finished.wait(1000) );
+	assertEquals( "5 50 100 100 130", StringUtil::stlJoin(results) );
+
+	assertEquals(5, timing.size());
+	assertInRange(4, 5, timing[0]);
+	assertInRange(48, 50, timing[1]);
+	assertInRange(98, 100, timing[2]);
+	assertInRange(98, 100, timing[3]);
+	assertInRange(128, 130, timing[4]);
+}
+

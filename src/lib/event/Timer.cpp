@@ -27,7 +27,6 @@ long long Timer::micros() const
 	return duration_cast<microseconds>( duration() ).count();
 }
 
-
 long long Timer::millis() const
 {
 	return duration_cast<milliseconds>( duration() ).count();
