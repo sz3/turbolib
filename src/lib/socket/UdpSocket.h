@@ -3,14 +3,16 @@
 #include <string>
 #include <netinet/in.h>
 
+class IpAddress;
+
 class UdpSocket
 {
 public:
 	UdpSocket(int sock);
 
 	bool isGood() const;
-	bool setTarget(const std::string& ip, short port);
-	std::string getTarget() const;
+	bool setTarget(const IpAddress& address);
+	IpAddress getTarget() const;
 
 	int send(const std::string& data) const;
 	int recv(std::string& buffer);

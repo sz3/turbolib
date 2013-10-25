@@ -5,6 +5,6 @@
 class UdpClientSocket : public UdpSocket
 {
 public:
-	UdpClientSocket(const std::string& ip, short port);
+	UdpClientSocket(const IpAddress& address);
 	~UdpClientSocket();
 };

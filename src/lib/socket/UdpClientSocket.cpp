@@ -1,9 +1,9 @@
 #include "UdpClientSocket.h"
 
-UdpClientSocket::UdpClientSocket(const std::string& ip, short port)
+UdpClientSocket::UdpClientSocket(const IpAddress& address)
 	: UdpSocket( socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP) )
 {
-	setTarget(ip, port);
+	setTarget(address);
 }
 
 UdpClientSocket::~UdpClientSocket()
