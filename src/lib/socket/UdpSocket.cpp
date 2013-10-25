@@ -1,5 +1,6 @@
 #include "UdpSocket.h"
 
+#include "IpAddress.h"
 #include <arpa/inet.h>
 #include <iostream>
 #include <sstream>
@@ -17,18 +18,16 @@ bool UdpSocket::isGood() const
 	return _good;
 }
 
-bool UdpSocket::setTarget(const std::string& ip, short port)
+bool UdpSocket::setTarget(const IpAddress& address)
 {
 	_target.sin_family = AF_INET;
-	_target.sin_port = htons(port);
-	return inet_aton(ip.c_str(), &_target.sin_addr) != 0;
+	_target.sin_port = htons(address.port());
+	return inet_aton(address.ip().c_str(), &_target.sin_addr) != 0;
 }
 
-std::string UdpSocket::getTarget() const
+IpAddress UdpSocket::getTarget() const
 {
-	std::stringstream ss;
-	ss << inet_ntoa(_target.sin_addr) << ":" << ntohs(_target.sin_port);
-	return ss.str();
+	return IpAddress(inet_ntoa(_target.sin_addr), ntohs(_target.sin_port));
 }
 
 int UdpSocket::send(const std::string& data) const

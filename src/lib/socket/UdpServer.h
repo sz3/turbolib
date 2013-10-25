@@ -19,6 +19,8 @@ public:
 	bool isRunning() const;
 	std::string lastError() const;
 
+	UdpSocket sock() const;
+
 protected:
 	void fatalError(const std::string& error);
 

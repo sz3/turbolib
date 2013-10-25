@@ -1,6 +1,8 @@
 #include "unittest.h"
 
 #include "UdpServer.h"
+
+#include "IpAddress.h"
 #include "UdpClientSocket.h"
 #include "command_line/CommandLine.h"
 #include "util/CallHistory.h"
@@ -23,7 +25,7 @@ TEST_CASE( "UdpServerTest/testDefault", "default" )
 	UdpServer server(8487, &onPacket);
 	assertMsg( server.start(), server.lastError() );
 
-	UdpClientSocket sock("127.0.0.1", 8487);
+	UdpClientSocket sock(IpAddress("127.0.0.1", 8487));
 
 	assertEquals( 8, sock.send("hi dudes") );
 	std::string buff;

@@ -5,6 +5,7 @@ project(socket_test)
 set (SOURCES
 	test.cpp
 	ConnectionByteStreamTest.cpp
+	IpAddressTest.cpp
 	LocalStreamSocketServerTest.cpp
 	UdpServerTest.cpp
 )

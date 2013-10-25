@@ -87,3 +87,8 @@ void UdpServer::fatalError(const std::string& error)
 {
 	_lastError = error;
 }
+
+UdpSocket UdpServer::sock() const
+{
+	return UdpSocket(_sock);
+}
