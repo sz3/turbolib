@@ -7,7 +7,7 @@ IpAddress::IpAddress()
 {
 }
 
-IpAddress::IpAddress(const std::string& ip, short port)
+IpAddress::IpAddress(const std::string& ip, unsigned short port)
 	: _ip(ip)
 	, _port(port)
 {
@@ -18,7 +18,7 @@ const std::string& IpAddress::ip() const
 	return _ip;
 }
 
-short IpAddress::port() const
+unsigned short IpAddress::port() const
 {
 	return _port;
 }

@@ -6,15 +6,15 @@ class IpAddress
 {
 public:
 	IpAddress();
-	IpAddress(const std::string& ip, short port);
+	IpAddress(const std::string& ip, unsigned short port);
 
 	const std::string& ip() const;
-	short port() const;
+	unsigned short port() const;
 
 	std::string toString() const;
 	bool fromString(const std::string& address);
 
 protected:
 	std::string _ip;
-	short _port;
+	unsigned short _port;
 };
