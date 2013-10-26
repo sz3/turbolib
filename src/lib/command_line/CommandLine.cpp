@@ -9,9 +9,11 @@ string CommandLine::run(const string& command)
 	if ( !file )
 		return "";
 
+	string result;
 	char buffer[1024];
-	char* result = fgets(buffer, sizeof(buffer), file);
+	char* bytes = NULL;
+	while ((bytes = fgets(buffer, sizeof(buffer), file)) != NULL)
+		result += bytes;
 	pclose(file);
-
-	return result == NULL? "" : string(result);
+	return result;
 }
