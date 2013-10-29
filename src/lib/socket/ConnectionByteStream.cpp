@@ -8,6 +8,11 @@ ConnectionByteStream::ConnectionByteStream(int fd)
 {
 }
 
+unsigned ConnectionByteStream::maxPacketLength() const
+{
+	return 8192;
+}
+
 int ConnectionByteStream::read(char* buffer, unsigned length)
 {
 	// TODO: _lastError here.

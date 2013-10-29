@@ -16,6 +16,7 @@ public:
 	void shutdown();
 
 	void schedule(const std::function<void()>& fun, unsigned millis);
+	void schedulePeriodic(const std::function<void()>& fun, unsigned millis);
 
 protected:
 	void run();

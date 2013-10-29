@@ -7,6 +7,7 @@ set (SOURCES
 	CallHistoryTest.cpp
 	FixedPointNumberTest.cpp
 	FixedPointPerformanceTest.cpp
+	RandomTest.cpp
 )
 
 include_directories(
