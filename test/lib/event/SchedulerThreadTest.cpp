@@ -9,7 +9,7 @@
 using std::bind;
 using std::vector;
 
-TEST_CASE( "SchedulerThreadTest/testDefault", "default" )
+TEST_CASE( "SchedulerThreadTest/testSchedule", "default" )
 {
 	SchedulerThread scheduler;
 
@@ -44,5 +44,28 @@ TEST_CASE( "SchedulerThreadTest/testDefault", "default" )
 	assertInRange(98, 100, timing[2]);
 	assertInRange(98, 100, timing[3]);
 	assertInRange(128, 130, timing[4]);
+}
+
+TEST_CASE( "SchedulerThreadTest/testPeriodic", "default" )
+{
+	SchedulerThread scheduler;
+
+	Timer time;
+	vector<unsigned> results;
+	vector<unsigned> timing;
+	Event finished;
+
+	scheduler.schedule( bind(&Event::signal, &finished), 100 );
+
+	scheduler.schedulePeriodic( [&] () { results.push_back(30); }, 30 );
+	scheduler.schedulePeriodic( [&] () { timing.push_back(time.millis()); }, 30 );
+
+	assertTrue( finished.wait(1000) );
+	assertEquals( "30 30 30", StringUtil::stlJoin(results) );
+
+	assertEquals(3, timing.size());
+	assertInRange(28, 30, timing[0]);
+	assertInRange(56, 60, timing[1]);
+	assertInRange(84, 90, timing[2]);
 }
 

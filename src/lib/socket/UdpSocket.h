@@ -15,6 +15,7 @@ public:
 	IpAddress getTarget() const;
 
 	int send(const std::string& data) const;
+	int send(const char* buffer, unsigned size) const;
 	int recv(std::string& buffer);
 
 protected:

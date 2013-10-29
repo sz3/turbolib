@@ -7,6 +7,8 @@ class ConnectionByteStream : public IByteStream
 public:
 	ConnectionByteStream(int fd);
 
+	unsigned maxPacketLength() const;
+
 	int read(char* buffer, unsigned length);
 	int write(const char* buffer, unsigned length);
 

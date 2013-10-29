@@ -95,3 +95,9 @@ void SchedulerThread::schedule(const std::function<void()>& fun, unsigned millis
 	}
 	_notifyWork.signal();
 }
+
+void SchedulerThread::schedulePeriodic(const std::function<void()>& fun, unsigned millis)
+{
+	std::function<void()> wrapper( [=] () { fun(); this->schedulePeriodic(fun, millis); } );
+	schedule(wrapper, millis);
+}

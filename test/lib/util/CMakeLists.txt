@@ -5,6 +5,7 @@ project(util_test)
 set (SOURCES
 	test.cpp
 	CallHistoryTest.cpp
+	RandomTest.cpp
 )
 
 include_directories(
