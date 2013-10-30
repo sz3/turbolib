@@ -5,7 +5,7 @@
 
 class IpAddress;
 
-class UdpSocket
+class UdpSocket // : public IDatagramSocket
 {
 public:
 	UdpSocket(int sock);

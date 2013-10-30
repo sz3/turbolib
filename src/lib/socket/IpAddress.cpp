@@ -1,14 +1,15 @@
 #include "IpAddress.h"
 
 #include <sstream>
+#include <utility>
 
 IpAddress::IpAddress()
 	: _port(0)
 {
 }
 
-IpAddress::IpAddress(const std::string& ip, unsigned short port)
-	: _ip(ip)
+IpAddress::IpAddress(std::string ip, unsigned short port)
+	: _ip(std::move(ip))
 	, _port(port)
 {
 }

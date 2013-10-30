@@ -4,12 +4,13 @@
 #include <fstream>
 #include <functional>
 #include <sstream> // for now
+#include <utility>
 
 class StateSaver
 {
 public:
-	StateSaver(const std::string& filename)
-		: _filename(filename)
+	StateSaver(std::string filename)
+		: _filename(std::move(filename))
 	{}
 
 	template <class IT>

@@ -6,7 +6,7 @@ class IpAddress
 {
 public:
 	IpAddress();
-	IpAddress(const std::string& ip, unsigned short port);
+	IpAddress(std::string ip, unsigned short port);
 
 	const std::string& ip() const;
 	unsigned short port() const;

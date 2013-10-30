@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 set(SOURCES
 	Event.cpp
 	Event.h
+	Executor.h
 	SchedulerThread.cpp
 	SchedulerThread.h
 	Timer.cpp
