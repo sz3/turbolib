@@ -5,13 +5,14 @@
 #include <sys/types.h>
 #include <iostream>
 #include <unistd.h>
+#include <utility>
 using std::string;
 
 // TODO: something to limit size of name. tied to "UNIX_PATH_MAX", which is defined in a mystery location, about ~108 chars
-LocalStreamSocketServer::LocalStreamSocketServer(const string& name, const std::function<void(int)>& onConnect, unsigned numThreads/*=1*/)
+LocalStreamSocketServer::LocalStreamSocketServer(string name, const std::function<void(int)>& onConnect, unsigned numThreads/*=1*/)
 	: _running(false)
 	, _sock(-1)
-	, _name(name)
+	, _name(std::move(name))
 	, _onConnect(onConnect)
 	, _numThreads(numThreads)
 {

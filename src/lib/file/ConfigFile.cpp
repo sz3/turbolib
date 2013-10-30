@@ -11,8 +11,8 @@
 using std::string;
 using namespace std::placeholders;
 
-ConfigFile::ConfigFile(const string& filename)
-	: _filename(filename)
+ConfigFile::ConfigFile(std::string filename)
+	: _filename(std::move(filename))
 {
 }
 

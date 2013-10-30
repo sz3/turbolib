@@ -10,7 +10,7 @@ class LocalStreamSocketServer
 {
 public:
 	// some sort of packet handling interface
-	LocalStreamSocketServer(const std::string& name, const std::function<void(int)>& onConnect, unsigned numThreads=1);
+	LocalStreamSocketServer(std::string name, const std::function<void(int)>& onConnect, unsigned numThreads=1);
 	~LocalStreamSocketServer();
 
 	bool start();

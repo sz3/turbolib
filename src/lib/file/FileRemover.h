@@ -2,12 +2,13 @@
 
 #include "File.h"
 #include <string>
+#include <utility>
 
 class FileRemover
 {
 public:
-	FileRemover(const std::string& filename)
-		: _filename(filename)
+	FileRemover(std::string filename)
+		: _filename(std::move(filename))
 	{}
 
 	~FileRemover()

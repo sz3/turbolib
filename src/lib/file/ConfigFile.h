@@ -6,7 +6,7 @@
 class ConfigFile
 {
 public:
-	ConfigFile(const std::string& filename);
+	ConfigFile(std::string filename);
 
 	bool load();
 	bool save() const;
