@@ -1,11 +1,12 @@
 #pragma once
 
+#include "IIpSocket.h"
 #include <string>
 #include <netinet/in.h>
 
 class IpAddress;
 
-class UdpSocket // : public IDatagramSocket
+class UdpSocket : public IIpSocket
 {
 public:
 	UdpSocket(int sock);

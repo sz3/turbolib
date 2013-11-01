@@ -4,6 +4,7 @@ set(SOURCES
 	ConnectionByteStream.cpp
 	ConnectionByteStream.h
 	IByteStream.h
+	IIpSocket.h
 	IpAddress.cpp
 	IpAddress.h
 	LocalStreamSocketServer.cpp
