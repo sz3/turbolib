@@ -13,10 +13,10 @@ using namespace std;
 namespace {
 	CallHistory _serverHistory;
 
-	void onPacket(const UdpSocket& sock, const std::string& buffer)
+	void onPacket(const IIpSocket& sock, const std::string& buffer)
 	{
 		_serverHistory.call("onPacket", buffer);
-		sock.send(buffer);
+		sock.send(&buffer[0], buffer.size());
 	}
 }
 

@@ -7,7 +7,7 @@
 #include <netinet/in.h>
 #include <string.h>
 
-UdpServer::UdpServer(short port, std::function<void(const UdpSocket&, const std::string&)> onPacket)
+UdpServer::UdpServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket)
 	: _running(false)
 	, _sock(-1)
 	, _port(port)
@@ -88,7 +88,7 @@ void UdpServer::fatalError(const std::string& error)
 	_lastError = error;
 }
 
-UdpSocket UdpServer::sock() const
+std::shared_ptr<IIpSocket> UdpServer::sock() const
 {
-	return UdpSocket(_sock);
+	return std::shared_ptr<IIpSocket>(new UdpSocket(_sock));
 }
