@@ -65,6 +65,18 @@ protected:
 			}
 		}
 
+		const ValueType& value() const
+		{
+			return _value;
+		}
+
+		const merkle_tree* subtree() const
+		{
+			if (_empty || _leaf)
+				return NULL;
+			return _node.subtree;
+		}
+
 	protected:
 		ValueType _value;
 		union leaf_or_tree {
@@ -92,6 +104,30 @@ public:
 	{
 		return
 	}*/
+
+	// how to interate?
+	const merkle_tree* subtree(const KeyType& key, unsigned level = 1) const
+	{
+		unsigned index = key & 0x3F;
+		merkle_tree* tree = _nodes[index].subtree();
+		if (tree == NULL || --level == 0)
+			return tree;
+		return tree->subtree(key >> 6, level);
+	}
+
+	// how make "level" work?
+	std::vector<unsigned> diff(const std::vector<ValueType>& other, const KeyType& key = 0, unsigned level = 0) const
+	{
+		merkle_tree* tree = level == 0? this : subtree(key, level);
+		const std::vector<node>& nodes(tree->_nodes);
+
+		std::vector<unsigned> diffs;
+		unsigned size = std::min(64, other.size());
+		for (unsigned i = 0; i < size; ++i)
+			if (other != nodes[i].value())
+				diffs.push_back(i);
+		return diffs;
+	}
 
 	void print(int level = 0) const
 	{
