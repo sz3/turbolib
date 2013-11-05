@@ -26,6 +26,7 @@ add_test(util_test util_test)
 
 target_link_libraries(util_test
 	event
+	serialize
 	
 	pthread
 )

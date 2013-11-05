@@ -22,6 +22,8 @@ set (PROJECTS
    test/lib/algorithm
    src/lib/command_line
    test/lib/command_line
+   src/lib/data_structures
+   test/lib/data_structures
    src/lib/event
    test/lib/event
    src/lib/file
