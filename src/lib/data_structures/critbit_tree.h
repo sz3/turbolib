@@ -11,8 +11,10 @@ adapted from DJB's critbit tree for NULL-terminated strings
 #include <cstring>
 #include <iostream>
 
-// template the function compare well
-template <typename ValType>//, typename Funct>
+// prototype for length, comparison operations
+template <typename ValType> class critbit_helper;
+
+template <typename ValType>
 class critbit_tree
 {
 protected:
@@ -29,36 +31,35 @@ public:
 	{}
 
 	// update all prototypes to use const& and copy semantics where appropriate, as well!
-	ValType* find(ValType* u) const
+	ValType* find(const ValType* u) const
 	{
 		const uint8_t* ubytes = (const uint8_t*)u;
-		const size_t ulen = strlen(u); // FIXME
+		const size_t ulen = critbit_helper<ValType*>::size(u);
 		if (empty())
 			return NULL;
 
-		return (ValType*)walkTreeForBestMember(_root, ubytes, ulen); //FIXME?
+		return walkTreeForBestMember(_root, ubytes, ulen); //FIXME?
 	}
 
-	bool contains(ValType* u) const
+	bool contains(const ValType* u) const
 	{
 		uint8_t* p = (uint8_t*)find(u);
 		if (p == NULL)
 			return false;
-		return 0 == strcmp(u, (const char*)p); // FIXME
+		return critbit_helper<ValType*>::equals(u, (ValType*)p);
 	}
 
 	// 0 == oom
 	// 1 == u already exists
 	// 2 == added u
-	int insert(ValType* u)
+	int insert(const ValType* u)
 	{
 		const uint8_t* ubytes = (const uint8_t*)u;
-		const size_t ulen = strlen(u); // FIXME
-
+		const size_t ulen = critbit_helper<ValType*>::size(u);
 		if (empty())
 			return insertIntoEmptyTree(u, ulen+1);
 
-		uint8_t* p = walkTreeForBestMember(_root, ubytes, ulen);
+		uint8_t* p = (uint8_t*)walkTreeForBestMember(_root, ubytes, ulen);
 
 		uint32_t newbyte;
 		uint32_t newotherbits;
@@ -70,7 +71,7 @@ public:
 		node* newnode;
 		if (posix_memalign((void**)&newnode, sizeof(void*), sizeof(node)))
 			return 0;
-		char* x;
+		ValType* x;
 		if (posix_memalign((void**)&x, sizeof(void*), ulen+1))
 		{
 			free(newnode);
@@ -110,14 +111,14 @@ public:
 	}
 
 private:
-	uint8_t* walkTreeForBestMember(void* p, const uint8_t* ubytes, size_t ulen) const
+	ValType* walkTreeForBestMember(void* p, const uint8_t* ubytes, size_t ulen) const
 	{
 		while (1 & (intptr_t)p)
 		{
-			node* q = (node*)(p-1);
+			node* q = (node*)((intptr_t)p-1);
 			p = q->child[calculateDirection(q, ubytes, ulen)];
 		}
-		return (uint8_t*)p;
+		return (ValType*)p;
 	}
 
 	int calculateDirection(node* q, const uint8_t* ubytes, size_t ulen) const
@@ -133,7 +134,7 @@ private:
 		return (1 + (bits | c)) >> 8;
 	}
 
-	int insertIntoEmptyTree(ValType* u, size_t bytes)
+	int insertIntoEmptyTree(const ValType* u, size_t bytes)
 	{
 		char* x;
 		int a = posix_memalign((void**)&x, sizeof(void*), bytes);
@@ -183,3 +184,33 @@ protected:
 	void* _root;
 };
 
+template <typename ValType>
+class critbit_helper
+{
+public:
+	static size_t size(const ValType& val)
+	{
+		return sizeof(val);
+	}
+
+	static bool equals(const ValType& left, const ValType& right)
+	{
+		return left == right;
+	}
+};
+
+// cstring
+template <>
+class critbit_helper<char*>
+{
+public:
+	static size_t size(const char* val)
+	{
+		return strlen(val);
+	}
+
+	static bool equals(const char* left, const char* right)
+	{
+		return 0 == strcmp(left, right);
+	}
+};
