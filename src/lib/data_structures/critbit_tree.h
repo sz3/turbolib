@@ -30,6 +30,11 @@ public:
 		: _root(NULL)
 	{}
 
+	~critbit_tree()
+	{
+		clear();
+	}
+
 	// internal storage = char* | FooType*
 	// external comparisons = const char* | const FooType& (with operator to cast)
 	//
@@ -119,7 +124,29 @@ public:
 		return _root == NULL;
 	}
 
+	void clear()
+	{
+		if (_root == NULL)
+			return;
+		clear(_root);
+		_root = NULL;
+	}
+
 private:
+	void clear(void* top)
+	{
+		ValType* p = (ValType*)top;
+		if (1 & (intptr_t)p)
+		{
+			node* q = (node*)((intptr_t)p-1);
+			clear(q->child[0]);
+			clear(q->child[1]);
+			free(q);
+		}
+		else
+			free(p);
+	}
+
 	ValType* walkTreeForBestMember(void* p, const uint8_t* keybytes, size_t keylen) const
 	{
 		while (1 & (intptr_t)p)

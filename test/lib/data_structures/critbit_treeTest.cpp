@@ -41,6 +41,10 @@ TEST_CASE( "critbit_treeTest/testInsertLookup", "[unit]" )
 
 	assertEquals(1, tree.insert("one") );
 	assertTrue( tree.contains("one") );
+
+	assertFalse(tree.empty());
+	tree.clear();
+	assertTrue(tree.empty());
 }
 
 TEST_CASE( "critbit_treeTest/testClass", "[unit]" )
@@ -64,5 +68,9 @@ TEST_CASE( "critbit_treeTest/testClass", "[unit]" )
 
 	assertEquals(1, tree.insert(Foo("turtle")) );
 	assertTrue( tree.contains(Foo("turtle")) );
+
+	assertFalse(tree.empty());
+	tree.clear();
+	assertTrue(tree.empty());
 }
 
