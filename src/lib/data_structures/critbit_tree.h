@@ -14,7 +14,7 @@ adapted from DJB's critbit tree for NULL-terminated strings
 // prototype for length, comparison operations
 template <typename ValType> class critbit_helper;
 
-template <typename ValType>
+template <typename ValType, typename ExternalType=const ValType&>
 class critbit_tree
 {
 protected:
@@ -30,41 +30,50 @@ public:
 		: _root(NULL)
 	{}
 
+	// internal storage = char* | FooType*
+	// external comparisons = const char* | const FooType& (with operator to cast)
+	//
+
 	// update all prototypes to use const& and copy semantics where appropriate, as well!
-	ValType* find(const ValType* u) const
+	ValType* find(ExternalType val) const
 	{
-		const uint8_t* ubytes = (const uint8_t*)u;
-		const size_t ulen = critbit_helper<ValType*>::size(u);
+		const uint8_t* ubytes = (const uint8_t*)val;
+		const size_t ulen = critbit_helper<ValType>::size(val);
 		if (empty())
 			return NULL;
 
-		return walkTreeForBestMember(_root, ubytes, ulen); //FIXME?
+		return walkTreeForBestMember(_root, ubytes, ulen);
 	}
 
-	bool contains(const ValType* u) const
+	bool contains(ExternalType val) const
 	{
-		uint8_t* p = (uint8_t*)find(u);
+		ValType* p = find(val);
 		if (p == NULL)
 			return false;
-		return critbit_helper<ValType*>::equals(u, (ValType*)p);
+
+		// well this isn't hideous at all
+		return 0 == strcmp((const char*)(const uint8_t*)val, (const char*)(const uint8_t*)critbit_helper<ValType>::downcast(p));
 	}
 
 	// 0 == oom
 	// 1 == u already exists
 	// 2 == added u
-	int insert(const ValType* u)
+	int insert(ExternalType val)
 	{
-		const uint8_t* ubytes = (const uint8_t*)u;
-		const size_t ulen = critbit_helper<ValType*>::size(u);
+		const size_t ulen = critbit_helper<ValType>::size(val);
+		const ValType* uptr = critbit_helper<ValType>::upcast(val);
 		if (empty())
-			return insertIntoEmptyTree(u, ulen+1);
+			return insertIntoEmptyTree(uptr, ulen);
 
-		uint8_t* p = (uint8_t*)walkTreeForBestMember(_root, ubytes, ulen);
+		const uint8_t* keybytes = (const uint8_t*)val;
+		const size_t keylen = strlen((const char*)keybytes);
+		ValType* bestMember = walkTreeForBestMember(_root, keybytes, keylen);
+		const uint8_t* p = (const uint8_t*)critbit_helper<ValType>::downcast(bestMember);
 
 		uint32_t newbyte;
 		uint32_t newotherbits;
 		int newdirection;
-		if (!findCriticalBit(p, ubytes, ulen, newbyte, newotherbits, newdirection))
+		if (!findCriticalBit(p, keybytes, keylen, newbyte, newotherbits, newdirection))
 			return 1;
 
 		// allocate node
@@ -72,12 +81,12 @@ public:
 		if (posix_memalign((void**)&newnode, sizeof(void*), sizeof(node)))
 			return 0;
 		ValType* x;
-		if (posix_memalign((void**)&x, sizeof(void*), ulen+1))
+		if (posix_memalign((void**)&x, sizeof(void*), ulen))
 		{
 			free(newnode);
 			return 0;
 		}
-		memcpy(x, ubytes, ulen+1);
+		memcpy(x, uptr, ulen);
 		newnode->byte = newbyte;
 		newnode->otherbits = newotherbits;
 		newnode->child[1-newdirection] = x;
@@ -95,8 +104,8 @@ public:
 			if (q->byte == newbyte && q->otherbits > newotherbits)
 				break;
 			uint8_t c = 0;
-			if (q->byte < ulen)
-				c = ubytes[q->byte];
+			if (q->byte < keylen)
+				c = keybytes[q->byte];
 			wherep = q->child + direction(q->otherbits, c);
 		}
 		newnode->child[newdirection] = *wherep;
@@ -111,21 +120,21 @@ public:
 	}
 
 private:
-	ValType* walkTreeForBestMember(void* p, const uint8_t* ubytes, size_t ulen) const
+	ValType* walkTreeForBestMember(void* p, const uint8_t* keybytes, size_t keylen) const
 	{
 		while (1 & (intptr_t)p)
 		{
 			node* q = (node*)((intptr_t)p-1);
-			p = q->child[calculateDirection(q, ubytes, ulen)];
+			p = q->child[calculateDirection(q, keybytes, keylen)];
 		}
 		return (ValType*)p;
 	}
 
-	int calculateDirection(node* q, const uint8_t* ubytes, size_t ulen) const
+	int calculateDirection(node* q, const uint8_t* keybytes, size_t keylen) const
 	{
 		uint8_t c = 0;
-		if (q->byte < ulen)
-			c = ubytes[q->byte];
+		if (q->byte < keylen)
+			c = keybytes[q->byte];
 		return direction(q->otherbits, c);
 	}
 
@@ -136,7 +145,7 @@ private:
 
 	int insertIntoEmptyTree(const ValType* u, size_t bytes)
 	{
-		char* x;
+		ValType* x;
 		int a = posix_memalign((void**)&x, sizeof(void*), bytes);
 		if (a)
 			return 0;
@@ -145,9 +154,9 @@ private:
 		return 2;
 	}
 
-	bool findCriticalBit(uint8_t* p, const uint8_t* ubytes, size_t ulen, uint32_t& newbyte, uint32_t& newotherbits, int& newdirection) const
+	bool findCriticalBit(const uint8_t* p, const uint8_t* keybytes, size_t keylen, uint32_t& newbyte, uint32_t& newotherbits, int& newdirection) const
 	{
-		if (!findDifferingByte(p, ubytes, ulen, newbyte, newotherbits))
+		if (!findDifferingByte(p, keybytes, keylen, newbyte, newotherbits))
 			return false;
 
 		// find differing bit
@@ -161,13 +170,13 @@ private:
 		return true;
 	}
 
-	bool findDifferingByte(uint8_t* p, const uint8_t* ubytes, size_t ulen, uint32_t& newbyte, uint32_t& newotherbits) const
+	bool findDifferingByte(const uint8_t* p, const uint8_t* keybytes, size_t keylen, uint32_t& newbyte, uint32_t& newotherbits) const
 	{
-		for (newbyte = 0; newbyte < ulen; ++newbyte)
+		for (newbyte = 0; newbyte < keylen; ++newbyte)
 		{
-			if (p[newbyte] != ubytes[newbyte])
+			if (p[newbyte] != keybytes[newbyte])
 			{
-				newotherbits = p[newbyte] ^ ubytes[newbyte];
+				newotherbits = p[newbyte] ^ keybytes[newbyte];
 				return true;
 			}
 		}
@@ -193,24 +202,34 @@ public:
 		return sizeof(val);
 	}
 
-	static bool equals(const ValType& left, const ValType& right)
+	static const ValType& downcast(ValType* val)
 	{
-		return left == right;
+		return *val;
+	}
+
+	static const ValType* upcast(const ValType& val)
+	{
+		return &val;
 	}
 };
 
 // cstring
 template <>
-class critbit_helper<char*>
+class critbit_helper<char>
 {
 public:
 	static size_t size(const char* val)
 	{
-		return strlen(val);
+		return strlen(val)+1;
 	}
 
-	static bool equals(const char* left, const char* right)
+	static const char* downcast(char* val)
 	{
-		return 0 == strcmp(left, right);
+		return (const char*)val;
+	}
+
+	static const char* upcast(const char* val)
+	{
+		return val;
 	}
 };
