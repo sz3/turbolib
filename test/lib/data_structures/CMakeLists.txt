@@ -4,7 +4,9 @@ project(data_structures_test)
 
 set (SOURCES
 	test.cpp
+	critbit_mapTest.cpp
 	critbit_treeTest.cpp
+	merkle_treeTest.cpp
 )
 
 include_directories(

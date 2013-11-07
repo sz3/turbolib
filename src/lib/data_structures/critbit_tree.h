@@ -15,7 +15,7 @@ adapted from DJB's critbit tree for NULL-terminated strings
 template <typename ValType> class critbit_elem_ops;
 
 // base critbit_node class.
-// also possible to inherit from this and add more stuff to the derived class.
+// also possible to inherit from this, add stuff, and pass in as template argument.
 struct critbit_node
 {
 	void* child[2];
@@ -23,7 +23,8 @@ struct critbit_node
 	uint8_t otherbits;
 };
 
-// prototype for extensions to critbit operations
+// prototype for extensions to critbit operations.
+// to remove, just nuke the template declaration at the bottom and any lines that include this prefix!
 template <typename ValType, typename Node> class critbit_ext;
 
 // internal storage = ValType* = char* | FooType*
@@ -331,6 +332,7 @@ public:
 	}
 };
 
+// empty functions to get optimised out. Specializations will implement special behavior.
 template <typename ValType, typename Node>
 class critbit_ext
 {

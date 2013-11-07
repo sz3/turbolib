@@ -5,7 +5,7 @@ project(util_test)
 set (SOURCES
 	test.cpp
 	CallHistoryTest.cpp
-	merkle_treeTest.cpp
+	merkle_experimentTest.cpp
 	RandomTest.cpp
 )
 

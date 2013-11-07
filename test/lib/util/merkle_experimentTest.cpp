@@ -1,6 +1,6 @@
 #include "unittest.h"
 
-#include "merkle_tree.h"
+#include "merkle_experiment.h"
 #include "serialize/StringUtil.h"
 #include <bitset>
 #include <iostream>
@@ -25,7 +25,7 @@ namespace {
 	}
 }
 
-TEST_CASE( "merkle_treeTest/testInsertRemove", "[unit]" )
+TEST_CASE( "merkle_experimentTest/testInsertRemove", "[unit]" )
 {
 	merkle_tree<unsigned, unsigned> merk;
 	assertEquals( 0, merk.count() );
@@ -78,7 +78,7 @@ TEST_CASE( "merkle_treeTest/testInsertRemove", "[unit]" )
 	assertNull( merk.subtree(1) );
 }
 
-TEST_CASE( "merkle_treeTest/testRecursion", "[unit]" )
+TEST_CASE( "merkle_experimentTest/testRecursion", "[unit]" )
 {
 	merkle_tree<unsigned, unsigned> merk;
 	assertEquals( 0, merk.count() );
@@ -97,7 +97,7 @@ TEST_CASE( "merkle_treeTest/testRecursion", "[unit]" )
 		assertNull( merk.subtree(i) );
 }
 
-TEST_CASE( "merkle_treeTest/testBigValue", "[unit]" )
+TEST_CASE( "merkle_experimentTest/testBigValue", "[unit]" )
 {
 	merkle_tree<unsigned long long, std::bitset<128> > merk;
 	assertEquals( 0, merk.count() );
@@ -115,7 +115,7 @@ TEST_CASE( "merkle_treeTest/testBigValue", "[unit]" )
 }
 
 
-TEST_CASE( "merkle_treeTest/testLoad", "[unit]" )
+TEST_CASE( "merkle_experimentTest/testLoad", "[unit]" )
 {
 	merkle_tree<unsigned long long, std::bitset<128> > merk;
 	assertEquals( 0, merk.count() );
