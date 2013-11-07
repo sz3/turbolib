@@ -14,6 +14,8 @@ adapted from DJB's critbit tree for NULL-terminated strings
 // prototype for length, comparison operations
 template <typename ValType> class critbit_helper;
 
+// internal storage = ValType* = char* | FooType*
+// external comparisons = ExternalType = const char* | const FooType& (with operator to cast)
 template <typename ValType, typename ExternalType=const ValType&>
 class critbit_tree
 {
@@ -35,19 +37,14 @@ public:
 		clear();
 	}
 
-	// internal storage = char* | FooType*
-	// external comparisons = const char* | const FooType& (with operator to cast)
-	//
-
-	// update all prototypes to use const& and copy semantics where appropriate, as well!
 	ValType* find(ExternalType val) const
 	{
-		const uint8_t* ubytes = (const uint8_t*)val;
-		const size_t ulen = critbit_helper<ValType>::size(val);
+		const uint8_t* keybytes = (const uint8_t*)val;
+		const size_t keylen = critbit_helper<ValType>::key_size(keybytes);
 		if (empty())
 			return NULL;
 
-		return walkTreeForBestMember(_root, ubytes, ulen);
+		return walkTreeForBestMember(_root, keybytes, keylen);
 	}
 
 	bool contains(ExternalType val) const
@@ -57,7 +54,7 @@ public:
 			return false;
 
 		// well this isn't hideous at all
-		return 0 == strcmp((const char*)(const uint8_t*)val, (const char*)(const uint8_t*)critbit_helper<ValType>::downcast(p));
+		return 0 == strcmp((const char*)(const uint8_t*)val, critbit_helper<ValType>::c_str(p));
 	}
 
 	// 0 == oom
@@ -66,19 +63,20 @@ public:
 	int insert(ExternalType val)
 	{
 		const size_t ulen = critbit_helper<ValType>::size(val);
-		const ValType* uptr = critbit_helper<ValType>::upcast(val);
 		if (empty())
-			return insertIntoEmptyTree(uptr, ulen);
+			return insertIntoEmptyTree(val, ulen);
 
 		const uint8_t* keybytes = (const uint8_t*)val;
-		const size_t keylen = strlen((const char*)keybytes);
+		const size_t keylen = critbit_helper<ValType>::key_size(keybytes);
+
 		ValType* bestMember = walkTreeForBestMember(_root, keybytes, keylen);
 		const uint8_t* p = (const uint8_t*)critbit_helper<ValType>::downcast(bestMember);
+		const size_t plen = critbit_helper<ValType>::key_size(p);
 
 		uint32_t newbyte;
 		uint32_t newotherbits;
 		int newdirection;
-		if (!findCriticalBit(p, keybytes, keylen, newbyte, newotherbits, newdirection))
+		if (!findCriticalBit(p, plen, keybytes, keylen, newbyte, newotherbits, newdirection))
 			return 1;
 
 		// allocate node
@@ -91,7 +89,7 @@ public:
 			free(newnode);
 			return 0;
 		}
-		memcpy(x, uptr, ulen);
+		critbit_helper<ValType>::construct(x, val, ulen);
 		newnode->byte = newbyte;
 		newnode->otherbits = newotherbits;
 		newnode->child[1-newdirection] = x;
@@ -119,6 +117,48 @@ public:
 		return 2;
 	}
 
+	// 0 if no changes
+	// 1 if we deleted the thing
+	int remove(ExternalType val)
+	{
+		const uint8_t* keybytes = (const uint8_t*)val;
+		const size_t keylen = critbit_helper<ValType>::key_size(keybytes);
+
+		ValType* p = (ValType*)_root;
+		if (p == NULL)
+			return 0;
+
+		void** wherep = &_root;
+		void** whereq = 0;
+		node* q = 0;
+		int direction = 0;
+
+		// walk tree for best match
+		while (1 & (intptr_t)p)
+		{
+			whereq = wherep;
+			q = (node*)((intptr_t)p-1);
+			direction = calculateDirection(q, keybytes, keylen);
+			wherep = q->child + direction;
+			p = (ValType*)*wherep;
+		}
+
+		// check best match
+		if (0 != strcmp((const char*)keybytes, critbit_helper<ValType>::c_str(p)))
+			return 0;
+		free(p);
+
+		// remove the node
+		if (whereq == NULL)
+			_root = 0;
+		else
+		{
+			*whereq = q->child[1-direction];
+			free(q);
+		}
+		return 1;
+	}
+
 	bool empty() const
 	{
 		return _root == NULL;
@@ -133,6 +173,7 @@ public:
 	}
 
 private:
+
 	void clear(void* top)
 	{
 		ValType* p = (ValType*)top;
@@ -170,20 +211,20 @@ private:
 		return (1 + (bits | c)) >> 8;
 	}
 
-	int insertIntoEmptyTree(const ValType* u, size_t bytes)
+	int insertIntoEmptyTree(ExternalType val, size_t bytes)
 	{
 		ValType* x;
 		int a = posix_memalign((void**)&x, sizeof(void*), bytes);
 		if (a)
 			return 0;
-		memcpy(x, u, bytes);
+		critbit_helper<ValType>::construct(x, val, bytes);
 		_root = x;
 		return 2;
 	}
 
-	bool findCriticalBit(const uint8_t* p, const uint8_t* keybytes, size_t keylen, uint32_t& newbyte, uint32_t& newotherbits, int& newdirection) const
+	bool findCriticalBit(const uint8_t* p, size_t plen, const uint8_t* keybytes, size_t keylen, uint32_t& newbyte, uint32_t& newotherbits, int& newdirection) const
 	{
-		if (!findDifferingByte(p, keybytes, keylen, newbyte, newotherbits))
+		if (!findDifferingByte(p, plen, keybytes, keylen, newbyte, newotherbits))
 			return false;
 
 		// find differing bit
@@ -197,7 +238,7 @@ private:
 		return true;
 	}
 
-	bool findDifferingByte(const uint8_t* p, const uint8_t* keybytes, size_t keylen, uint32_t& newbyte, uint32_t& newotherbits) const
+	bool findDifferingByte(const uint8_t* p, size_t plen, const uint8_t* keybytes, size_t keylen, uint32_t& newbyte, uint32_t& newotherbits) const
 	{
 		for (newbyte = 0; newbyte < keylen; ++newbyte)
 		{
@@ -207,7 +248,7 @@ private:
 				return true;
 			}
 		}
-		if (p[newbyte] != 0)
+		if (newbyte < plen)
 		{
 			newotherbits = p[newbyte];
 			return true;
@@ -229,14 +270,26 @@ public:
 		return sizeof(val);
 	}
 
+	static size_t key_size(const uint8_t* key)
+	{
+		return ValType::key_size(key);
+	}
+
+	static const char* c_str(ValType* val)
+	{
+		return (const char*)(const uint8_t*)downcast(val);
+	}
+
 	static const ValType& downcast(ValType* val)
 	{
 		return *val;
 	}
 
-	static const ValType* upcast(const ValType& val)
+	// target has already allocated memory for us,
+	// but we still need to put a new ValType into him
+	static void construct(ValType* target, const ValType& source, size_t length)
 	{
-		return &val;
+		new (target) ValType(source);
 	}
 };
 
@@ -250,13 +303,23 @@ public:
 		return strlen(val)+1;
 	}
 
+	static size_t key_size(const uint8_t* key)
+	{
+		return strlen((const char*)key);
+	}
+
+	static const char* c_str(char* val)
+	{
+		return (const char*)val;
+	}
+
 	static const char* downcast(char* val)
 	{
 		return (const char*)val;
 	}
 
-	static const char* upcast(const char* val)
+	static void construct(char* target, const char* source, size_t length)
 	{
-		return val;
+		memcpy(target, source, length);
 	}
 };
