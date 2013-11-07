@@ -12,21 +12,25 @@ adapted from DJB's critbit tree for NULL-terminated strings
 #include <iostream>
 
 // prototype for length, comparison operations
-template <typename ValType> class critbit_helper;
+template <typename ValType> class critbit_elem_ops;
+
+// base critbit_node class.
+// also possible to inherit from this and add more stuff to the derived class.
+struct critbit_node
+{
+	void* child[2];
+	uint32_t byte;
+	uint8_t otherbits;
+};
+
+// prototype for extensions to critbit operations
+template <typename ValType, typename Node> class critbit_ext;
 
 // internal storage = ValType* = char* | FooType*
 // external comparisons = ExternalType = const char* | const FooType& (with operator to cast)
-template <typename ValType, typename ExternalType=const ValType&>
+template <typename ValType, typename ExternalType=const ValType&, typename Node=critbit_node>
 class critbit_tree
 {
-protected:
-	struct node
-	{
-		void* child[2];
-		uint32_t byte;
-		uint8_t otherbits;
-	};
-
 public:
 	critbit_tree()
 		: _root(NULL)
@@ -37,10 +41,11 @@ public:
 		clear();
 	}
 
-	ValType* find(ExternalType val) const
+	// iterator would be wonderful
+	ValType* lower_bound(ExternalType val) const
 	{
 		const uint8_t* keybytes = (const uint8_t*)val;
-		const size_t keylen = critbit_helper<ValType>::key_size(keybytes);
+		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
 		if (empty())
 			return NULL;
 
@@ -49,12 +54,11 @@ public:
 
 	bool contains(ExternalType val) const
 	{
-		ValType* p = find(val);
+		ValType* p = lower_bound(val);
 		if (p == NULL)
 			return false;
 
-		// well this isn't hideous at all
-		return 0 == strcmp((const char*)(const uint8_t*)val, critbit_helper<ValType>::c_str(p));
+		return critbit_elem_ops<ValType>::equals(val, critbit_elem_ops<ValType>::downcast(p));
 	}
 
 	// 0 == oom
@@ -62,26 +66,27 @@ public:
 	// 2 == added u
 	int insert(ExternalType val)
 	{
-		const size_t ulen = critbit_helper<ValType>::size(val);
+		const size_t ulen = critbit_elem_ops<ValType>::size(val);
 		if (empty())
 			return insertIntoEmptyTree(val, ulen);
 
 		const uint8_t* keybytes = (const uint8_t*)val;
-		const size_t keylen = critbit_helper<ValType>::key_size(keybytes);
+		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
 
 		ValType* bestMember = walkTreeForBestMember(_root, keybytes, keylen);
-		const uint8_t* p = (const uint8_t*)critbit_helper<ValType>::downcast(bestMember);
-		const size_t plen = critbit_helper<ValType>::key_size(p);
+		const uint8_t* p = (const uint8_t*)critbit_elem_ops<ValType>::downcast(bestMember);
+		const size_t plen = critbit_elem_ops<ValType>::key_size(p);
 
 		uint32_t newbyte;
 		uint32_t newotherbits;
 		int newdirection;
 		if (!findCriticalBit(p, plen, keybytes, keylen, newbyte, newotherbits, newdirection))
 			return 1;
+		//critbit_ext<Node>::onchange(bestMember);
 
 		// allocate node
-		node* newnode;
-		if (posix_memalign((void**)&newnode, sizeof(void*), sizeof(node)))
+		Node* newnode;
+		if (posix_memalign((void**)&newnode, sizeof(void*), sizeof(Node)))
 			return 0;
 		ValType* x;
 		if (posix_memalign((void**)&x, sizeof(void*), ulen))
@@ -89,7 +94,7 @@ public:
 			free(newnode);
 			return 0;
 		}
-		critbit_helper<ValType>::construct(x, val, ulen);
+		critbit_elem_ops<ValType>::construct(x, val, ulen);
 		newnode->byte = newbyte;
 		newnode->otherbits = newotherbits;
 		newnode->child[1-newdirection] = x;
@@ -101,18 +106,19 @@ public:
 			if (!(1 & (intptr_t)*wherep))
 				break;
 			uint8_t* p = (uint8_t*)*wherep;
-			node* q = (node*)(p-1);
+			Node* q = (Node*)(p-1);
 			if (q->byte > newbyte)
 				break;
 			if (q->byte == newbyte && q->otherbits > newotherbits)
 				break;
-			uint8_t c = 0;
-			if (q->byte < keylen)
-				c = keybytes[q->byte];
-			wherep = q->child + direction(q->otherbits, c);
+			wherep = q->child + calculateDirection(q, keybytes, keylen);
 		}
 		newnode->child[newdirection] = *wherep;
 		*wherep = (void*)(1 + (char*)newnode);
+
+		critbit_ext<ValType,Node>::assignParent(x, newnode);
+		critbit_ext<ValType,Node>::assignParent(newnode->child[newdirection], newnode);
+		critbit_ext<ValType,Node>::onchange(newnode);
 
 		return 2;
 	}
@@ -122,7 +128,7 @@ public:
 	int remove(ExternalType val)
 	{
 		const uint8_t* keybytes = (const uint8_t*)val;
-		const size_t keylen = critbit_helper<ValType>::key_size(keybytes);
+		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
 
 		ValType* p = (ValType*)_root;
 		if (p == NULL)
@@ -130,21 +136,21 @@ public:
 
 		void** wherep = &_root;
 		void** whereq = 0;
-		node* q = 0;
+		Node* q = 0;
 		int direction = 0;
 
 		// walk tree for best match
 		while (1 & (intptr_t)p)
 		{
 			whereq = wherep;
-			q = (node*)((intptr_t)p-1);
+			q = (Node*)((intptr_t)p-1);
 			direction = calculateDirection(q, keybytes, keylen);
 			wherep = q->child + direction;
 			p = (ValType*)*wherep;
 		}
 
 		// check best match
-		if (0 != strcmp((const char*)keybytes, critbit_helper<ValType>::c_str(p)))
+		if (!critbit_elem_ops<ValType>::equals(val, critbit_elem_ops<ValType>::downcast(p)))
 			return 0;
 		free(p);
 
@@ -154,6 +160,7 @@ public:
 		else
 		{
 			*whereq = q->child[1-direction];
+			critbit_ext<ValType,Node>::inheritParent(*whereq, q);
 			free(q);
 		}
 		return 1;
@@ -179,7 +186,7 @@ private:
 		ValType* p = (ValType*)top;
 		if (1 & (intptr_t)p)
 		{
-			node* q = (node*)((intptr_t)p-1);
+			Node* q = (Node*)((intptr_t)p-1);
 			clear(q->child[0]);
 			clear(q->child[1]);
 			free(q);
@@ -192,13 +199,13 @@ private:
 	{
 		while (1 & (intptr_t)p)
 		{
-			node* q = (node*)((intptr_t)p-1);
+			Node* q = (Node*)((intptr_t)p-1);
 			p = q->child[calculateDirection(q, keybytes, keylen)];
 		}
 		return (ValType*)p;
 	}
 
-	int calculateDirection(node* q, const uint8_t* keybytes, size_t keylen) const
+	int calculateDirection(Node* q, const uint8_t* keybytes, size_t keylen) const
 	{
 		uint8_t c = 0;
 		if (q->byte < keylen)
@@ -217,7 +224,7 @@ private:
 		int a = posix_memalign((void**)&x, sizeof(void*), bytes);
 		if (a)
 			return 0;
-		critbit_helper<ValType>::construct(x, val, bytes);
+		critbit_elem_ops<ValType>::construct(x, val, bytes);
 		_root = x;
 		return 2;
 	}
@@ -262,7 +269,7 @@ protected:
 };
 
 template <typename ValType>
-class critbit_helper
+class critbit_elem_ops
 {
 public:
 	static size_t size(const ValType& val)
@@ -275,9 +282,9 @@ public:
 		return ValType::key_size(key);
 	}
 
-	static const char* c_str(ValType* val)
+	static bool equals(const ValType& left, const ValType& right)
 	{
-		return (const char*)(const uint8_t*)downcast(val);
+		return left == right;
 	}
 
 	static const ValType& downcast(ValType* val)
@@ -295,7 +302,7 @@ public:
 
 // cstring
 template <>
-class critbit_helper<char>
+class critbit_elem_ops<char>
 {
 public:
 	static size_t size(const char* val)
@@ -308,9 +315,9 @@ public:
 		return strlen((const char*)key);
 	}
 
-	static const char* c_str(char* val)
+	static bool equals(const char* left, const char* right)
 	{
-		return (const char*)val;
+		return 0 == strcmp(left, right);
 	}
 
 	static const char* downcast(char* val)
@@ -321,5 +328,28 @@ public:
 	static void construct(char* target, const char* source, size_t length)
 	{
 		memcpy(target, source, length);
+	}
+};
+
+template <typename ValType, typename Node>
+class critbit_ext
+{
+public:
+	static void assignParent(ValType* child, Node* parent)
+	{
+		//elem->setParent(parent);
+	}
+
+	static void assignParent(void* child, Node* parent)
+	{
+	}
+
+	static void inheritParent(void* successor, Node* child)
+	{
+		//replacement->parent = child->parent;
+	}
+
+	static void onchange(Node* node)
+	{
 	}
 };
