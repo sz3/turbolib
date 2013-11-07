@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
-	merkle_tree.h
+	merkle_experiment.h
 	CallHistory.h
 	FixedPointNumber.h
 	Random.h

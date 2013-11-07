@@ -7,7 +7,7 @@ set (SOURCES
 	CallHistoryTest.cpp
 	FixedPointNumberTest.cpp
 	FixedPointPerformanceTest.cpp
-	merkle_treeTest.cpp
+	merkle_experimentTest.cpp
 	RandomTest.cpp
 )
 
