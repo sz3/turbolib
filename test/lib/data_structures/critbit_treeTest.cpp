@@ -89,9 +89,9 @@ namespace {
 			return _str == right._str;
 		}
 
-		static size_t key_size(const uint8_t* cstr)
+		size_t key_size() const
 		{
-			return strlen((const char*)cstr);
+			return _str.size()+1;
 		}
 
 	public:
@@ -186,7 +186,7 @@ namespace {
 			return _key == right._key;
 		}
 
-		static size_t key_size(const uint8_t*)
+		size_t key_size() const
 		{
 			return sizeof(unsigned);
 		}

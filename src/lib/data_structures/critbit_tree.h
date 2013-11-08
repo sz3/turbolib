@@ -42,13 +42,14 @@ public:
 		clear();
 	}
 
+	// TODO: prefix is different from the normal value lookup -- it might be intentionally shorter.
 	void* subtree(ExternalType prefix) const
 	{
 		if (empty())
 			return NULL;
 
 		const uint8_t* keybytes = (const uint8_t*)prefix;
-		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
+		const size_t keylen = critbit_elem_ops<ValType>::key_size(prefix);
 
 		void* p;
 		void* top = p = _root;
@@ -70,7 +71,7 @@ public:
 			return NULL;
 
 		const uint8_t* keybytes = (const uint8_t*)val;
-		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
+		const size_t keylen = critbit_elem_ops<ValType>::key_size(val);
 		return walkTreeForBestMember(_root, keybytes, keylen);
 	}
 
@@ -93,11 +94,11 @@ public:
 			return insertIntoEmptyTree(val, ulen);
 
 		const uint8_t* keybytes = (const uint8_t*)val;
-		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
+		const size_t keylen = critbit_elem_ops<ValType>::key_size(val);
 
-		ValType* bestMember = walkTreeForBestMember(_root, keybytes, keylen);
-		const uint8_t* p = (const uint8_t*)critbit_elem_ops<ValType>::downcast(bestMember);
-		const size_t plen = critbit_elem_ops<ValType>::key_size(p);
+		ExternalType bestMember = critbit_elem_ops<ValType>::downcast(walkTreeForBestMember(_root, keybytes, keylen));
+		const uint8_t* p = (const uint8_t*)bestMember;
+		const size_t plen = critbit_elem_ops<ValType>::key_size(bestMember);
 
 		uint32_t newbyte;
 		uint32_t newotherbits;
@@ -154,7 +155,7 @@ public:
 			return 0;
 
 		const uint8_t* keybytes = (const uint8_t*)val;
-		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
+		const size_t keylen = critbit_elem_ops<ValType>::key_size(val);
 
 		ValType* p = (ValType*)_root;
 		void** wherep = &_root;
@@ -301,9 +302,9 @@ public:
 		return sizeof(val);
 	}
 
-	static size_t key_size(const uint8_t* key)
+	static size_t key_size(const ValType& val)
 	{
-		return ValType::key_size(key);
+		return val.key_size();
 	}
 
 	static bool equals(const ValType& left, const ValType& right)
@@ -334,9 +335,9 @@ public:
 		return strlen(val)+1;
 	}
 
-	static size_t key_size(const uint8_t* key)
+	static size_t key_size(const char* key)
 	{
-		return strlen((const char*)key);
+		return strlen(key);
 	}
 
 	static bool equals(const char* left, const char* right)
