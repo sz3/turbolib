@@ -25,7 +25,7 @@ struct critbit_map_pair : std::pair<Key, Value>
 		return first == right.first;
 	}
 
-	static size_t key_size(const uint8_t*)
+	size_t key_size() const
 	{
 		return sizeof(Key);
 	}
