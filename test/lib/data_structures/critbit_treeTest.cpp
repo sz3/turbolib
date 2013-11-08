@@ -70,6 +70,11 @@ TEST_CASE( "critbit_treeTest/testRemove", "[unit]" )
 	assertTrue(tree.empty());
 }
 
+TEST_CASE( "critbit_treeTest/testPrefixLookup", "[unit]" )
+{
+	assertEquals( false, true );
+}
+
 namespace {
 	class KeyString
 	{

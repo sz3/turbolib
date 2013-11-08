@@ -59,6 +59,7 @@ public:
 	static void onchange(merkle_node<HashType>* node)
 	{
 		node->hash = getHash(node->child[0]) ^ getHash(node->child[1]);
+		//std::cout << " onchange(" << (unsigned)node->byte << ")! my children's hashes are " << getHash(node->child[0]) << "," << getHash(node->child[1]) << ". Mine is " << node->hash << std::endl;
 		if (node->parent != NULL)
 			onchange(node->parent);
 	}

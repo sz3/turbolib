@@ -13,10 +13,10 @@ TEST_CASE( "merkle_treeTest/testAddRemoveTreeWalk", "[unit]" )
 	merkle_tree<unsigned, unsigned long long> tree;
 
 	{
-		assertEquals( 2, tree.insert(10, 1337) );
-		assertTrue( tree.contains(10) );
+		assertEquals( 2, tree.insert(1337, 1337) );
+		assertTrue( tree.contains(1337) );
 
-		merkle_pair<unsigned, unsigned long long>* internalNode = tree.lower_bound(10);
+		merkle_pair<unsigned, unsigned long long>* internalNode = tree.lower_bound(1337);
 		assertNotNull( internalNode );
 		assertEquals( 1337, internalNode->second );
 
@@ -24,38 +24,38 @@ TEST_CASE( "merkle_treeTest/testAddRemoveTreeWalk", "[unit]" )
 		assertNull( parent );
 	}
 
-	assertEquals(2, tree.insert(20, 2048) );
-	assertTrue( tree.contains(20) );
-	assertEquals( 2048, tree.lower_bound(20)->second );
+	assertEquals(2, tree.insert(2048, 2048) );
+	assertTrue( tree.contains(2048) );
+	assertEquals( 2048, tree.lower_bound(2048)->second );
 
-	assertEquals(2, tree.insert(47, 42) );
-	assertTrue( tree.contains(47) );
-	assertEquals( 42, tree.lower_bound(47)->second );
+	assertEquals(2, tree.insert(42, 42) );
+	assertTrue( tree.contains(42) );
+	assertEquals( 42, tree.lower_bound(42)->second );
 
 	{
-		merkle_pair<unsigned, unsigned long long>* internalNode = tree.lower_bound(10);
+		merkle_pair<unsigned, unsigned long long>* internalNode = tree.lower_bound(1337);
 		assertNotNull( internalNode );
 		assertEquals( 1337, internalNode->second );
 
 		merkle_node<unsigned long long>* parent = internalNode->parent;
 		assertNotNull( parent );
-		assertEquals( (1337 xor 2048), parent->hash );
+		assertEquals( (1337 xor 42), parent->hash );
 
 		parent = parent->parent;
 		assertNotNull( parent );
-		assertEquals( (1337 xor 2048 xor 42), parent->hash );
+		assertEquals( (1337 xor 42 xor 2048), parent->hash );
 
 		parent = parent->parent;
 		assertNull(parent);
 	}
 
-	assertEquals(1, tree.insert(10, 15) );
-	assertTrue( tree.contains(10) );
-	assertEquals(1, tree.remove(10) );
-	assertFalse( tree.contains(10) );
+	assertEquals(1, tree.insert(1337, 15) );
+	assertTrue( tree.contains(1337) );
+	assertEquals(1, tree.remove(1337) );
+	assertFalse( tree.contains(1337) );
 
 	{
-		merkle_pair<unsigned, unsigned long long>* internalNode = tree.lower_bound(20);
+		merkle_pair<unsigned, unsigned long long>* internalNode = tree.lower_bound(2048);
 		assertNotNull( internalNode );
 		assertEquals( 2048, internalNode->second );
 
@@ -78,16 +78,18 @@ TEST_CASE( "merkle_treeTest/testHeavyLoad", "[unit]" )
 
 	for (int i = 0xFF; i > 0; --i)
 	{
-		assertEquals( 2, tree.insert(i, 0xf00) );
+		//std::cout << "insert of element " << i << std::endl;
+		assertEquals( 2, tree.insert(i, i*i) );
 
 		merkle_pair<unsigned, unsigned long long>* internalNode = tree.lower_bound(i);
 		assertNotNull( internalNode );
 		assertEquals( i, internalNode->first );
-		assertEquals( 0xf00, internalNode->second );
+		assertEquals( (i*i), internalNode->second );
 	}
 
 	merkle_pair<unsigned, unsigned long long>* node = tree.lower_bound(10);
 	assertNotNull( node );
 	assertEquals( 10, node->first );
-	assertEquals( 0xf00, node->second );
+	assertEquals( 100, node->second );
 }
+
