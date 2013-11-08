@@ -63,16 +63,16 @@ public:
 			onchange(node->parent);
 	}
 
-	static void onchange(void* elem)
+	static void onParentChange(void* elem)
 	{
 		merkle_node<HashType>* node;
 		LeafType* leaf;
 		if (isLeaf(elem, node, leaf))
-		{
-			if (leaf->parent != NULL)
-				onchange(leaf->parent);
-		}
+			node = leaf->parent;
 		else
+			node = node->parent;
+
+		if (node != NULL)
 			onchange(node);
 	}
 
@@ -103,4 +103,8 @@ protected:
 };
 
 template <typename KeyType, typename HashType>
-using merkle_tree = critbit_map< KeyType, HashType, merkle_node<HashType>, merkle_pair<KeyType,HashType> >;
+class merkle_tree : public critbit_map< KeyType, HashType, merkle_node<HashType>, merkle_pair<KeyType,HashType> >
+{
+public:
+
+};
