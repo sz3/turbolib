@@ -42,14 +42,35 @@ public:
 		clear();
 	}
 
-	// iterator would be wonderful
-	ValType* lower_bound(ExternalType val) const
+	void* subtree(ExternalType prefix) const
 	{
-		const uint8_t* keybytes = (const uint8_t*)val;
-		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
 		if (empty())
 			return NULL;
 
+		const uint8_t* keybytes = (const uint8_t*)prefix;
+		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
+
+		void* p;
+		void* top = p = _root;
+		while (1 & (intptr_t)p)
+		{
+			Node* q = (Node*)((intptr_t)p-1);
+			p = q->child[calculateDirection(q, keybytes, keylen)];
+			if (q->byte >= keylen)
+				break;
+			top = p;
+		}
+		return top;
+	}
+
+	// iterator would be wonderful
+	ValType* lower_bound(ExternalType val) const
+	{
+		if (empty())
+			return NULL;
+
+		const uint8_t* keybytes = (const uint8_t*)val;
+		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
 		return walkTreeForBestMember(_root, keybytes, keylen);
 	}
 
@@ -129,16 +150,16 @@ public:
 	// 1 if we deleted the thing
 	int remove(ExternalType val)
 	{
+		if (empty())
+			return 0;
+
 		const uint8_t* keybytes = (const uint8_t*)val;
 		const size_t keylen = critbit_elem_ops<ValType>::key_size(keybytes);
 
 		ValType* p = (ValType*)_root;
-		if (p == NULL)
-			return 0;
-
 		void** wherep = &_root;
-		void** whereq = 0;
 		Node* q = 0;
+		void** whereq = 0;
 		int direction = 0;
 
 		// walk tree for best match
@@ -164,7 +185,7 @@ public:
 			*whereq = q->child[1-direction];
 			critbit_ext<ValType,Node>::inheritParent(*whereq, q);
 			free(q);
-			critbit_ext<ValType,Node>::onchange(*whereq);
+			critbit_ext<ValType,Node>::onParentChange(*whereq);
 		}
 		return 1;
 	}
@@ -183,7 +204,6 @@ public:
 	}
 
 private:
-
 	void clear(void* top)
 	{
 		ValType* p = (ValType*)top;
@@ -360,7 +380,7 @@ public:
 	{
 	}
 
-	static void onchange(void* node)
+	static void onParentChange(void* node)
 	{
 	}
 };
