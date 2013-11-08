@@ -33,16 +33,12 @@ public:
 
 	static void assignParent(void* child, merkle_node<HashType>* parent)
 	{
-		if (1 & (intptr_t)child)
-		{
-			merkle_node<HashType>* q = (merkle_node<HashType>*)((intptr_t)child-1);
-			q->parent = parent;
-		}
+		merkle_node<HashType>* node;
+		LeafType* leaf;
+		if (isLeaf(child, node, leaf))
+			assignParent(leaf, parent);
 		else
-		{
-			LeafType* p = (LeafType*)child;
-			assignParent(p, parent);
-		}
+			node->parent = parent;
 	}
 
 	static void inheritParent(void* successor, merkle_node<HashType>* child)
@@ -50,23 +46,58 @@ public:
 		assignParent(successor, child->parent);
 	}
 
+	static void inheritParent(merkle_node<HashType>* successor, void* child)
+	{
+		merkle_node<HashType>* node;
+		LeafType* leaf;
+		if (isLeaf(child, node, leaf))
+			successor->parent = leaf->parent;
+		else
+			successor->parent = node->parent;
+	}
+
 	static void onchange(merkle_node<HashType>* node)
 	{
 		node->hash = getHash(node->child[0]) ^ getHash(node->child[1]);
+		if (node->parent != NULL)
+			onchange(node->parent);
+	}
+
+	static void onchange(void* elem)
+	{
+		merkle_node<HashType>* node;
+		LeafType* leaf;
+		if (isLeaf(elem, node, leaf))
+		{
+			if (leaf->parent != NULL)
+				onchange(leaf->parent);
+		}
+		else
+			onchange(node);
 	}
 
 protected:
-	static HashType getHash(void* child)
+	static HashType getHash(void* elem)
 	{
-		if (1 & (intptr_t)child)
+		merkle_node<HashType>* node;
+		LeafType* leaf;
+		if (isLeaf(elem, node, leaf))
+			return leaf->second;
+		else
+			return node->hash;
+	}
+
+	static bool isLeaf(void* elem, merkle_node<HashType>*& node, LeafType*& leaf)
+	{
+		if (1 & (intptr_t)elem)
 		{
-			merkle_node<HashType>* q = (merkle_node<HashType>*)((intptr_t)child-1);
-			return q->hash;
+			node = (merkle_node<HashType>*)((intptr_t)elem-1);
+			return false;
 		}
 		else
 		{
-			LeafType* p = (LeafType*)child;
-			return p->second;
+			leaf = (LeafType*)elem;
+			return true;
 		}
 	}
 };

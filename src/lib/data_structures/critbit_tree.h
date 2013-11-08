@@ -117,6 +117,7 @@ public:
 		newnode->child[newdirection] = *wherep;
 		*wherep = (void*)(1 + (char*)newnode);
 
+		critbit_ext<ValType,Node>::inheritParent(newnode, newnode->child[newdirection]);
 		critbit_ext<ValType,Node>::assignParent(x, newnode);
 		critbit_ext<ValType,Node>::assignParent(newnode->child[newdirection], newnode);
 		critbit_ext<ValType,Node>::onchange(newnode);
@@ -163,6 +164,7 @@ public:
 			*whereq = q->child[1-direction];
 			critbit_ext<ValType,Node>::inheritParent(*whereq, q);
 			free(q);
+			critbit_ext<ValType,Node>::onchange(*whereq);
 		}
 		return 1;
 	}
@@ -226,6 +228,7 @@ private:
 		if (a)
 			return 0;
 		critbit_elem_ops<ValType>::construct(x, val, bytes);
+		critbit_ext<ValType,Node>::assignParent(x, NULL);
 		_root = x;
 		return 2;
 	}
@@ -339,7 +342,6 @@ class critbit_ext
 public:
 	static void assignParent(ValType* child, Node* parent)
 	{
-		//elem->setParent(parent);
 	}
 
 	static void assignParent(void* child, Node* parent)
@@ -348,10 +350,17 @@ public:
 
 	static void inheritParent(void* successor, Node* child)
 	{
-		//replacement->parent = child->parent;
+	}
+
+	static void inheritParent(Node* successor, void* child)
+	{
 	}
 
 	static void onchange(Node* node)
+	{
+	}
+
+	static void onchange(void* node)
 	{
 	}
 };

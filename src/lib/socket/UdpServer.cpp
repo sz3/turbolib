@@ -6,6 +6,7 @@
 #include <arpa/inet.h>
 #include <netinet/in.h>
 #include <string.h>
+#include <unistd.h>
 
 UdpServer::UdpServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket)
 	: _running(false)
@@ -39,7 +40,7 @@ bool UdpServer::start()
 	if (bind(_sock, (struct sockaddr*)&si_me, sizeof(si_me)) == -1)
 	{
 		fatalError("couldn't bind to port!");
-		close(_sock);
+		::close(_sock);
 		return _running = false;
 	}
 
