@@ -70,9 +70,88 @@ TEST_CASE( "critbit_treeTest/testRemove", "[unit]" )
 	assertTrue(tree.empty());
 }
 
+namespace {
+	void print_cstr_tree(critbit_node_ptr<char, critbit_node> root, string label)
+	{
+		if (root.isNull())
+			return;
+
+		if (root.isLeaf())
+			std::cout << label << " leaf: " << root.leaf() << std::endl;
+		else
+		{
+			critbit_node* node = root.node();
+			std::cout << label << " node at " << node->byte << "," << (unsigned)(node->otherbits ^ 0xFF) << std::endl;
+			print_cstr_tree(node->child[0], label + " left");
+			print_cstr_tree(node->child[1], label + " right");
+		}
+	}
+}
+
 TEST_CASE( "critbit_treeTest/testPrefixLookup", "[unit]" )
 {
-	assertEquals( false, true );
+	critbit_tree<char, const char*> tree;
+
+	assertEquals(2, tree.insert("two") );
+	assertEquals(2, tree.insert("forty-two") );
+	assertEquals(2, tree.insert("forty-seven") );
+	assertEquals(2, tree.insert("one") );
+
+	/*
+	 * for review:
+	 *   't' == 116 == 01110100
+	 *   'f' == 102 == 01100110
+	 *   'o' == 111 == 01101111
+	 *
+	 * So tree should look like this,
+	 *  where 0:16 means we branch on the 5th (10000 == 16) bit of the 1st (0th) byte:
+	 *
+	 *           0:16
+	 *         /      \
+	 *       0:8      two
+	 *      /    \
+	 *    6:4    one
+	 *   .....
+	 */
+
+	using node_ptr = critbit_node_ptr<char, critbit_node>;
+	{
+		// use bit mask to specify which parts of the last byte we don't care about
+		// 000s == exact match
+		node_ptr elem = tree.subtree("o");
+		assertFalse( elem.isNode() );
+		assertStringsEqual( "one", elem.leaf() );
+	}
+	{
+		node_ptr elem = tree.subtree("o", 0xF); // don't match the final 4 bits
+		assertTrue( elem.isNode() );
+		node_ptr right = elem.node()->child[1];
+		assertStringsEqual( "one", right.leaf() );
+
+		node_ptr left = elem.node()->child[0];
+		assertTrue(left.isNode());
+		node_ptr leftleft = left.node()->child[0];
+		assertStringsEqual( "forty-seven", leftleft.leaf() );
+	}
+	{
+		node_ptr elem = tree.subtree("o", 0x1F); // don't match the final 5 bits
+		assertTrue( elem.isNode() );
+		node_ptr right = elem.node()->child[1];
+		assertStringsEqual( "two", right.leaf() );
+
+		node_ptr left = elem.node()->child[0];
+		assertTrue(left.isNode());
+		node_ptr leftright = left.node()->child[1];
+		assertStringsEqual( "one", leftright.leaf() );
+	}
+	{
+		node_ptr elem = tree.subtree("forty");
+		assertTrue( elem.isNode() );
+		node_ptr left = elem.node()->child[0];
+		assertStringsEqual( "forty-seven", left.leaf() );
+		node_ptr right = elem.node()->child[1];
+		assertStringsEqual( "forty-two", right.leaf() );
+	}
 }
 
 namespace {
