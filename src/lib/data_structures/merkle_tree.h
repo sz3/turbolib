@@ -22,23 +22,28 @@ struct merkle_pair : public critbit_map_pair<KeyType,HashType>
 	merkle_node<HashType>* parent;
 };
 
-template <typename LeafType, typename HashType>
-class critbit_ext< LeafType, merkle_node<HashType> >
+// TODO: probably should go with the "change list", rather than adding parent everywhere.
+// pare ourselves down to 1-2 functions instead of 6.
+template <typename KeyType, typename HashType>
+class critbit_ext< merkle_pair<KeyType, HashType>, merkle_node<HashType> >
 {
+protected:
+	using leaf_type = merkle_pair<KeyType, HashType>;
+	using node_ptr = critbit_node_ptr< leaf_type, merkle_node<HashType> >;
+
 public:
-	static void assignParent(LeafType* child, merkle_node<HashType>* parent)
+	static void assignParent(leaf_type* child, merkle_node<HashType>* parent)
 	{
 		child->parent = parent;
 	}
 
 	static void assignParent(void* child, merkle_node<HashType>* parent)
 	{
-		merkle_node<HashType>* node;
-		LeafType* leaf;
-		if (isLeaf(child, node, leaf))
-			assignParent(leaf, parent);
+		node_ptr node(child);
+		if (node.isLeaf())
+			assignParent(node.leaf(), parent);
 		else
-			node->parent = parent;
+			node.node()->parent = parent;
 	}
 
 	static void inheritParent(void* successor, merkle_node<HashType>* child)
@@ -48,12 +53,11 @@ public:
 
 	static void inheritParent(merkle_node<HashType>* successor, void* child)
 	{
-		merkle_node<HashType>* node;
-		LeafType* leaf;
-		if (isLeaf(child, node, leaf))
-			successor->parent = leaf->parent;
+		node_ptr node(child);
+		if (node.isLeaf())
+			successor->parent = node.leaf()->parent;
 		else
-			successor->parent = node->parent;
+			successor->parent = node.node()->parent;
 	}
 
 	static void onchange(merkle_node<HashType>* node)
@@ -66,40 +70,26 @@ public:
 
 	static void onParentChange(void* elem)
 	{
-		merkle_node<HashType>* node;
-		LeafType* leaf;
-		if (isLeaf(elem, node, leaf))
-			node = leaf->parent;
-		else
-			node = node->parent;
+		merkle_node<HashType>* parent;
 
-		if (node != NULL)
-			onchange(node);
+		node_ptr node(elem);
+		if (node.isLeaf())
+			parent = node.leaf()->parent;
+		else
+			parent = node.node()->parent;
+
+		if (parent != NULL)
+			onchange(parent);
 	}
 
 protected:
 	static HashType getHash(void* elem)
 	{
-		merkle_node<HashType>* node;
-		LeafType* leaf;
-		if (isLeaf(elem, node, leaf))
-			return leaf->second;
+		node_ptr node(elem);
+		if (node.isLeaf())
+			return node.leaf()->second;
 		else
-			return node->hash;
-	}
-
-	static bool isLeaf(void* elem, merkle_node<HashType>*& node, LeafType*& leaf)
-	{
-		if (1 & (intptr_t)elem)
-		{
-			node = (merkle_node<HashType>*)((intptr_t)elem-1);
-			return false;
-		}
-		else
-		{
-			leaf = (LeafType*)elem;
-			return true;
-		}
+			return node.node()->hash;
 	}
 };
 

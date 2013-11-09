@@ -11,9 +11,6 @@ adapted from DJB's critbit tree for NULL-terminated strings
 #include <cstring>
 #include <iostream>
 
-// prototype for length, comparison operations
-template <typename ValType> class critbit_elem_ops;
-
 // base critbit_node class.
 // also possible to inherit from this, add stuff, and pass in as template argument.
 struct critbit_node
@@ -22,6 +19,52 @@ struct critbit_node
 	uint32_t byte;
 	uint8_t otherbits;
 };
+
+// utility class to browse the tree
+template <typename ValType, typename Node>
+class critbit_node_ptr
+{
+public:
+	critbit_node_ptr()
+	{
+	}
+
+	critbit_node_ptr(void* ptr)
+		: _ptr(ptr)
+	{
+	}
+
+	bool isNull() const
+	{
+		return _ptr == NULL;
+	}
+
+	bool isLeaf() const
+	{
+		return !isNode();
+	}
+
+	bool isNode() const
+	{
+		return (1 & (intptr_t)_ptr);
+	}
+
+	Node* node() const
+	{
+		return (Node*)((intptr_t)_ptr-1);
+	}
+
+	ValType* leaf() const
+	{
+		return (ValType*)_ptr;
+	}
+
+protected:
+	void* _ptr;
+};
+
+// prototype for length, comparison operations
+template <typename ValType> class critbit_elem_ops;
 
 // prototype for extensions to critbit operations.
 // to remove, just nuke the template declaration at the bottom and any lines that include this prefix!
@@ -33,6 +76,9 @@ template <typename ValType, typename ExternalType=const ValType&, typename Node=
 class critbit_tree
 {
 public:
+	using node_ptr = critbit_node_ptr<ValType,Node>;
+
+public:
 	critbit_tree()
 		: _root(NULL)
 	{}
@@ -43,22 +89,26 @@ public:
 	}
 
 	// TODO: prefix is different from the normal value lookup -- it might be intentionally shorter.
-	void* subtree(ExternalType prefix) const
+	node_ptr subtree(ExternalType prefix, unsigned char bitmask = 0, size_t keylen = 0) const
 	{
 		if (empty())
 			return NULL;
 
 		const uint8_t* keybytes = (const uint8_t*)prefix;
-		const size_t keylen = critbit_elem_ops<ValType>::key_size(prefix);
+		if (keylen == 0)
+			keylen = critbit_elem_ops<ValType>::key_size(prefix);
 
-		void* p;
-		void* top = p = _root;
-		while (1 & (intptr_t)p)
+		node_ptr p;
+		node_ptr top = p = _root;
+		while (p.isNode())
 		{
-			Node* q = (Node*)((intptr_t)p-1);
+			Node* q = p.node();
+			if (q->byte+1 >= keylen)
+			{
+				if (q->byte >= keylen || ((q->otherbits ^ 0xFF) & bitmask) > 0)
+					break;
+			}
 			p = q->child[calculateDirection(q, keybytes, keylen)];
-			if (q->byte >= keylen)
-				break;
 			top = p;
 		}
 		return top;
@@ -139,6 +189,8 @@ public:
 		newnode->child[newdirection] = *wherep;
 		*wherep = (void*)(1 + (char*)newnode);
 
+		// instead of messing around with parents, what about a "modified list", that gets [optionally] auto-populated on insert/delete?
+		// deque or something, preserves the inheritance order and just calls onchange on each guy.
 		critbit_ext<ValType,Node>::inheritParent(newnode, newnode->child[newdirection]);
 		critbit_ext<ValType,Node>::assignParent(x, newnode);
 		critbit_ext<ValType,Node>::assignParent(newnode->child[newdirection], newnode);
@@ -205,28 +257,27 @@ public:
 	}
 
 private:
-	void clear(void* top)
+	void clear(node_ptr p)
 	{
-		ValType* p = (ValType*)top;
-		if (1 & (intptr_t)p)
+		if (p.isNode())
 		{
-			Node* q = (Node*)((intptr_t)p-1);
+			Node* q = p.node();
 			clear(q->child[0]);
 			clear(q->child[1]);
 			free(q);
 		}
 		else
-			free(p);
+			free(p.leaf());
 	}
 
-	ValType* walkTreeForBestMember(void* p, const uint8_t* keybytes, size_t keylen) const
+	ValType* walkTreeForBestMember(node_ptr p, const uint8_t* keybytes, size_t keylen) const
 	{
-		while (1 & (intptr_t)p)
+		while (p.isNode())
 		{
-			Node* q = (Node*)((intptr_t)p-1);
+			Node* q = p.node();
 			p = q->child[calculateDirection(q, keybytes, keylen)];
 		}
-		return (ValType*)p;
+		return p.leaf();
 	}
 
 	int calculateDirection(Node* q, const uint8_t* keybytes, size_t keylen) const
