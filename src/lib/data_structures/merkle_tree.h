@@ -93,9 +93,74 @@ protected:
 	}
 };
 
+template <typename KeyType>
+struct merkle_location
+{
+	KeyType key;
+	unsigned keybits;
+
+	merkle_location(const KeyType& key)
+		: key(key)
+		, keybits(sizeof(KeyType)*8)
+	{}
+
+	merkle_location(const KeyType& key, unsigned keybits)
+		: key(key)
+		, keybits(keybits)
+	{}
+};
+
 template <typename KeyType, typename HashType>
 class merkle_tree : public critbit_map< KeyType, HashType, merkle_node<HashType>, merkle_pair<KeyType,HashType> >
 {
-public:
+protected:
+	using pair = merkle_pair<KeyType,HashType>;
+	using tree_type = critbit_tree< pair, const pair&, merkle_node<HashType> >;
 
+	using critbit_map< KeyType, HashType, merkle_node<HashType>, merkle_pair<KeyType,HashType> >::_tree;
+
+public:
+	// want top level state
+
+	// returns whether true if we found a node, false if we found a leaf
+	bool hash_lookup(const merkle_location<KeyType>& location, HashType& hash)
+	{
+		unsigned keylen = location.keybits/8;
+		unsigned char bitmask = location.keybits%8;
+		if (bitmask > 0)
+			++keylen;
+		bitmask = (1 << (8-bitmask)) - 1;
+
+		typename tree_type::node_ptr node_ptr = _tree.subtree(pair(location.key), bitmask, keylen); // what about prefix, size?
+		if (node_ptr.isNode())
+		{
+			merkle_node<HashType>* node = node_ptr.node();
+			hash = node->hash;
+			return true;
+		}
+
+		pair* pear = node_ptr.leaf();
+		hash = pear->second;
+		return false;
+	}
+
+	// match key,keybits,hash against the tree, returning two children if match fails
+	bool diff() const
+	{
+
+	}
+
+	// ping|foo
+	// diff -> receive a node and its immediate children?
+	// ack|oof 17:bar 18:stew
+
+	// or maybe just a list of expected values (given that stuff can always change, no value is guaranteed to be in sync)
+	// ack|17:bar 18:stew
+
+	// when we receive a Key,Hash pair, there are a couple possibilities:
+	// 1) we have it, and it's the same. yay!
+	// 2) we have it, and it's different. This is the start (root) diff case. We need to send the nodes' children pairs as a response.
+	// 3) we don't have it. "I need everything under this node, e.g. every file that begins with this prefix"
+
+	// want to compare/return diff of someone else's state
 };
