@@ -145,6 +145,20 @@ TEST_CASE( "critbit_treeTest/testPrefixLookup", "[unit]" )
 		assertStringsEqual( "one", leftright.leaf() );
 	}
 	{
+		// tree root
+		node_ptr elem = tree.subtree("", 0xFF);
+		assertTrue( elem.isNode() );
+		node_ptr right = elem.node()->child[1];
+		assertStringsEqual( "two", right.leaf() );
+	}
+	{
+		// tree root again
+		node_ptr elem = tree.subtree("whocares", 0xFF, 1);
+		assertTrue( elem.isNode() );
+		node_ptr right = elem.node()->child[1];
+		assertStringsEqual( "two", right.leaf() );
+	}
+	{
 		node_ptr elem = tree.subtree("forty");
 		assertTrue( elem.isNode() );
 		node_ptr left = elem.node()->child[0];

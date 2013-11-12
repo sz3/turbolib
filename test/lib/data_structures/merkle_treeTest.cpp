@@ -93,3 +93,64 @@ TEST_CASE( "merkle_treeTest/testHeavyLoad", "[unit]" )
 	assertEquals( 100, node->second );
 }
 
+TEST_CASE( "merkle_treeTest/testHashLookup", "[unit]" )
+{
+	merkle_tree<unsigned, unsigned long long> tree;
+
+	tree.insert(1337, 1337);
+	tree.insert(2048, 2048);
+	tree.insert(42, 42);
+
+	// 2048 == ... 0000 1000 0000 0000
+	// 1337 == ... 0000 0101 0011 1001
+	//   42 == ... 0000 0000 0010 1010
+
+	// ... if only it were that simple. Endianness rains on our parade.
+	// 2048 == 0000 0000 | 0000 1000 | ...
+	// 1337 == 0011 1001 | 0000 0101 | ...
+	//   42 == 0010 1010 | 0000 0000 | ...
+
+	/* so:
+	 *           (bit 3)
+	 *         /         \
+	 *       2048      (bit 4)
+	 *                /       \
+	 *               42      1337
+	 **/
+
+	// root
+	unsigned long long hash;
+	assertTrue( tree.hash_lookup(merkle_location<unsigned>(0, 0), hash) );
+	assertEquals( (1337 xor 42 xor 2048), hash );
+	assertTrue( tree.hash_lookup(merkle_location<unsigned>(1337, 0), hash) );
+	assertEquals( (1337 xor 42 xor 2048), hash );
+	assertTrue( tree.hash_lookup(merkle_location<unsigned>(1337, 2), hash) );
+	assertEquals( (1337 xor 42 xor 2048), hash );
+
+	// right side of the first branch (bit 3) -- node
+	assertTrue( tree.hash_lookup(merkle_location<unsigned>(1337, 3), hash) );
+	assertEquals( (1337 xor 42), hash );
+
+	// left side of the first branch (bit 3) -- leaf
+	assertFalse( tree.hash_lookup(merkle_location<unsigned>(2048, 3), hash) );
+	assertEquals( 2048, hash );
+
+	// right side of second branch (bit 4) -- leaf
+	assertFalse( tree.hash_lookup(merkle_location<unsigned>(1337, 4), hash) );
+	assertEquals( 1337, hash );
+
+	// full lookup (32)
+	assertFalse( tree.hash_lookup(merkle_location<unsigned>(1337, 32), hash) );
+	assertEquals( 1337, hash );
+
+	assertFalse( tree.hash_lookup(merkle_location<unsigned>(1337), hash) );
+	assertEquals( 1337, hash );
+
+	// remove 1337
+	tree.remove(1337);
+
+	// root again.
+	assertTrue( tree.hash_lookup(merkle_location<unsigned>(0, 0), hash) );
+	assertEquals( (42 xor 2048), hash );
+}
+

@@ -89,13 +89,13 @@ public:
 	}
 
 	// TODO: prefix is different from the normal value lookup -- it might be intentionally shorter.
-	node_ptr subtree(ExternalType prefix, unsigned char bitmask = 0, size_t keylen = 0) const
+	node_ptr subtree(ExternalType prefix, unsigned char bitmask = 0, size_t keylen = ~0) const
 	{
 		if (empty())
 			return NULL;
 
 		const uint8_t* keybytes = (const uint8_t*)prefix;
-		if (keylen == 0)
+		if (keylen == ~0)
 			keylen = critbit_elem_ops<ValType>::key_size(prefix);
 
 		node_ptr p;
