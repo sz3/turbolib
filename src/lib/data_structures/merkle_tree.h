@@ -119,11 +119,8 @@ protected:
 
 	using critbit_map< KeyType, HashType, merkle_node<HashType>, merkle_pair<KeyType,HashType> >::_tree;
 
-public:
-	// want top level state
-
-	// returns whether true if we found a node, false if we found a leaf
-	bool hash_lookup(const merkle_location<KeyType>& location, HashType& hash)
+protected:
+	typename tree_type::node_ptr lookup(const merkle_location<KeyType>& location) const
 	{
 		unsigned keylen = location.keybits/8;
 		unsigned char bitmask = location.keybits%8;
@@ -131,7 +128,11 @@ public:
 			++keylen;
 		bitmask = (1 << (8-bitmask)) - 1;
 
-		typename tree_type::node_ptr node_ptr = _tree.subtree(pair(location.key), bitmask, keylen); // what about prefix, size?
+		return _tree.subtree(pair(location.key), bitmask, keylen);
+	}
+
+	bool getHash(const typename tree_type::node_ptr& node_ptr, HashType& hash) const
+	{
 		if (node_ptr.isNode())
 		{
 			merkle_node<HashType>* node = node_ptr.node();
@@ -144,10 +145,29 @@ public:
 		return false;
 	}
 
-	// match key,keybits,hash against the tree, returning two children if match fails
-	bool diff() const
-	{
+public:
+	// want top level state
 
+	// returns whether true if we found a node, false if we found a leaf
+	bool hash_lookup(const merkle_location<KeyType>& location, HashType& hash) const
+	{
+		typename tree_type::node_ptr node_ptr = lookup(location);
+		return getHash(node_ptr, hash);
+	}
+
+	// match key,keybits,hash against the tree, returning two children if match fails
+	bool diff(const merkle_location<KeyType>& location, const HashType& hash) const
+	{
+		// return false -> no differences
+		typename tree_type::node_ptr node_ptr = lookup(location);
+
+		HashType myhash;
+		getHash(node_ptr, myhash);
+		if (hash == myhash)
+			return false;
+
+		// diffs.push_back();
+		return true;
 	}
 
 	// ping|foo
