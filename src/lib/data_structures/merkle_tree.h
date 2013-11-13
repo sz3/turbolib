@@ -7,6 +7,8 @@
 
 #include "critbit_map.h"
 
+#include <deque>
+
 template <typename HashType>
 struct merkle_node : public critbit_node
 {
@@ -99,6 +101,8 @@ struct merkle_location
 	KeyType key;
 	unsigned keybits;
 
+	merkle_location() {}
+
 	merkle_location(const KeyType& key)
 		: key(key)
 		, keybits(sizeof(KeyType)*8)
@@ -111,13 +115,20 @@ struct merkle_location
 };
 
 template <typename KeyType, typename HashType>
+struct merkle_point
+{
+	merkle_location<KeyType> location;
+	HashType hash;
+};
+
+template <typename KeyType, typename HashType>
 class merkle_tree : public critbit_map< KeyType, HashType, merkle_node<HashType>, merkle_pair<KeyType,HashType> >
 {
 protected:
 	using pair = merkle_pair<KeyType,HashType>;
 	using tree_type = critbit_tree< pair, const pair&, merkle_node<HashType> >;
 
-	using critbit_map< KeyType, HashType, merkle_node<HashType>, merkle_pair<KeyType,HashType> >::_tree;
+	using critbit_map< KeyType, HashType, merkle_node<HashType>, pair >::_tree;
 
 protected:
 	typename tree_type::node_ptr lookup(const merkle_location<KeyType>& location) const
@@ -145,8 +156,18 @@ protected:
 		return false;
 	}
 
+
 public:
-	// want top level state
+	static unsigned keybits(uint32_t byte, uint8_t otherbits)
+	{
+		// http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup
+		static const int MultiplyDeBruijnBitPosition[32] =
+		{
+		  0, 1, 28, 2, 29, 14, 24, 3, 30, 22, 20, 15, 25, 17, 4, 8,
+		  31, 27, 13, 23, 21, 19, 16, 7, 26, 12, 18, 6, 11, 5, 10, 9
+		};
+		return (byte*8) + 8-(MultiplyDeBruijnBitPosition[((uint32_t)((otherbits & -otherbits) * 0x077CB531U)) >> 27]);
+	}
 
 	// returns whether true if we found a node, false if we found a leaf
 	bool hash_lookup(const merkle_location<KeyType>& location, HashType& hash) const
@@ -156,18 +177,50 @@ public:
 	}
 
 	// match key,keybits,hash against the tree, returning two children if match fails
-	bool diff(const merkle_location<KeyType>& location, const HashType& hash) const
+	std::deque< merkle_point<KeyType, HashType> > diff(const merkle_location<KeyType>& location, const HashType& hash) const
 	{
-		// return false -> no differences
-		typename tree_type::node_ptr node_ptr = lookup(location);
+		std::deque< merkle_point<KeyType, HashType> > diffs;
 
 		HashType myhash;
+		typename tree_type::node_ptr node_ptr = lookup(location);
 		getHash(node_ptr, myhash);
 		if (hash == myhash)
-			return false;
+			return diffs; // no differences
 
-		// diffs.push_back();
-		return true;
+		merkle_point<KeyType,HashType> current;
+		if (node_ptr.isLeaf())
+			current.location = merkle_location<KeyType>(node_ptr.leaf()->first, location.keybits);
+		else
+		{
+			pair* childLeaf = _tree.begin(node_ptr);
+			merkle_node<HashType>* node = node_ptr.node();
+			current.location.key = childLeaf->first;
+			current.location.keybits = keybits(node->byte, node->otherbits xor 0xFF);
+
+			// push children into diffs
+			{
+				typename tree_type::node_ptr left = node->child[0];
+				merkle_point<KeyType, HashType> diff;
+				getHash(left, diff.hash);
+				diff.location = current.location;
+				diff.location.keybits += 1;
+				diffs.push_back(diff);
+			}
+			{
+				typename tree_type::node_ptr right = node->child[1];
+				merkle_point<KeyType, HashType> diff;
+				getHash(right, diff.hash);
+				diff.location = current.location;
+				((uint8_t*)&diff.location.key)[node->byte] ^= (node->otherbits ^ 0xFF);
+				diff.location.keybits += 1;
+				diffs.push_back(diff);
+			}
+		}
+
+		current.hash = myhash;
+		diffs.push_back(current);
+
+		return diffs;
 	}
 
 	// ping|foo

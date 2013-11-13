@@ -2,6 +2,7 @@
 
 #include "merkle_tree.h"
 #include "util/Random.h"
+#include <deque>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -152,5 +153,122 @@ TEST_CASE( "merkle_treeTest/testHashLookup", "[unit]" )
 	// root again.
 	assertTrue( tree.hash_lookup(merkle_location<unsigned>(0, 0), hash) );
 	assertEquals( (42 xor 2048), hash );
+}
+
+
+TEST_CASE( "merkle_treeTest/testCalcKeybits", "[unit]" )
+{
+	merkle_tree<unsigned, unsigned long long> tree;
+
+	assertEquals( 1, tree.keybits(0, 128) );
+	assertEquals( 2, tree.keybits(0, 64) );
+	assertEquals( 3, tree.keybits(0, 32) );
+	assertEquals( 4, tree.keybits(0, 16) );
+	assertEquals( 5, tree.keybits(0, 8) );
+	assertEquals( 6, tree.keybits(0, 4) );
+	assertEquals( 7, tree.keybits(0, 2) );
+	assertEquals( 8, tree.keybits(0, 1) );
+
+	assertEquals( 9, tree.keybits(1, 128) );
+	assertEquals( 17, tree.keybits(2, 128) );
+	assertEquals( 161, tree.keybits(20, 128) );
+	assertEquals( 168, tree.keybits(20, 1) );
+}
+
+
+TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
+{
+	merkle_tree<unsigned, unsigned long long> tree;
+
+	tree.insert(1337, 1337);
+	tree.insert(2048, 2048);
+	tree.insert(42, 42);
+
+	// as above,
+	// 2048 == 0000 0000 | 0000 1000 | ...
+	// 1337 == 0011 1001 | 0000 0101 | ...
+	//   42 == 0010 1010 | 0000 0000 | ...
+
+	/* so:
+	 *           (bit 3)
+	 *         /         \
+	 *       2048      (bit 4)
+	 *                /       \
+	 *               42      1337
+	 **/
+
+	// TODO! rather than returning a weird "merkle_point", what we have is really:
+	// * key == left key (first child)
+	// * right key OR critbit (so we can look up the right branch)
+	// * top hash
+	// * left hash
+	// * right hash
+
+	// root
+	std::deque< merkle_point<unsigned, unsigned long long> > results = tree.diff( merkle_location<unsigned>(0, 0), (1337 xor 42 xor 2048) );
+	assertEquals( 0, results.size() );
+
+	{
+		// bad hash -> we have diffs
+		results = tree.diff( merkle_location<unsigned>(0, 0), 0xF00 );
+		assertEquals( 3, results.size() );
+
+		// left child
+		assertEquals( 2048, results[0].hash );
+		assertEquals( 2048, results[0].location.key );
+		assertEquals( 4, results[0].location.keybits );
+
+		// right child
+		assertEquals( (42 xor 1337), results[1].hash );
+		assertEquals( 2080, results[1].location.key ); // 2048 xor 32
+		assertEquals( 4, results[1].location.keybits );
+
+		// top (node that was diff'd)
+		assertEquals( (1337 xor 42 xor 2048) , results[2].hash );
+		assertEquals( 2048, results[2].location.key );
+		assertEquals( 3, results[2].location.keybits );
+	}
+
+	// left side
+	results = tree.diff( merkle_location<unsigned>(2048, 2), (1337 xor 42 xor 2048) );
+	assertEquals( 0, results.size() );
+	results = tree.diff( merkle_location<unsigned>(2048, 3), 2048 );
+	assertEquals( 0, results.size() );
+
+	{
+		// bad hash on leaf -> one diff.
+		results = tree.diff( merkle_location<unsigned>(2048, 3), 0xF00 );
+		assertEquals( 1, results.size() );
+		assertEquals( 2048, results[0].hash );
+		assertEquals( 2048, results[0].location.key );
+		assertEquals( 3, results[0].location.keybits );
+	}
+
+	// right child, using derived key from above
+	// NOTE: using "3" as the keybits when it's "4" above is weird.
+	//  it makes sense, sort of -- we care about 3 bits for this (child) node, while the critbit for the parent is 3...
+	results = tree.diff( merkle_location<unsigned>(2080, 3), (42 xor 1337) );
+	assertEquals( 0, results.size() );
+
+	{
+		// bad hash, blah blah blah
+		results = tree.diff( merkle_location<unsigned>(2080, 3), 0xF00 );
+		assertEquals( 3, results.size() );
+
+		// left
+		assertEquals( 42, results[0].hash );
+		assertEquals( 42, results[0].location.key );
+		assertEquals( 5, results[0].location.keybits );
+
+		// right
+		assertEquals( 1337, results[1].hash );
+		assertEquals( 58, results[1].location.key ); // 42 xor 16
+		assertEquals( 5, results[1].location.keybits );
+
+		// top (node that was diff'd)
+		assertEquals( (1337 xor 42), results[2].hash );
+		assertEquals( 42, results[2].location.key );
+		assertEquals( 4, results[2].location.keybits );
+	}
 }
 

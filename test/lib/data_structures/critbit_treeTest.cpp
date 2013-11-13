@@ -168,6 +168,23 @@ TEST_CASE( "critbit_treeTest/testPrefixLookup", "[unit]" )
 	}
 }
 
+TEST_CASE( "critbit_treeTest/testBegin", "[unit]" )
+{
+	critbit_tree<char, const char*> tree;
+
+	assertEquals(2, tree.insert("one") );
+	assertEquals(2, tree.insert("five") );
+	assertEquals(2, tree.insert("one-hundred") );
+
+	const char* leaf = tree.begin();
+	assertStringsEqual( "five", leaf );
+
+	using node_ptr = critbit_node_ptr<char, critbit_node>;
+	node_ptr node = tree.subtree("o");
+	assertTrue( node.isNode() );
+	assertStringsEqual( "one", tree.begin(node) );
+}
+
 namespace {
 	class KeyString
 	{
