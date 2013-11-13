@@ -172,7 +172,7 @@ public:
 		int newdirection;
 		if (!findCriticalBit(p, plen, keybytes, keylen, newbyte, newotherbits, newdirection))
 			return 1;
-		//critbit_ext<Node>::onchange(bestMember);
+		// TODO: _ext.onchange() for in-place updates
 
 		// allocate node
 		Node* newnode;
@@ -202,16 +202,13 @@ public:
 			if (q->byte == newbyte && q->otherbits > newotherbits)
 				break;
 			wherep = q->child + calculateDirection(q, keybytes, keylen);
+			_ext.push_change(q);
 		}
 		newnode->child[newdirection] = *wherep;
 		*wherep = (void*)(1 + (char*)newnode);
 
-		// instead of messing around with parents, what about a "modified list", that gets [optionally] auto-populated on insert/delete?
-		// deque or something, preserves the inheritance order and just calls onchange on each guy.
-		critbit_ext<ValType,Node>::inheritParent(newnode, newnode->child[newdirection]);
-		critbit_ext<ValType,Node>::assignParent(x, newnode);
-		critbit_ext<ValType,Node>::assignParent(newnode->child[newdirection], newnode);
-		critbit_ext<ValType,Node>::onchange(newnode);
+		_ext.push_change(newnode);
+		_ext.onchange();
 
 		return 2;
 	}
@@ -240,6 +237,7 @@ public:
 			direction = calculateDirection(q, keybytes, keylen);
 			wherep = q->child + direction;
 			p = (ValType*)*wherep;
+			_ext.push_change(q);
 		}
 
 		// check best match
@@ -253,9 +251,8 @@ public:
 		else
 		{
 			*whereq = q->child[1-direction];
-			critbit_ext<ValType,Node>::inheritParent(*whereq, q);
 			free(q);
-			critbit_ext<ValType,Node>::onParentChange(*whereq);
+			_ext.onchange();
 		}
 		return 1;
 	}
@@ -317,7 +314,6 @@ private:
 		if (a)
 			return 0;
 		critbit_elem_ops<ValType>::construct(x, val, bytes);
-		critbit_ext<ValType,Node>::assignParent(x, NULL);
 		_root = x;
 		return 2;
 	}
@@ -359,6 +355,7 @@ private:
 
 protected:
 	void* _root;
+	critbit_ext<ValType, Node> _ext;
 };
 
 template <typename ValType>
@@ -429,27 +426,11 @@ template <typename ValType, typename Node>
 class critbit_ext
 {
 public:
-	static void assignParent(ValType* child, Node* parent)
+	void push_change(Node* node)
 	{
 	}
 
-	static void assignParent(void* child, Node* parent)
-	{
-	}
-
-	static void inheritParent(void* successor, Node* child)
-	{
-	}
-
-	static void inheritParent(Node* successor, void* child)
-	{
-	}
-
-	static void onchange(Node* node)
-	{
-	}
-
-	static void onParentChange(void* node)
+	void onchange()
 	{
 	}
 };
