@@ -114,6 +114,23 @@ public:
 		return top;
 	}
 
+	ValType* begin() const
+	{
+		if (empty())
+			return NULL;
+		return begin(_root);
+	}
+
+	ValType* begin(node_ptr root) const
+	{
+		while (root.isNode())
+		{
+			Node* node = root.node();
+			root = node->child[0];
+		}
+		return root.leaf();
+	}
+
 	// iterator would be wonderful
 	ValType* lower_bound(ExternalType val) const
 	{
