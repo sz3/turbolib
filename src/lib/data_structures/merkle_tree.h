@@ -12,7 +12,6 @@
 template <typename HashType>
 struct merkle_node : public critbit_node
 {
-	merkle_node* parent;
 	HashType hash;
 };
 
@@ -20,79 +19,41 @@ template <typename KeyType, typename HashType>
 struct merkle_pair : public critbit_map_pair<KeyType,HashType>
 {
 	using critbit_map_pair<KeyType,HashType>::critbit_map_pair; // constructors
-
-	merkle_node<HashType>* parent;
 };
 
-// TODO: probably should go with the "change list", rather than adding parent everywhere.
-// pare ourselves down to 1-2 functions instead of 6.
 template <typename KeyType, typename HashType>
 class critbit_ext< merkle_pair<KeyType, HashType>, merkle_node<HashType> >
 {
-protected:
-	using leaf_type = merkle_pair<KeyType, HashType>;
-	using node_ptr = critbit_node_ptr< leaf_type, merkle_node<HashType> >;
-
 public:
-	static void assignParent(leaf_type* child, merkle_node<HashType>* parent)
+	void push_change(merkle_node<HashType>* node)
 	{
-		child->parent = parent;
+		_changes.push_front(node);
 	}
 
-	static void assignParent(void* child, merkle_node<HashType>* parent)
+	void onchange()
 	{
-		node_ptr node(child);
-		if (node.isLeaf())
-			assignParent(node.leaf(), parent);
-		else
-			node.node()->parent = parent;
-	}
-
-	static void inheritParent(void* successor, merkle_node<HashType>* child)
-	{
-		assignParent(successor, child->parent);
-	}
-
-	static void inheritParent(merkle_node<HashType>* successor, void* child)
-	{
-		node_ptr node(child);
-		if (node.isLeaf())
-			successor->parent = node.leaf()->parent;
-		else
-			successor->parent = node.node()->parent;
-	}
-
-	static void onchange(merkle_node<HashType>* node)
-	{
-		node->hash = getHash(node->child[0]) ^ getHash(node->child[1]);
-		//std::cout << " onchange(" << (unsigned)node->byte << ")! my children's hashes are " << getHash(node->child[0]) << "," << getHash(node->child[1]) << ". Mine is " << node->hash << std::endl;
-		if (node->parent != NULL)
-			onchange(node->parent);
-	}
-
-	static void onParentChange(void* elem)
-	{
-		merkle_node<HashType>* parent;
-
-		node_ptr node(elem);
-		if (node.isLeaf())
-			parent = node.leaf()->parent;
-		else
-			parent = node.node()->parent;
-
-		if (parent != NULL)
-			onchange(parent);
+		for (auto it = _changes.begin(); it != _changes.end(); ++it)
+		{
+			merkle_node<HashType>* node = *it;
+			node->hash = getHash(node->child[0]) ^ getHash(node->child[1]);
+			//std::cout << " onchange(" << (unsigned)node->byte << ")! my children's hashes are " << getHash(node->child[0]) << "," << getHash(node->child[1]) << ". Mine is " << node->hash << std::endl;
+		}
+		_changes.clear();
 	}
 
 protected:
 	static HashType getHash(void* elem)
 	{
+		using node_ptr = critbit_node_ptr< merkle_pair<KeyType, HashType>, merkle_node<HashType> >;
 		node_ptr node(elem);
 		if (node.isLeaf())
 			return node.leaf()->second;
 		else
 			return node.node()->hash;
 	}
+
+protected:
+	std::deque<merkle_node<HashType>*> _changes;
 };
 
 template <typename KeyType>
@@ -187,38 +148,35 @@ public:
 		if (hash == myhash)
 			return diffs; // no differences
 
-		merkle_point<KeyType,HashType> current;
 		if (node_ptr.isLeaf())
-			current.location = merkle_location<KeyType>(node_ptr.leaf()->first, location.keybits);
-		else
 		{
-			pair* childLeaf = _tree.begin(node_ptr);
-			merkle_node<HashType>* node = node_ptr.node();
-			current.location.key = childLeaf->first;
-			current.location.keybits = keybits(node->byte, node->otherbits xor 0xFF);
-
-			// push children into diffs
-			{
-				typename tree_type::node_ptr left = node->child[0];
-				merkle_point<KeyType, HashType> diff;
-				getHash(left, diff.hash);
-				diff.location = current.location;
-				diff.location.keybits += 1;
-				diffs.push_back(diff);
-			}
-			{
-				typename tree_type::node_ptr right = node->child[1];
-				merkle_point<KeyType, HashType> diff;
-				getHash(right, diff.hash);
-				diff.location = current.location;
-				((uint8_t*)&diff.location.key)[node->byte] ^= (node->otherbits ^ 0xFF);
-				diff.location.keybits += 1;
-				diffs.push_back(diff);
-			}
+			merkle_point<KeyType,HashType> current;
+			current.location = merkle_location<KeyType>(node_ptr.leaf()->first, location.keybits);
+			current.hash = myhash;
+			diffs.push_back(current);
+			return diffs;
 		}
 
-		current.hash = myhash;
-		diffs.push_back(current);
+		pair* childLeaf = _tree.begin(node_ptr);
+		merkle_node<HashType>* node = node_ptr.node();
+
+		merkle_location<KeyType> childLoc(childLeaf->first, keybits(node->byte, node->otherbits xor 0xFF));
+		// push children into diffs
+		{
+			typename tree_type::node_ptr left = node->child[0];
+			merkle_point<KeyType, HashType> diff;
+			getHash(left, diff.hash);
+			diff.location = childLoc;
+			diffs.push_back(diff);
+		}
+		{
+			typename tree_type::node_ptr right = node->child[1];
+			merkle_point<KeyType, HashType> diff;
+			getHash(right, diff.hash);
+			diff.location = childLoc;
+			((uint8_t*)&diff.location.key)[node->byte] ^= (node->otherbits ^ 0xFF);
+			diffs.push_back(diff);
+		}
 
 		return diffs;
 	}

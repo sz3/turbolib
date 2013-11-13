@@ -13,16 +13,12 @@ TEST_CASE( "merkle_treeTest/testAddRemoveTreeWalk", "[unit]" )
 {
 	merkle_tree<unsigned, unsigned long long> tree;
 
+	assertEquals( 2, tree.insert(1337, 1337) );
+	assertTrue( tree.contains(1337) );
 	{
-		assertEquals( 2, tree.insert(1337, 1337) );
-		assertTrue( tree.contains(1337) );
-
 		merkle_pair<unsigned, unsigned long long>* internalNode = tree.lower_bound(1337);
 		assertNotNull( internalNode );
 		assertEquals( 1337, internalNode->second );
-
-		merkle_node<unsigned long long>* parent = internalNode->parent;
-		assertNull( parent );
 	}
 
 	assertEquals(2, tree.insert(2048, 2048) );
@@ -33,40 +29,10 @@ TEST_CASE( "merkle_treeTest/testAddRemoveTreeWalk", "[unit]" )
 	assertTrue( tree.contains(42) );
 	assertEquals( 42, tree.lower_bound(42)->second );
 
-	{
-		merkle_pair<unsigned, unsigned long long>* internalNode = tree.lower_bound(1337);
-		assertNotNull( internalNode );
-		assertEquals( 1337, internalNode->second );
-
-		merkle_node<unsigned long long>* parent = internalNode->parent;
-		assertNotNull( parent );
-		assertEquals( (1337 xor 42), parent->hash );
-
-		parent = parent->parent;
-		assertNotNull( parent );
-		assertEquals( (1337 xor 42 xor 2048), parent->hash );
-
-		parent = parent->parent;
-		assertNull(parent);
-	}
-
 	assertEquals(1, tree.insert(1337, 15) );
 	assertTrue( tree.contains(1337) );
 	assertEquals(1, tree.remove(1337) );
 	assertFalse( tree.contains(1337) );
-
-	{
-		merkle_pair<unsigned, unsigned long long>* internalNode = tree.lower_bound(2048);
-		assertNotNull( internalNode );
-		assertEquals( 2048, internalNode->second );
-
-		merkle_node<unsigned long long>* parent = internalNode->parent;
-		assertNotNull( parent );
-		assertEquals( (2048 xor 42), parent->hash );
-
-		parent = parent->parent;
-		assertNull(parent);
-	}
 
 	assertFalse(tree.empty());
 	tree.clear();
@@ -211,22 +177,17 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	{
 		// bad hash -> we have diffs
 		results = tree.diff( merkle_location<unsigned>(0, 0), 0xF00 );
-		assertEquals( 3, results.size() );
+		assertEquals( 2, results.size() );
 
 		// left child
 		assertEquals( 2048, results[0].hash );
 		assertEquals( 2048, results[0].location.key );
-		assertEquals( 4, results[0].location.keybits );
+		assertEquals( 3, results[0].location.keybits );
 
 		// right child
 		assertEquals( (42 xor 1337), results[1].hash );
 		assertEquals( 2080, results[1].location.key ); // 2048 xor 32
-		assertEquals( 4, results[1].location.keybits );
-
-		// top (node that was diff'd)
-		assertEquals( (1337 xor 42 xor 2048) , results[2].hash );
-		assertEquals( 2048, results[2].location.key );
-		assertEquals( 3, results[2].location.keybits );
+		assertEquals( 3, results[1].location.keybits );
 	}
 
 	// left side
@@ -245,30 +206,23 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	}
 
 	// right child, using derived key from above
-	// NOTE: using "3" as the keybits when it's "4" above is weird.
-	//  it makes sense, sort of -- we care about 3 bits for this (child) node, while the critbit for the parent is 3...
 	results = tree.diff( merkle_location<unsigned>(2080, 3), (42 xor 1337) );
 	assertEquals( 0, results.size() );
 
 	{
 		// bad hash, blah blah blah
 		results = tree.diff( merkle_location<unsigned>(2080, 3), 0xF00 );
-		assertEquals( 3, results.size() );
+		assertEquals( 2, results.size() );
 
 		// left
 		assertEquals( 42, results[0].hash );
 		assertEquals( 42, results[0].location.key );
-		assertEquals( 5, results[0].location.keybits );
+		assertEquals( 4, results[0].location.keybits );
 
 		// right
 		assertEquals( 1337, results[1].hash );
 		assertEquals( 58, results[1].location.key ); // 42 xor 16
-		assertEquals( 5, results[1].location.keybits );
-
-		// top (node that was diff'd)
-		assertEquals( (1337 xor 42), results[2].hash );
-		assertEquals( 42, results[2].location.key );
-		assertEquals( 4, results[2].location.keybits );
+		assertEquals( 4, results[1].location.keybits );
 	}
 }
 
