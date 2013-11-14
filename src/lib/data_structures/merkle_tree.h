@@ -6,6 +6,7 @@
 // 3) each node in the tree contains a hash of the child nodes!
 
 #include "critbit_map.h"
+#include "merkle_location.h"
 
 #include <deque>
 
@@ -54,32 +55,6 @@ protected:
 
 protected:
 	std::deque<merkle_node<HashType>*> _changes;
-};
-
-template <typename KeyType>
-struct merkle_location
-{
-	KeyType key;
-	unsigned keybits;
-
-	merkle_location() {}
-
-	merkle_location(const KeyType& key)
-		: key(key)
-		, keybits(sizeof(KeyType)*8)
-	{}
-
-	merkle_location(const KeyType& key, unsigned keybits)
-		: key(key)
-		, keybits(keybits)
-	{}
-};
-
-template <typename KeyType, typename HashType>
-struct merkle_point
-{
-	merkle_location<KeyType> location;
-	HashType hash;
 };
 
 template <typename KeyType, typename HashType>
