@@ -20,7 +20,7 @@ namespace {
 		else
 		{
 			string message = "back at you: " + string(buf, nbytes);
-			if (send(fd, &message[0], message.size(), 0) < 0)
+			if (send(fd, message.data(), message.size(), 0) < 0)
 				perror("send");
 		}
 	}

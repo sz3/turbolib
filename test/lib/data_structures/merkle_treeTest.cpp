@@ -146,52 +146,65 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 {
 	merkle_tree<unsigned, unsigned long long> tree;
 
-	tree.insert(1337, 1337);
+	tree.insert(45, 45);
 	tree.insert(2048, 2048);
 	tree.insert(42, 42);
 
-	// as above,
+	// like the above,
 	// 2048 == 0000 0000 | 0000 1000 | ...
-	// 1337 == 0011 1001 | 0000 0101 | ...
+	//   45 == 0010 1101 | 0000 0000 | ...
 	//   42 == 0010 1010 | 0000 0000 | ...
 
 	/* so:
 	 *           (bit 3)
 	 *         /         \
-	 *       2048      (bit 4)
+	 *       2048      (bit 6)
 	 *                /       \
-	 *               42      1337
+	 *               42       45
 	 **/
 
-	// TODO! rather than returning a weird "merkle_point", what we have is really:
-	// * key == left key (first child)
-	// * right key OR critbit (so we can look up the right branch)
-	// * top hash
-	// * left hash
-	// * right hash
+	/*
+	 * diff cases:
+	 *  1) empty
+	 *  2) no diff
+	 *  3) leaf diff -> 1 key is disparate. 1 hash. Need 3rd party to tell us what's wrong.
+	 *  4) branch diff, keybits !=. 0 hashes, just the missing branch. If my keybits > than query, I'm missing information on anything in the range (key ^ branch critbit)
+	 *  5) branch diff, keybits !=. 2 hashes. If my keybits < than query, other party is missing said info
+	 *  6) branch diff, keybits ==. 2 hashes. Recurse to right, left sides.
+	 */
 
 	// root
-	std::deque< merkle_point<unsigned, unsigned long long> > results = tree.diff( merkle_location<unsigned>(0, 0), (1337 xor 42 xor 2048) );
+	std::deque< merkle_point<unsigned, unsigned long long> > results = tree.diff( merkle_location<unsigned>(0, 0), (45 xor 42 xor 2048) );
 	assertEquals( 0, results.size() );
 
+
 	{
-		// bad hash -> we have diffs
-		results = tree.diff( merkle_location<unsigned>(0, 0), 0xF00 );
+		// bad hash at pre-branch bit -> returns merkle_location of (implied) missing branch
+		results = tree.diff( merkle_location<unsigned>(0, 1), 0xF00 );
+		assertEquals( 1, results.size() );
+
+		assertEquals( 0x4800, results[0].location.key );
+		assertEquals( 1, results[0].location.keybits );
+	}
+
+	{
+		// bad hash at branch bit -> we have diffs
+		results = tree.diff( merkle_location<unsigned>(0, 2), 0xF00 );
 		assertEquals( 2, results.size() );
 
 		// left child
 		assertEquals( 2048, results[0].hash );
 		assertEquals( 2048, results[0].location.key );
-		assertEquals( 3, results[0].location.keybits );
+		assertEquals( 32, results[0].location.keybits );
 
 		// right child
-		assertEquals( (42 xor 1337), results[1].hash );
+		assertEquals( (42 xor 45), results[1].hash );
 		assertEquals( 2080, results[1].location.key ); // 2048 xor 32
-		assertEquals( 3, results[1].location.keybits );
+		assertEquals( 6, results[1].location.keybits );
 	}
 
 	// left side
-	results = tree.diff( merkle_location<unsigned>(2048, 2), (1337 xor 42 xor 2048) );
+	results = tree.diff( merkle_location<unsigned>(2048, 2), (45 xor 42 xor 2048) );
 	assertEquals( 0, results.size() );
 	results = tree.diff( merkle_location<unsigned>(2048, 3), 2048 );
 	assertEquals( 0, results.size() );
@@ -202,27 +215,27 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		assertEquals( 1, results.size() );
 		assertEquals( 2048, results[0].hash );
 		assertEquals( 2048, results[0].location.key );
-		assertEquals( 3, results[0].location.keybits );
+		assertEquals( 32, results[0].location.keybits );
 	}
 
 	// right child, using derived key from above
-	results = tree.diff( merkle_location<unsigned>(2080, 3), (42 xor 1337) );
+	results = tree.diff( merkle_location<unsigned>(2080, 5), (42 xor 45) );
 	assertEquals( 0, results.size() );
 
 	{
-		// bad hash, blah blah blah
-		results = tree.diff( merkle_location<unsigned>(2080, 3), 0xF00 );
+		// bad hash, exact bit match
+		results = tree.diff( merkle_location<unsigned>(2080, 5), 0xF00 );
 		assertEquals( 2, results.size() );
 
 		// left
 		assertEquals( 42, results[0].hash );
 		assertEquals( 42, results[0].location.key );
-		assertEquals( 4, results[0].location.keybits );
+		assertEquals( 32, results[0].location.keybits );
 
 		// right
-		assertEquals( 1337, results[1].hash );
-		assertEquals( 58, results[1].location.key ); // 42 xor 16
-		assertEquals( 4, results[1].location.keybits );
+		assertEquals( 45, results[1].hash );
+		assertEquals( 46, results[1].location.key ); // 42 xor 4
+		assertEquals( 32, results[1].location.keybits );
 	}
 }
 

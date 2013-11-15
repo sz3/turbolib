@@ -16,7 +16,7 @@ namespace {
 	void onPacket(const IIpSocket& sock, const std::string& buffer)
 	{
 		_serverHistory.call("onPacket", buffer);
-		sock.send(&buffer[0], buffer.size());
+		sock.send(buffer.data(), buffer.size());
 	}
 }
 
