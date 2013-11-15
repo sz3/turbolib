@@ -105,7 +105,7 @@ protected:
 		{
 			pair* pear = node_ptr.leaf();
 			point.hash = pear->second;
-			point.location = merkle_location<KeyType>( key );
+			point.location = merkle_location<KeyType>( pear->first );
 		}
 		return point;
 	}
@@ -180,7 +180,6 @@ public:
 			unsigned char expectedBranchBits = location.keybits % 8;
 			if (expectedBranchBits > 0)
 				expectedBranchByte++;
-			std::cout << " keybits : " << location.keybits << ", expected branch at " << expectedBranchByte << "," << (unsigned)expectedBranchBits << std::endl;
 			((uint8_t*)&missing.location.key)[expectedBranchByte] ^= (1 << (7-expectedBranchBits));
 			diffs.push_back(missing);
 			return diffs;
