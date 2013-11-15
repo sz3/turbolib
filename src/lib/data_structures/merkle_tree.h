@@ -99,7 +99,7 @@ protected:
 		{
 			merkle_node<HashType>* node = node_ptr.node();
 			point.hash = node->hash;
-			point.location = merkle_location<KeyType>( key, keybits(node->byte, node->otherbits xor 0xFF) );
+			point.location = merkle_location<KeyType>( key, keybits(node->byte, node->otherbits xor 0xFF)-1 );
 		}
 		else
 		{
@@ -127,6 +127,12 @@ public:
 	{
 		typename tree_type::node_ptr node_ptr = lookup(location);
 		return getHash(node_ptr, hash);
+	}
+
+	merkle_point<KeyType, HashType> top() const
+	{
+		typename tree_type::node_ptr node_ptr = lookup(merkle_location<KeyType>(0,0));
+		return getPoint(0, node_ptr);
 	}
 
 	/*
@@ -167,10 +173,10 @@ public:
 
 		pair* leafNode = _tree.begin(node_ptr);
 		merkle_node<HashType>* branchNode = node_ptr.node();
-		unsigned branchKeybits = keybits(branchNode->byte, branchNode->otherbits xor 0xFF);
+		unsigned branchKeybits = keybits(branchNode->byte, branchNode->otherbits xor 0xFF)-1;
 
 		// case 4: branch, but the location parameter seemed to expect a branch sooner
-		if (branchKeybits > location.keybits+1)
+		if (branchKeybits > location.keybits)
 		{
 			merkle_point<KeyType,HashType> missing;
 			missing.location.key = leafNode->first;
