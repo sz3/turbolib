@@ -92,6 +92,23 @@ protected:
 		return false;
 	}
 
+	merkle_point<KeyType, HashType> getPoint(const KeyType& key, const typename tree_type::node_ptr& node_ptr) const
+	{
+		merkle_point<KeyType, HashType> point;
+		if (node_ptr.isNode())
+		{
+			merkle_node<HashType>* node = node_ptr.node();
+			point.hash = node->hash;
+			point.location = merkle_location<KeyType>( key, keybits(node->byte, node->otherbits xor 0xFF) );
+		}
+		else
+		{
+			pair* pear = node_ptr.leaf();
+			point.hash = pear->second;
+			point.location = merkle_location<KeyType>( key );
+		}
+		return point;
+	}
 
 public:
 	static unsigned keybits(uint32_t byte, uint8_t otherbits)
@@ -112,10 +129,25 @@ public:
 		return getHash(node_ptr, hash);
 	}
 
-	// match key,keybits,hash against the tree, returning two children if match fails
+	/*
+	 * diff cases:
+	 *  1) empty
+	 *  2) no diff
+	 *  3) leaf diff -> 1 key is disparate. 1 hash. Need 3rd party to tell us what's wrong.
+	 *  4) branch diff, keybits !=. 0 hashes, just the missing branch. If my keybits > than query, I'm missing information on anything in the range (key ^ branch critbit)
+	 *  5) branch diff, keybits !=. 2 hashes. If my keybits < than query, other party is missing said info
+	 *  6) branch diff, keybits ==. 2 hashes. Recurse to right, left sides.
+	 */
 	std::deque< merkle_point<KeyType, HashType> > diff(const merkle_location<KeyType>& location, const HashType& hash) const
 	{
 		std::deque< merkle_point<KeyType, HashType> > diffs;
+		if (_tree.empty())
+		{
+			merkle_point<KeyType,HashType> missing;
+			missing.location = location;
+			diffs.push_back(missing);
+			return diffs;
+		}
 
 		HashType myhash;
 		typename tree_type::node_ptr node_ptr = lookup(location);
@@ -123,33 +155,50 @@ public:
 		if (hash == myhash)
 			return diffs; // no differences
 
+		// case 3: leaf
 		if (node_ptr.isLeaf())
 		{
 			merkle_point<KeyType,HashType> current;
-			current.location = merkle_location<KeyType>(node_ptr.leaf()->first, location.keybits);
+			current.location = merkle_location<KeyType>(node_ptr.leaf()->first);
 			current.hash = myhash;
 			diffs.push_back(current);
 			return diffs;
 		}
 
-		pair* childLeaf = _tree.begin(node_ptr);
-		merkle_node<HashType>* node = node_ptr.node();
+		pair* leafNode = _tree.begin(node_ptr);
+		merkle_node<HashType>* branchNode = node_ptr.node();
+		unsigned branchKeybits = keybits(branchNode->byte, branchNode->otherbits xor 0xFF);
 
-		merkle_location<KeyType> childLoc(childLeaf->first, keybits(node->byte, node->otherbits xor 0xFF));
+		// case 4: branch, but the location parameter seemed to expect a branch sooner
+		if (branchKeybits > location.keybits+1)
+		{
+			merkle_point<KeyType,HashType> missing;
+			missing.location.key = leafNode->first;
+			missing.location.keybits = location.keybits;
+
+			unsigned expectedBranchByte = location.keybits / 8;
+			unsigned char expectedBranchBits = location.keybits % 8;
+			if (expectedBranchBits > 0)
+				expectedBranchByte++;
+			std::cout << " keybits : " << location.keybits << ", expected branch at " << expectedBranchByte << "," << (unsigned)expectedBranchBits << std::endl;
+			((uint8_t*)&missing.location.key)[expectedBranchByte] ^= (1 << (7-expectedBranchBits));
+			diffs.push_back(missing);
+			return diffs;
+		}
+
+		// case 5,6
 		// push children into diffs
 		{
-			typename tree_type::node_ptr left = node->child[0];
-			merkle_point<KeyType, HashType> diff;
-			getHash(left, diff.hash);
-			diff.location = childLoc;
+			typename tree_type::node_ptr left = branchNode->child[0];
+			merkle_point<KeyType, HashType> diff = getPoint(leafNode->first, left);
 			diffs.push_back(diff);
 		}
 		{
-			typename tree_type::node_ptr right = node->child[1];
-			merkle_point<KeyType, HashType> diff;
-			getHash(right, diff.hash);
-			diff.location = childLoc;
-			((uint8_t*)&diff.location.key)[node->byte] ^= (node->otherbits ^ 0xFF);
+			typename tree_type::node_ptr right = branchNode->child[1];
+			KeyType key = leafNode->first;
+			((uint8_t*)&key)[branchNode->byte] ^= (branchNode->otherbits ^ 0xFF);
+
+			merkle_point<KeyType, HashType> diff = getPoint(key, right);
 			diffs.push_back(diff);
 		}
 

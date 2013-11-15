@@ -32,7 +32,7 @@ IpAddress UdpSocket::getTarget() const
 
 int UdpSocket::send(const std::string& data) const
 {
-	return send(&data[0], data.size());
+	return send(data.data(), data.size());
 }
 
 int UdpSocket::send(const char* buffer, unsigned size) const
