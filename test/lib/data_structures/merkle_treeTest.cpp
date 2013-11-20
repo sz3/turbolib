@@ -141,10 +141,35 @@ TEST_CASE( "merkle_treeTest/testCalcKeybits", "[unit]" )
 	assertEquals( 168, tree.keybits(20, 1) );
 }
 
+TEST_CASE( "merkle_treeTest/testTop", "[unit]" )
+{
+	using mpoint = merkle_point<unsigned, unsigned long long>;
+	merkle_tree<unsigned, unsigned long long> tree;
+
+	mpoint nulltop = tree.top();
+	assertEquals( 0, nulltop.location.key );
+	assertEquals( 65535, nulltop.location.keybits );
+	assertEquals( 0, nulltop.hash );
+	assertTrue( nulltop == mpoint::null() );
+
+	tree.insert(45, 45);
+	tree.insert(2048, 2048);
+
+	mpoint top = tree.top();
+	assertEquals( 0, top.location.key );
+	assertEquals( 2, top.location.keybits );
+	assertEquals( (2048 xor 45), top.hash );
+	assertFalse( top == mpoint::null() );
+}
 
 TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 {
 	merkle_tree<unsigned, unsigned long long> tree;
+
+	// empty tree
+	std::deque< merkle_point<unsigned, unsigned long long> > results = tree.diff( merkle_location<unsigned>(0, 0), 0 );
+	assertEquals( 1, results.size() );
+	assertEquals( results[0], (merkle_point<unsigned, unsigned long long>::null()) );
 
 	tree.insert(45, 45);
 	tree.insert(2048, 2048);
@@ -178,7 +203,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	 */
 
 	// root
-	std::deque< merkle_point<unsigned, unsigned long long> > results = tree.diff( merkle_location<unsigned>(0, 0), (45 xor 42 xor 2048 xor 128) );
+	results = tree.diff( merkle_location<unsigned>(0, 0), (45 xor 42 xor 2048 xor 128) );
 	assertEquals( 0, results.size() );
 
 

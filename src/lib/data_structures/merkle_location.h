@@ -24,5 +24,24 @@ struct merkle_point
 {
 	merkle_location<KeyType> location;
 	HashType hash;
+
+	static merkle_point<KeyType,HashType> null()
+	{
+		static merkle_point<KeyType,HashType> nullStatic = [] ()
+		{
+			merkle_point<KeyType,HashType> temp;
+			temp.location = merkle_location<KeyType>(KeyType(0), ~0);
+			temp.hash = 0;
+			return temp;
+		}();
+		return nullStatic;
+	}
+
+	bool operator==(const merkle_point<KeyType,HashType>& other) const
+	{
+		return location.key == other.location.key
+				&& location.keybits == other.location.keybits
+				&& hash == other.hash;
+	}
 };
 
