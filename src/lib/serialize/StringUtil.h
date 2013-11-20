@@ -6,23 +6,31 @@
 
 namespace StringUtil
 {
-	template <class T>
-	std::string stlJoin(const T& start, const T& end, char delim=' ')
+	template <class Iter>
+	std::string stlJoin(const Iter& start, const Iter& end, char delim=' ')
 	{
-		std::stringstream str;
-		T it = start;
+		std::stringstream ss;
+		Iter it = start;
 		if (it != end)
-			str << *it++;
+			ss << *it++;
 		for (; it != end; ++it)
-			str << delim << *it;
-		return str.str();
+			ss << delim << *it;
+		return ss.str();
 	}
 
-	template <class TYPE>
-	std::string stlJoin(const TYPE& container, char delim=' ')
+	template <class Type>
+	std::string stlJoin(const Type& container, char delim=' ')
 	{
 		return stlJoin(container.begin(), container.end(), delim);
 	}
 
 	std::vector<std::string> split(const std::string& input, char delim=' ');
+
+	template <typename Type>
+	std::string str(const Type& val)
+	{
+		std::stringstream ss;
+		ss << val;
+		return ss.str();
+	}
 }

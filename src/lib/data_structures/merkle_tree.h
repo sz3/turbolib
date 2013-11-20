@@ -132,6 +132,8 @@ public:
 	merkle_point<KeyType, HashType> top() const
 	{
 		typename tree_type::node_ptr node_ptr = lookup(merkle_location<KeyType>(0,0));
+		if (node_ptr.isNull())
+			return merkle_point<KeyType, HashType>::null();
 		return getPoint(0, node_ptr);
 	}
 
@@ -149,9 +151,7 @@ public:
 		std::deque< merkle_point<KeyType, HashType> > diffs;
 		if (_tree.empty())
 		{
-			merkle_point<KeyType,HashType> missing;
-			missing.location = location;
-			diffs.push_back(missing);
+			diffs.push_back(merkle_point<KeyType, HashType>::null());
 			return diffs;
 		}
 
