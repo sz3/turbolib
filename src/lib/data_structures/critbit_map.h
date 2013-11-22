@@ -32,13 +32,13 @@ struct critbit_map_pair : std::pair<Key, Value>
 };
 
 // critbit_int_map?
-template < typename Key, typename Value, typename Node=critbit_node, typename Pair=critbit_map_pair<Key,Value> >
-class critbit_map
+template < typename Key, typename Pair, typename Node=critbit_node >
+class critbit_map_internal
 {
 public:
-	int insert(const Key& key, const Value& value)
+	int insert(const Pair& pair)
 	{
-		return _tree.insert(Pair(key, value));
+		return _tree.insert(pair);
 	}
 
 	int remove(const Key& key)
@@ -70,3 +70,5 @@ protected:
 	critbit_tree<Pair, const Pair&, Node> _tree;
 };
 
+template<class Key, class Value, typename Node=critbit_node>
+using critbit_map = critbit_map_internal<Key, critbit_map_pair<Key,Value>, Node>;
