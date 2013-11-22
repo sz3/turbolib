@@ -9,19 +9,19 @@ TEST_CASE( "cribit_mapTest/testIntMap", "[unit]" )
 {
 	critbit_map<unsigned long long, string> map;
 
-	assertEquals( 2, map.insert(10, "banana") );
+	assertEquals( 2, map.insert({10, "banana"}) );
 	assertTrue( map.contains(10) );
 	assertEquals( "banana", map.lower_bound(10)->second );
 
-	assertEquals(2, map.insert(20, "orange") );
+	assertEquals(2, map.insert({20, "orange"}) );
 	assertTrue( map.contains(20) );
 	assertEquals( "orange", map.lower_bound(20)->second );
 
-	assertEquals(2, map.insert(47, "rocketship") );
+	assertEquals(2, map.insert({47, "rocketship"}) );
 	assertTrue( map.contains(47) );
 	assertEquals( "rocketship", map.lower_bound(47)->second );
 
-	assertEquals(1, map.insert(10, "apple") );
+	assertEquals(1, map.insert({10, "apple"}) );
 	assertTrue( map.contains(10) );
 	assertEquals(1, map.remove(10) );
 	assertFalse( map.contains(10) );
@@ -37,7 +37,7 @@ TEST_CASE( "merkle_mapTest/testClassKeyInt_Load", "[unit]" )
 
 	for (int i = 0xFF; i > 0; --i)
 	{
-		assertEquals( 2, map.insert(i, "banana") );
+		assertEquals( 2, map.insert({i, "banana"}) );
 
 		critbit_map_pair<unsigned long long, string>* pear = map.lower_bound(i);
 		assertNotNull( pear );
