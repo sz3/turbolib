@@ -9,6 +9,7 @@ adapted from DJB's critbit tree for NULL-terminated strings
 #include <cstdlib>
 #include <cstdint>
 #include <cstring>
+#include <functional>
 #include <iostream>
 
 // base critbit_node class.
