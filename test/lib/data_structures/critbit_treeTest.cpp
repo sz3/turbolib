@@ -1,6 +1,7 @@
 #include "unittest.h"
 
 #include "critbit_tree.h"
+#include "serialize/StringUtil.h"
 #include "util/Random.h"
 #include <iostream>
 #include <sstream>
@@ -166,6 +167,12 @@ TEST_CASE( "critbit_treeTest/testPrefixLookup", "[unit]" )
 		node_ptr right = elem.node()->child[1];
 		assertStringsEqual( "forty-two", right.leaf() );
 	}
+	{
+		// nonsense lookup finds closest node.
+		node_ptr elem = tree.subtree("nothing");
+		assertTrue( elem.isLeaf() );
+		assertStringsEqual( "one", elem.leaf() );
+	}
 }
 
 TEST_CASE( "critbit_treeTest/testBegin", "[unit]" )
@@ -184,6 +191,140 @@ TEST_CASE( "critbit_treeTest/testBegin", "[unit]" )
 	assertTrue( node.isNode() );
 	assertStringsEqual( "one", tree.begin(node) );
 }
+
+TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
+{
+	critbit_tree<char, const char*> tree;
+
+	assertEquals(2, tree.insert("two") );
+	assertEquals(2, tree.insert("forty-two") );
+	assertEquals(2, tree.insert("forty-seven") );
+	assertEquals(2, tree.insert("one") );
+
+	/*
+	 * for review:
+	 *   't' == 116 == 01110100
+	 *   'f' == 102 == 01100110
+	 *   'o' == 111 == 01101111
+	 *   's' == 115 == 01110011
+	 *
+	 * So tree should look like this,
+	 *  where 0:16 means we branch on the 5th (10000 == 16) bit of the 1st (0th) byte:
+	 *
+	 *           0:16
+	 *         /      \
+	 *       0:8      two
+	 *      /    \
+	 *    6:4    one
+	 *   .....
+	 */
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		assertTrue( tree.enumerate(fun, "f") );
+		assertEquals( "forty-seven forty-two", StringUtil::stlJoin(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		assertFalse( tree.enumerate(fun, "no") );
+		assertEquals( "", StringUtil::stlJoin(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		assertTrue( tree.enumerate(fun, "o") );
+		assertEquals( "one", StringUtil::stlJoin(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		assertTrue( tree.enumerate(fun, "o", 0x1F) );
+		assertEquals( "forty-seven forty-two one two", StringUtil::stlJoin(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		assertTrue( tree.enumerate(fun, "o", 0xF) );
+		assertEquals( "forty-seven forty-two one", StringUtil::stlJoin(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		assertTrue( tree.enumerate(fun, "forty-seven") );
+		assertEquals( "forty-seven", StringUtil::stlJoin(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		assertTrue( tree.enumerate(fun, "forty-s") );
+		assertEquals( "forty-seven", StringUtil::stlJoin(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		assertTrue( tree.enumerate(fun, "forty-s", 0x7) );
+		assertEquals( "forty-seven forty-two", StringUtil::stlJoin(words) );
+	}
+
+	// limit amount of enumeration. "false" will terminate the operation.
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return words.size() < 2; };
+		assertTrue( tree.enumerate(fun, "o", 0xFF) );
+		assertEquals( "forty-seven forty-two", StringUtil::stlJoin(words) );
+	}
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return words.size() < 3; };
+		assertTrue( tree.enumerate(fun, "o", 0xFF) );
+		assertEquals( "forty-seven forty-two one", StringUtil::stlJoin(words) );
+	}
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return false; };
+		assertTrue( tree.enumerate(fun, "o", 0xFF) );
+		assertEquals( "forty-seven", StringUtil::stlJoin(words) );
+	}
+
+	// with user specified length
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		assertTrue( tree.enumerate(fun, "oleoleole", 0, 1) );
+		assertEquals( "one", StringUtil::stlJoin(words) );
+	}
+}
+
+TEST_CASE( "critbit_treeTest/testEnumerateNode", "[unit]" )
+{
+	critbit_tree<char, const char*> tree;
+
+	assertEquals(2, tree.insert("two") );
+	assertEquals(2, tree.insert("forty-two") );
+	assertEquals(2, tree.insert("forty-seven") );
+	assertEquals(2, tree.insert("one") );
+
+	// the alternative version of enumerate, for those who know what they're doing
+	using node_ptr = critbit_node_ptr<char, critbit_node>;
+	node_ptr top = tree.subtree("forty");
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		assertTrue( tree.enumerate(fun, top) );
+		assertEquals( "forty-seven forty-two", StringUtil::stlJoin(words) );
+	}
+}
+
 
 namespace {
 	class KeyString

@@ -88,7 +88,6 @@ public:
 		clear();
 	}
 
-	// TODO: prefix is different from the normal value lookup -- it might be intentionally shorter.
 	node_ptr subtree(ExternalType prefix, unsigned char bitmask = 0, size_t keylen = ~0) const
 	{
 		if (empty())
@@ -98,20 +97,55 @@ public:
 		if (keylen == ~0)
 			keylen = critbit_elem_ops<ValType>::key_size(prefix);
 
-		node_ptr p;
-		node_ptr top = p = _root;
-		while (p.isNode())
+		// walk tree until we reach the end of the prefix
+		// the bitmask is used to discard low-end disagreements in the last byte
+		node_ptr top = _root;
+		while (top.isNode())
 		{
-			Node* q = p.node();
+			Node* q = top.node();
 			if (q->byte+1 >= keylen)
 			{
 				if (q->byte >= keylen || ((q->otherbits ^ 0xFF) & bitmask) > 0)
 					break;
 			}
-			p = q->child[calculateDirection(q, keybytes, keylen)];
-			top = p;
+			top = q->child[calculateDirection(q, keybytes, keylen)];
 		}
 		return top;
+	}
+
+	bool enumerate(std::function<bool(ExternalType)> fun, ExternalType prefix, unsigned char bitmask = 0, size_t keylen = ~0) const
+	{
+		node_ptr top = subtree(prefix, bitmask, keylen);
+		ValType* leaf = begin(top);
+
+		const uint8_t* keybytes = (const uint8_t*)prefix;
+		if (keylen == ~0)
+			keylen = critbit_elem_ops<ValType>::key_size(prefix);
+		if (keylen == 0)
+			return false;
+
+		for (unsigned i = 0; i < keylen-1; ++i)
+			if (keybytes[i] != leaf[i])
+				return false;
+		if (((keybytes[keylen-1] xor leaf[keylen-1]) & ~bitmask) != 0)
+			return false;
+
+		enumerate(fun, top);
+		return true;
+	}
+
+	bool enumerate(std::function<bool(ExternalType)> fun, node_ptr top) const
+	{
+		if (top.isLeaf())
+			return fun(critbit_elem_ops<ValType>::downcast(top.leaf()));
+		else
+		{
+			Node* node = top.node();
+			if (enumerate(fun, node->child[0]))
+				return enumerate(fun, node->child[1]);
+			else
+				return false;
+		}
 	}
 
 	ValType* begin() const
@@ -351,7 +385,6 @@ private:
 		}
 		return false;
 	}
-
 
 protected:
 	void* _root;
