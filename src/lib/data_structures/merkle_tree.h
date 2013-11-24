@@ -16,16 +16,10 @@ struct merkle_node : public critbit_node
 	HashType hash;
 };
 
-template <typename KeyType, typename HashType>
-struct merkle_pair : public critbit_map_pair<KeyType,HashType>
-{
-	using critbit_map_pair<KeyType,HashType>::critbit_map_pair; // constructors
-};
-
 // 'Tuple' will be struct merkle_pair or a subclass.
 // see merkle_tree definition below.
-template <typename HashType, typename Tuple>
-class critbit_ext< Tuple, merkle_node<HashType> >
+template <typename KeyType, typename HashType, typename Tuple>
+class critbit_ext< critbit_map_pair<KeyType,Tuple>, merkle_node<HashType> >
 {
 public:
 	void push_change(merkle_node<HashType>* node)
@@ -47,10 +41,10 @@ public:
 protected:
 	static HashType getHash(void* elem)
 	{
-		using node_ptr = critbit_node_ptr< Tuple, merkle_node<HashType> >;
+		using node_ptr = critbit_node_ptr< critbit_map_pair<KeyType,Tuple>, merkle_node<HashType> >;
 		node_ptr node(elem);
 		if (node.isLeaf())
-			return node.leaf()->second;
+			return std::get<0>(node.leaf()->second);
 		else
 			return node.node()->hash;
 	}
@@ -59,13 +53,16 @@ protected:
 	std::deque<merkle_node<HashType>*> _changes;
 };
 
-template <typename KeyType, typename HashType, typename Tuple=merkle_pair<KeyType,HashType>>
-class merkle_tree : public critbit_map_internal< KeyType, Tuple, merkle_node<HashType> >
+template <typename KeyType, typename HashType, typename... ValueType>
+class merkle_tree : public critbit_map< KeyType, std::tuple<HashType, ValueType...>, merkle_node<HashType> >
 {
-protected:
-	using tree_type = critbit_tree< Tuple, const Tuple&, merkle_node<HashType> >;
+public:
+	using pair = critbit_map_pair<KeyType,std::tuple<HashType, ValueType...>>;
 
-	using critbit_map_internal< KeyType, Tuple, merkle_node<HashType> >::_tree;
+protected:
+	using tree_type = critbit_tree< pair, const pair&, merkle_node<HashType> >;
+	using map_type = critbit_map< KeyType, std::tuple<HashType, ValueType...>, merkle_node<HashType> >;
+	using map_type::_tree;
 
 protected:
 	typename tree_type::node_ptr lookup(const merkle_location<KeyType>& location) const
@@ -76,7 +73,7 @@ protected:
 			++keylen;
 		bitmask = (1 << (8-bitmask)) - 1;
 
-		return _tree.subtree(Tuple(location.key), bitmask, keylen);
+		return _tree.subtree(pair(location.key), bitmask, keylen);
 	}
 
 	bool getHash(const typename tree_type::node_ptr& node_ptr, HashType& hash) const
@@ -88,8 +85,8 @@ protected:
 			return true;
 		}
 
-		Tuple* pear = node_ptr.leaf();
-		hash = pear->second;
+		pair* pear = node_ptr.leaf();
+		hash = std::get<0>(pear->second);
 		return false;
 	}
 
@@ -104,8 +101,8 @@ protected:
 		}
 		else
 		{
-			Tuple* twopull = node_ptr.leaf();
-			point.hash = twopull->second;
+			pair* twopull = node_ptr.leaf();
+			point.hash = std::get<0>(twopull->second);
 			point.location = merkle_location<KeyType>( twopull->first );
 		}
 		return point;
@@ -172,7 +169,7 @@ public:
 			return diffs;
 		}
 
-		Tuple* leafNode = _tree.begin(node_ptr);
+		pair* leafNode = _tree.begin(node_ptr);
 		merkle_node<HashType>* branchNode = node_ptr.node();
 		unsigned branchKeybits = keybits(branchNode->byte, branchNode->otherbits xor 0xFF)-1;
 
@@ -209,6 +206,11 @@ public:
 		}
 
 		return diffs;
+	}
+
+	int insert(const KeyType& key, const HashType& hash, const ValueType&... value)
+	{
+		return map_type::insert({key, std::make_tuple(hash, value...)});
 	}
 
 	// ping|foo
