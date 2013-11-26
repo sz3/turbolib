@@ -1,6 +1,7 @@
 #include "unittest.h"
 
 #include "merkle_tree.h"
+#include "serialize/StringUtil.h"
 #include "util/Random.h"
 #include <deque>
 #include <iostream>
@@ -206,7 +207,6 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	results = tree.diff( merkle_location<unsigned>(0, 0), (45 xor 42 xor 2048 xor 128) );
 	assertEquals( 0, results.size() );
 
-
 	{
 		// bad hash at root
 		results = tree.diff( merkle_location<unsigned>(0, 0), 0xF00 );
@@ -370,4 +370,71 @@ TEST_CASE( "merkle_treeTest/testWithPayload", "[unit]" )
 	merkle_tree<unsigned, unsigned long long, string>::pair* elem2 = tree.lower_bound(2);
 	assertEquals(   20,  std::get<0>(elem2->second) );
 	assertEquals( "two", std::get<1>(elem2->second) );
+}
+
+TEST_CASE( "merkle_treeTest/testEnumerate", "[unit]" )
+{
+	merkle_tree<unsigned, unsigned long long, string> tree;
+
+	tree.insert(1, 10, "one");
+	tree.insert(2, 20, "two");
+	tree.insert(3, 30, "three");
+
+	std::vector<string> words;
+	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return true; };
+	tree.enumerate(fun, 1, 3);
+
+	assertEquals( "one two three", StringUtil::stlJoin(words) );
+}
+
+TEST_CASE( "merkle_treeTest/testEnumerate.Lots", "[unit]" )
+{
+	//  20 == 0001 0100 | 0000 0000 | ...
+	// 276 == 0001 0100 | 0000 0001 | ...
+	// 532 == 0001 0100 | 0000 0010 | ...
+	// 788 == 0001 0100 | 0000 0011 | ...
+
+	merkle_tree<unsigned, unsigned long long, string> tree;
+
+	for (unsigned i = 0; i < 1000; ++i)
+		tree.insert(i, i*10, StringUtil::str(i));
+
+	std::vector<string> words;
+	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return true; };
+
+	// currently goes and grabs the whole subtree, rather than stopping at 25... =/
+	tree.enumerate(fun, 20, 25);
+	assertEquals( "20 276 532 788 21 277 533 789 "
+				  "22 278 534 790 23 279 535 791 "
+				  "24 280 536 792 25 281 537 793 "
+				  "26 282 538 794 27 283 539 795 "
+				  "28 284 540 796 29 285 541 797 "
+				  "30 286 542 798 31 287 543 799", StringUtil::stlJoin(words) );
+
+	words.clear();
+	tree.enumerate(fun, 1, 2);
+	assertEquals( "1 257 513 769 2 258 514 770 3 259 515 771", StringUtil::stlJoin(words) );
+
+	words.clear();
+	tree.enumerate(fun, 52, 52);
+	assertEquals( "52", StringUtil::stlJoin(words) );
+}
+
+TEST_CASE( "merkle_treeTest/testEnumerate.Stop", "[unit]" )
+{
+	//  20 == 0001 0100 | 0000 0000 | ...
+	// 276 == 0001 0100 | 0000 0001 | ...
+	// 532 == 0001 0100 | 0000 0010 | ...
+	// 788 == 0001 0100 | 0000 0011 | ...
+
+	merkle_tree<unsigned, unsigned long long, string> tree;
+
+	for (unsigned i = 0; i < 1000; ++i)
+		tree.insert(i, i*10, StringUtil::str(i));
+
+	std::vector<string> words;
+	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return words.size() < 5; };
+
+	tree.enumerate(fun, 20, 25);
+	assertEquals( "20 276 532 788 21", StringUtil::stlJoin(words) );
 }

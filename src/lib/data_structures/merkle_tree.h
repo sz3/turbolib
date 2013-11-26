@@ -7,7 +7,7 @@
 
 #include "critbit_map.h"
 #include "merkle_location.h"
-
+#include "util/unpack_tuple.h"
 #include <deque>
 
 template <typename HashType>
@@ -65,7 +65,7 @@ protected:
 	using map_type::_tree;
 
 protected:
-	typename tree_type::node_ptr lookup(const merkle_location<KeyType>& location) const
+	typename tree_type::node_ptr nearest_subtree(const merkle_location<KeyType>& location) const
 	{
 		unsigned keylen = location.keybits/8;
 		unsigned char bitmask = location.keybits%8;
@@ -73,7 +73,7 @@ protected:
 			++keylen;
 		bitmask = (1 << (8-bitmask)) - 1;
 
-		return _tree.subtree(pair(location.key), bitmask, keylen);
+		return _tree.nearest_subtree(pair(location.key), bitmask, keylen);
 	}
 
 	bool getHash(const typename tree_type::node_ptr& node_ptr, HashType& hash) const
@@ -123,13 +123,18 @@ public:
 	// returns whether true if we found a node, false if we found a leaf
 	bool hash_lookup(const merkle_location<KeyType>& location, HashType& hash) const
 	{
-		typename tree_type::node_ptr node_ptr = lookup(location);
+		typename tree_type::node_ptr node_ptr = nearest_subtree(location);
+		if (node_ptr.isNull())
+		{
+			hash = 0;
+			return false;
+		}
 		return getHash(node_ptr, hash);
 	}
 
 	merkle_point<KeyType, HashType> top() const
 	{
-		typename tree_type::node_ptr node_ptr = lookup(merkle_location<KeyType>(0,0));
+		typename tree_type::node_ptr node_ptr = nearest_subtree(merkle_location<KeyType>(0,0));
 		if (node_ptr.isNull())
 			return merkle_point<KeyType, HashType>::null();
 		return getPoint(0, node_ptr);
@@ -154,7 +159,16 @@ public:
 		}
 
 		HashType myhash;
-		typename tree_type::node_ptr node_ptr = lookup(location);
+		typename tree_type::node_ptr node_ptr = nearest_subtree(location);
+		if (node_ptr.isNull())
+		{
+			merkle_point<KeyType,HashType> nothing;
+			nothing.location = location;
+			nothing.hash = 0;
+			diffs.push_back(nothing);
+			return diffs;
+		}
+
 		getHash(node_ptr, myhash);
 		if (hash == myhash)
 			return diffs; // no differences
@@ -211,6 +225,14 @@ public:
 	int insert(const KeyType& key, const HashType& hash, const ValueType&... value)
 	{
 		return map_type::insert({key, std::make_tuple(hash, value...)});
+	}
+
+	void enumerate(const std::function<bool(const HashType&, const ValueType&...)>& fun, const KeyType& start, const KeyType& finish)
+	{
+		auto translator = [&fun] (const pair& pear) {
+			return unpack_tuple<sizeof...(ValueType)+1>::unpack(fun, pear.second);
+		};
+		_tree.enumerate(translator, pair(start), pair(finish));
 	}
 
 	// ping|foo
