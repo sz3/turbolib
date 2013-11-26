@@ -89,7 +89,8 @@ public:
 		clear();
 	}
 
-	node_ptr subtree(ExternalType prefix, unsigned char bitmask = 0, size_t keylen = ~0) const
+	// nearest_subtree. No sanity check that our prefix actually matches what we found.
+	node_ptr nearest_subtree(ExternalType prefix, unsigned char bitmask = 0, size_t keylen = ~0) const
 	{
 		if (empty())
 			return NULL;
@@ -114,25 +115,101 @@ public:
 		return top;
 	}
 
-	bool enumerate(std::function<bool(ExternalType)> fun, ExternalType prefix, unsigned char bitmask = 0, size_t keylen = ~0) const
+	node_ptr subtree(ExternalType prefix, unsigned char bitmask = 0, size_t keylen = ~0) const
 	{
-		node_ptr top = subtree(prefix, bitmask, keylen);
-		ValType* leaf = begin(top);
+		node_ptr top = nearest_subtree(prefix, bitmask, keylen);
+		if (top.isNull())
+			return top;
 
 		const uint8_t* keybytes = (const uint8_t*)prefix;
 		if (keylen == ~0)
 			keylen = critbit_elem_ops<ValType>::key_size(prefix);
-		if (keylen == 0)
-			return false;
 
-		for (unsigned i = 0; i < keylen-1; ++i)
-			if (keybytes[i] != leaf[i])
-				return false;
-		if (((keybytes[keylen-1] xor leaf[keylen-1]) & ~bitmask) != 0)
-			return false;
+		// test that we have a valid node
+		if (keylen > 0)
+		{
+			ValType* leaf = top.isLeaf()? top.leaf() : begin(top);
+			const uint8_t* leafbytes = (const uint8_t*)critbit_elem_ops<ValType>::downcast(leaf);
 
-		enumerate(fun, top);
-		return true;
+			for (unsigned i = 0; i < keylen-1; ++i)
+				if (keybytes[i] != leafbytes[i])
+					return NULL;
+			if (((keybytes[keylen-1] xor leafbytes[keylen-1]) & ~bitmask) != 0)
+				return NULL;
+		}
+		return top;
+	}
+
+	void enumerate(std::function<bool(ExternalType)> fun, ExternalType first, ExternalType last) const
+	{
+		const uint8_t* firstkey = (const uint8_t*)first;
+		const size_t firstlen = critbit_elem_ops<ValType>::key_size(first);
+		const uint8_t* lastkey = (const uint8_t*)last;
+		const size_t lastlen = critbit_elem_ops<ValType>::key_size(last);
+
+		node_ptr top;
+
+		uint32_t diffbyte;
+		uint32_t diffbits;
+		int direction;
+		if (!findCriticalBit(firstkey, firstlen, lastkey, lastlen, diffbyte, diffbits, direction))
+			top = subtree(first);
+		else
+		{
+			diffbits ^= 0xFF;
+			diffbits |= diffbits>>1;
+			diffbits |= diffbits>>2;
+			diffbits |= diffbits>>4;
+			top = subtree(first, diffbits, diffbyte+1);
+		}
+		if (top.isNull())
+			return;
+
+		// walk tree to first leaf in set.
+		node_ptr p(top);
+		while (p.isNode())
+		{
+			Node* q = p.node();
+			int dir = calculateDirection(q, firstkey, firstlen);
+			p = q->child[dir];
+		}
+		enumerate(fun, top, p.leaf());
+	}
+
+	int enumerate(std::function<bool(ExternalType)> fun, node_ptr top, ValType* start, unsigned state=1) const
+	{
+		enum {
+			STOP = 0,
+			SEARCHING = 1,
+			FOUND = 2
+		};
+		if (top.isLeaf())
+		{
+			switch (state)
+			{
+				case SEARCHING:
+					if (top.leaf() != start)
+						break;
+					state = FOUND;
+
+				case FOUND:
+					if (!fun(critbit_elem_ops<ValType>::downcast(top.leaf())))
+						return STOP;
+					break;
+
+				default:
+					return STOP;
+			}
+			return state;
+		}
+		else
+		{
+			Node* node = top.node();
+			if (state = enumerate(fun, node->child[0], start, state))
+				return enumerate(fun, node->child[1], start, state);
+			else
+				return STOP;
+		}
 	}
 
 	bool enumerate(std::function<bool(ExternalType)> fun, node_ptr top) const
