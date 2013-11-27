@@ -69,10 +69,11 @@ protected:
 	{
 		unsigned keylen = location.keybits/8;
 		unsigned char bitmask = location.keybits%8;
-		if (bitmask > 0)
+		if (bitmask != 0)
+		{
 			++keylen;
-		bitmask = (1 << (8-bitmask)) - 1;
-
+			bitmask = (1 << (8-bitmask)) - 1;
+		}
 		return _tree.nearest_subtree(pair(location.key), bitmask, keylen);
 	}
 
@@ -184,7 +185,7 @@ public:
 			return diffs;
 		}
 
-		pair* leafNode = _tree.begin(node_ptr);
+		pair* leftLeaf = _tree.begin(node_ptr);
 		merkle_node<HashType>* branchNode = node_ptr.node();
 		unsigned branchKeybits = keybits(branchNode->byte, branchNode->otherbits xor 0xFF)-1;
 
@@ -192,13 +193,11 @@ public:
 		if (branchKeybits > location.keybits)
 		{
 			merkle_point<KeyType,HashType> missing;
-			missing.location.key = leafNode->first;
+			missing.location.key = leftLeaf->first;
 			missing.location.keybits = location.keybits;
 
 			unsigned expectedBranchByte = location.keybits / 8;
 			unsigned char expectedBranchBits = location.keybits % 8;
-			if (expectedBranchBits > 0)
-				expectedBranchByte++;
 			((uint8_t*)&missing.location.key)[expectedBranchByte] ^= (1 << (7-expectedBranchBits));
 			diffs.push_back(missing);
 			return diffs;
@@ -208,15 +207,13 @@ public:
 		// push children into diffs
 		{
 			typename tree_type::node_ptr left = branchNode->child[0];
-			merkle_point<KeyType, HashType> diff = getPoint(leafNode->first, left);
+			merkle_point<KeyType, HashType> diff = getPoint(leftLeaf->first, left);
 			diffs.push_back(diff);
 		}
 		{
 			typename tree_type::node_ptr right = branchNode->child[1];
-			KeyType key = leafNode->first;
-			((uint8_t*)&key)[branchNode->byte] ^= (branchNode->otherbits ^ 0xFF);
-
-			merkle_point<KeyType, HashType> diff = getPoint(key, right);
+			pair* rightLeaf = _tree.begin(right);
+			merkle_point<KeyType, HashType> diff = getPoint(rightLeaf->first, right);
 			diffs.push_back(diff);
 		}
 
