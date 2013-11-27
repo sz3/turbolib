@@ -172,25 +172,25 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	assertEquals( 1, results.size() );
 	assertEquals( results[0], (merkle_point<unsigned, unsigned long long>::null()) );
 
-	tree.insert(45, 45);
+	tree.insert(32810, 32810);
 	tree.insert(2048, 2048);
 	tree.insert(42, 42);
 	tree.insert(128, 128); // branch at bit 1, because we're about that life
 
 	// like the above,
-	// 2048 == 0000 0000 | 0000 1000 | ...
-	//   45 == 0010 1101 | 0000 0000 | ...
-	//   42 == 0010 1010 | 0000 0000 | ...
-	//  128 == 1000 0000 | 0000 0000 | ...
+	//   128 == 1000 0000 | 0000 0000 | ...
+	//  2048 == 0000 0000 | 0000 1000 | ...
+	//    42 == 0010 1010 | 0000 0000 | ...
+	// 32810 == 0010 1010 | 1000 0000 | ...
 
 	/* so:
 	 *                 (bit 1)
 	 *               /         \
 	 *           (bit 3)       128
 	 *         /         \
-	 *       2048      (bit 6)
+	 *       2048      (bit 9)
 	 *                /       \
-	 *               42       45
+	 *               42      32810
 	 **/
 
 	/*
@@ -204,7 +204,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	 */
 
 	// root
-	results = tree.diff( merkle_location<unsigned>(0, 0), (45 xor 42 xor 2048 xor 128) );
+	results = tree.diff( merkle_location<unsigned>(0, 0), (32810 xor 42 xor 2048 xor 128) );
 	assertEquals( 0, results.size() );
 
 	{
@@ -213,7 +213,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		assertEquals( 2, results.size() );
 
 		// left child -- location of next lookup
-		assertEquals( (45 xor 42 xor 2048), results[0].hash );
+		assertEquals( (32810 xor 42 xor 2048), results[0].hash );
 		assertEquals( 2048, results[0].location.key );
 		assertEquals( 2, results[0].location.keybits );
 
@@ -228,12 +228,12 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		results = tree.diff( merkle_location<unsigned>(0, 1), 0xF00 );
 		assertEquals( 1, results.size() );
 
-		assertEquals( 0x4800, results[0].location.key );
+		assertEquals( 2112, results[0].location.key ); // 2048 with 2nd bit flipped (xor 64)
 		assertEquals( 1, results[0].location.keybits );
 	}
 
 	// left side
-	results = tree.diff( merkle_location<unsigned>(2048, 2), (45 xor 42 xor 2048) );
+	results = tree.diff( merkle_location<unsigned>(2048, 2), (32810 xor 42 xor 2048) );
 	assertEquals( 0, results.size() );
 
 	{
@@ -247,9 +247,9 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		assertEquals( 32, results[0].location.keybits );
 
 		// right child -- location of next lookup
-		assertEquals( (42 xor 45), results[1].hash );
-		assertEquals( 2080, results[1].location.key ); // 2048 xor 32
-		assertEquals( 5, results[1].location.keybits );
+		assertEquals( (42 xor 32810), results[1].hash );
+		assertEquals( 42, results[1].location.key );
+		assertEquals( 8, results[1].location.keybits );
 	}
 
 	results = tree.diff( merkle_location<unsigned>(2048, 3), 2048 );
@@ -264,13 +264,13 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		assertEquals( 32, results[0].location.keybits );
 	}
 
-	// right child, using derived key from above
-	results = tree.diff( merkle_location<unsigned>(2080, 5), (42 xor 45) );
+	// right child, using key from above
+	results = tree.diff( merkle_location<unsigned>(42, 8), (42 xor 32810) );
 	assertEquals( 0, results.size() );
 
 	{
 		// bad hash, exact bit match
-		results = tree.diff( merkle_location<unsigned>(2080, 5), 0xF00 );
+		results = tree.diff( merkle_location<unsigned>(42, 8), 0xF00 );
 		assertEquals( 2, results.size() );
 
 		// left
@@ -279,9 +279,18 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		assertEquals( 32, results[0].location.keybits );
 
 		// right
-		assertEquals( 45, results[1].hash );
-		assertEquals( 45, results[1].location.key );
+		assertEquals( 32810, results[1].hash );
+		assertEquals( 32810, results[1].location.key );
 		assertEquals( 32, results[1].location.keybits );
+	}
+
+	{
+		// bad hash at pre-branch bit
+		results = tree.diff( merkle_location<unsigned>(42, 7), 0xF00 );
+		assertEquals( 1, results.size() );
+
+		assertEquals( 43, results[0].location.key ); // 42 with 8th bit flipped (xor 1)
+		assertEquals( 7, results[0].location.keybits );
 	}
 
 	// look up a leaf
