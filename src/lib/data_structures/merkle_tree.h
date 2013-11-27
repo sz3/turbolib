@@ -145,9 +145,10 @@ public:
 	 *  1) empty
 	 *  2) no diff
 	 *  3) leaf diff -> 1 key is disparate. 1 hash. Need 3rd party to tell us what's wrong.
-	 *  4) branch diff, keybits !=. 0 hashes, just the missing branch. If my keybits > than query, I'm missing information on anything in the range (key ^ branch critbit)
-	 *  5) branch diff, keybits !=. 2 hashes. If my keybits < than query, other party is missing said info
-	 *  6) branch diff, keybits ==. 2 hashes. Recurse to right, left sides.
+	 *  4) branch diff, keybits !=. null hashes, just the missing branch. If my keybits > than query, I'm missing information on anything in the range (key ^ branch critbit)
+	 *  5) branch diff, parent keybits !=. Detect missing branch! TODO!!!
+	 *  6) branch diff, keybits !=. 2 hashes. If my keybits < than query, other party is missing said info
+	 *  7) branch diff, keybits ==. 2 hashes. Recurse to right, left sides.
 	 */
 	std::deque< merkle_point<KeyType, HashType> > diff(const merkle_location<KeyType>& location, const HashType& hash) const
 	{
@@ -227,7 +228,7 @@ public:
 		return map_type::insert({key, std::make_tuple(hash, value...)});
 	}
 
-	void enumerate(const std::function<bool(const HashType&, const ValueType&...)>& fun, const KeyType& start, const KeyType& finish)
+	void enumerate(const std::function<bool(const HashType&, const ValueType&...)>& fun, const KeyType& start, const KeyType& finish) const
 	{
 		auto translator = [&fun] (const pair& pear) {
 			return unpack_tuple<sizeof...(ValueType)+1>::unpack(fun, pear.second);
