@@ -1,6 +1,7 @@
 #pragma once
 
 #include <condition_variable>
+#include <functional>
 #include <mutex>
 
 class Event
@@ -9,9 +10,12 @@ public:
 	Event();
 
 	void signal();
+	void signalOne();
+	void shutdown();
 	bool wait(unsigned millis = ~0) const;
 
 protected:
+	bool _shutdown;
 	mutable std::mutex _mutex;
 	mutable std::condition_variable _cond;
 };
