@@ -7,6 +7,7 @@ using std::unique_lock;
 using namespace std::chrono;
 
 Event::Event()
+	: _shutdown(false)
 {
 }
 
@@ -16,9 +17,24 @@ void Event::signal()
 	_cond.notify_all();
 }
 
+void Event::signalOne()
+{
+	lock_guard<mutex> myLock(_mutex);
+	_cond.notify_one();
+}
+
+void Event::shutdown()
+{
+	lock_guard<mutex> myLock(_mutex);
+	_cond.notify_all();
+	_shutdown = true;
+}
+
 bool Event::wait(unsigned millis) const
 {
 	unique_lock<mutex> myLock(_mutex);
+	if (_shutdown)
+		return true;
 	std::cv_status res = _cond.wait_for(myLock, milliseconds(millis));
 	return res != std::cv_status::timeout; // false would be if we hit our timeout
 }
