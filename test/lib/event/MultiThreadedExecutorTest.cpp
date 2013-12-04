@@ -1,6 +1,6 @@
 #include "unittest.h"
 
-#include "ThreadPool.h"
+#include "MultiThreadedExecutor.h"
 
 #include "Event.h"
 #include "serialize/StringUtil.h"
@@ -12,9 +12,9 @@
 using std::lock_guard;
 using std::mutex;
 
-TEST_CASE( "ThreadPoolTest/testDefault", "[unit]" )
+TEST_CASE( "MultiThreadedExecutorTest/testDefault", "[unit]" )
 {
-	ThreadPool threads(4);
+	MultiThreadedExecutor threads(4);
 	assertTrue( threads.start() );
 
 	mutex myMutex;

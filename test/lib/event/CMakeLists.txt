@@ -5,8 +5,8 @@ project(event_test)
 set (SOURCES
 	test.cpp
 	EventTest.cpp
+	MultiThreadedExecutorTest.cpp
 	SchedulerThreadTest.cpp
-	ThreadPoolTest.cpp
 )
 
 include_directories(

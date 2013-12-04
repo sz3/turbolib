@@ -5,11 +5,13 @@ set(SOURCES
 	CounterEvent.h
 	Event.cpp
 	Event.h
-	Executor.h
+	IExecutor.h
+	MultiThreadedExecutor.cpp
+	MultiThreadedExecutor.h
 	SchedulerThread.cpp
 	SchedulerThread.h
-	ThreadPool.cpp
-	ThreadPool.h
+	SimpleExecutor.h
+	ThreadSpawningExecutor.h
 	Timer.cpp
 	Timer.h
 )
