@@ -23,6 +23,9 @@ void Event::signalOne()
 	_cond.notify_one();
 }
 
+// TODO: instead of a blanket shutdown, what about a std::atomic<int> that we check to see
+// before we call wait?
+// e.g, signal(100)
 void Event::shutdown()
 {
 	lock_guard<mutex> myLock(_mutex);

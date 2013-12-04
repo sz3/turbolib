@@ -1,32 +1,32 @@
-#include "ThreadPool.h"
+#include "MultiThreadedExecutor.h"
 
 #include <iostream>
 
-ThreadPool::ThreadPool(unsigned numThreads)
+MultiThreadedExecutor::MultiThreadedExecutor(unsigned numThreads)
 	: _running(false)
 	, _numThreads(numThreads)
 	, _notifyRunning(numThreads)
 {
 }
 
-ThreadPool::~ThreadPool()
+MultiThreadedExecutor::~MultiThreadedExecutor()
 {
 	stop();
 }
 
 
-bool ThreadPool::start()
+bool MultiThreadedExecutor::start()
 {
 	if (_running)
 		return true;
 	_running = true;
 
 	for (unsigned i = 0; i < _numThreads; ++i)
-		_threads.push_back( std::thread(std::bind(&ThreadPool::run, this)) );
+		_threads.push_back( std::thread(std::bind(&MultiThreadedExecutor::run, this)) );
 	return _running = _notifyRunning.wait(5000);
 }
 
-void ThreadPool::stop()
+void MultiThreadedExecutor::stop()
 {
 	_running = false;
 	_notifyWork.shutdown();
@@ -38,18 +38,18 @@ void ThreadPool::stop()
 	_threads.clear();
 }
 
-void ThreadPool::execute(std::function<void()> fun)
+void MultiThreadedExecutor::execute(std::function<void()> fun)
 {
 	_queue.push(fun);
 	_notifyWork.signalOne();
 }
 
-size_t ThreadPool::queued() const
+size_t MultiThreadedExecutor::queued() const
 {
 	return _queue.unsafe_size();
 }
 
-void ThreadPool::run()
+void MultiThreadedExecutor::run()
 {
 	_notifyRunning.signal();
 	while (_running)

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "IExecutor.h"
 #include "CounterEvent.h"
 #include "Event.h"
 #include "tbb/concurrent_queue.h"
@@ -7,11 +8,11 @@
 #include <memory>
 #include <thread>
 
-class ThreadPool
+class MultiThreadedExecutor : public IExecutor
 {
 public:
-	ThreadPool(unsigned numThreads = std::thread::hardware_concurrency());
-	~ThreadPool();
+	MultiThreadedExecutor(unsigned numThreads = std::thread::hardware_concurrency());
+	~MultiThreadedExecutor();
 
 	bool start();
 	void stop();

@@ -1,15 +1,12 @@
 #pragma once
 
-#include <functional>
+#include "IExecutor.h"
 #include <thread>
 
-class Executor
+class ThreadSpawningExecutor : public IExecutor
 {
 public:
-	Executor() {}
-
-	template <typename Func>
-	void run(Func fun)
+	void execute(std::function<void()> fun)
 	{
 		std::thread(fun).detach();
 	}
