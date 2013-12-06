@@ -1,6 +1,6 @@
 #include "unittest.h"
 
-#include "ConnectionByteStream.h"
+#include "FileByteStream.h"
 #include "LocalStreamSocketServer.h"
 #include "command_line/CommandLine.h"
 
@@ -15,7 +15,7 @@ namespace {
 		const int buflen = 1024;
 		char buf[buflen];
 
-		ConnectionByteStream stream(fd);
+		FileByteStream stream(fd);
 		if (stream.read(buf, buflen) >= 0)
 		{
 			string message = "back at you: " + string(buf);
@@ -24,7 +24,7 @@ namespace {
 	}
 }
 
-TEST_CASE( "ConnectionByteStreamTest/testWithServer", "default" )
+TEST_CASE( "FileByteStreamTest/testWithServer", "default" )
 {
 	LocalStreamSocketServer server("/tmp/iamthebestserver", &onConnect, 4);
 	assertMsg( server.start(), server.lastError() );

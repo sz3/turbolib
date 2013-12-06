@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
-	ConnectionByteStream.cpp
-	ConnectionByteStream.h
+	FileByteStream.cpp
+	FileByteStream.h
 	IByteStream.h
 	IIpSocket.h
 	IpAddress.cpp

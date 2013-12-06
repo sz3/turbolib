@@ -2,10 +2,10 @@
 
 #include "IByteStream.h"
 
-class ConnectionByteStream : public IByteStream
+class FileByteStream : public IByteStream
 {
 public:
-	ConnectionByteStream(int fd);
+	FileByteStream(int fd);
 
 	unsigned maxPacketLength() const;
 
