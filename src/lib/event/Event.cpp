@@ -2,7 +2,6 @@
 
 #include <chrono>
 using std::mutex;
-using std::lock_guard;
 using std::unique_lock;
 using namespace std::chrono;
 
@@ -13,13 +12,11 @@ Event::Event()
 
 void Event::signal()
 {
-	lock_guard<mutex> myLock(_mutex);
 	_cond.notify_all();
 }
 
 void Event::signalOne()
 {
-	lock_guard<mutex> myLock(_mutex);
 	_cond.notify_one();
 }
 
@@ -28,9 +25,9 @@ void Event::signalOne()
 // e.g, signal(100)
 void Event::shutdown()
 {
-	lock_guard<mutex> myLock(_mutex);
-	_cond.notify_all();
+	unique_lock<mutex> myLock(_mutex);
 	_shutdown = true;
+	signal();
 }
 
 bool Event::wait(unsigned millis) const
