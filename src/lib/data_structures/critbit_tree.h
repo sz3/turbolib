@@ -349,12 +349,17 @@ public:
 			direction = calculateDirection(q, keybytes, keylen);
 			wherep = q->child + direction;
 			p = (ValType*)*wherep;
-			_ext.push_change(q);
+
+			if (1 & (intptr_t)p)
+				_ext.push_change(q);
 		}
 
 		// check best match
 		if (!critbit_elem_ops<ValType>::equals(val, critbit_elem_ops<ValType>::downcast(p)))
+		{
+			_ext.clear_changes();
 			return 0;
+		}
 		free(p);
 
 		// remove the node
@@ -538,6 +543,10 @@ class critbit_ext
 {
 public:
 	void push_change(Node* node)
+	{
+	}
+
+	void clear_changes()
 	{
 	}
 
