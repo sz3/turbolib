@@ -8,7 +8,10 @@
 #include "critbit_map.h"
 #include "merkle_location.h"
 #include "util/unpack_tuple.h"
+#include <bitset>
 #include <deque>
+#include <iomanip>
+#include <iostream>
 
 template <typename HashType>
 struct merkle_node : public critbit_node
@@ -27,6 +30,11 @@ public:
 		_changes.push_front(node);
 	}
 
+	void clear_changes()
+	{
+		_changes.clear();
+	}
+
 	void onchange()
 	{
 		for (auto it = _changes.begin(); it != _changes.end(); ++it)
@@ -35,7 +43,7 @@ public:
 			node->hash = getHash(node->child[0]) ^ getHash(node->child[1]);
 			//std::cout << " onchange(" << (unsigned)node->byte << ")! my children's hashes are " << getHash(node->child[0]) << "," << getHash(node->child[1]) << ". Mine is " << node->hash << std::endl;
 		}
-		_changes.clear();
+		clear_changes();
 	}
 
 protected:
@@ -231,6 +239,24 @@ public:
 			return unpack_tuple<sizeof...(ValueType)+1>::unpack(fun, pear.second);
 		};
 		_tree.enumerate(translator, pair(start), pair(finish));
+	}
+
+	void print(int keywidth=0) const
+	{
+		auto printer = [=] (const pair& pear) {
+			unsigned char* keybytes = (unsigned char*)&pear.first;
+			std::cout << std::setfill(' ') << std::setw(keywidth) << pear.second << ": ";
+			for (int i = 0; i < sizeof(KeyType); ++i)
+			{
+				if (i != 0)
+					std::cout << " | ";
+				std::cout << std::bitset<4>(keybytes[i] >> 4).to_string() << " ";
+				std::cout << std::bitset<4>(keybytes[i] & 0xF).to_string();
+			}
+			std::cout << std::endl;
+			return true;
+		};
+		_tree.enumerate(printer, pair(0), pair(~0ULL));
 	}
 
 	// ping|foo
