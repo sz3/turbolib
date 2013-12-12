@@ -12,6 +12,6 @@ add_executable (
 )
 
 target_link_libraries(heapsort
-	event
+	time
 )
 

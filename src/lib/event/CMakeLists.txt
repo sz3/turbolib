@@ -12,8 +12,6 @@ set(SOURCES
 	SchedulerThread.h
 	SimpleExecutor.h
 	ThreadSpawningExecutor.h
-	Timer.cpp
-	Timer.h
 )
 
 include_directories(

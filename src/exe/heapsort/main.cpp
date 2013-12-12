@@ -2,7 +2,7 @@
 #include "algorithm/heapsort.h"
 #include "algorithm/mergesort.h"
 
-#include "event/Timer.h"
+#include "time/Timer.h"
 #include <cstring>
 #include <iostream>
 using namespace std;

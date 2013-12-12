@@ -17,6 +17,7 @@ include_directories(
 
 target_link_libraries(threadlock
 	event
+	time
 
 	pthread
 )

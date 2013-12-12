@@ -1,7 +1,7 @@
 #include "catch.hpp"
 
 #include "Event.h"
-#include "Timer.h"
+#include "time/Timer.h"
 #include <ctime>
 #include <functional>
 #include <iostream>

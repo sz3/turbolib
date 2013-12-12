@@ -21,6 +21,6 @@ add_executable (
 add_test(algorithm_test algorithm_test)
 
 target_link_libraries(algorithm_test
-	event
+	time
 )
 

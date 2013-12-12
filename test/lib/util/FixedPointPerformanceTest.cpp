@@ -1,7 +1,7 @@
 #include "catch.hpp"
 
 #include "FixedPointNumber.h"
-#include "event/Timer.h"
+#include "time/Timer.h"
 #include <functional>
 #include <string>
 using std::string;

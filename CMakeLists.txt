@@ -32,6 +32,7 @@ set (PROJECTS
    test/lib/serialize
    src/lib/socket
    test/lib/socket
+   src/lib/time
    src/lib/util
    test/lib/util
 )
