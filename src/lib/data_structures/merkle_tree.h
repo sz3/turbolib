@@ -202,7 +202,7 @@ public:
 		{
 			merkle_point<KeyType,HashType> missing;
 			missing.location.key = leftLeaf->first;
-			missing.location.keybits = location.keybits;
+			missing.location.keybits = location.keybits+1;
 
 			unsigned expectedBranchByte = location.keybits / 8;
 			unsigned char expectedBranchBits = location.keybits % 8;

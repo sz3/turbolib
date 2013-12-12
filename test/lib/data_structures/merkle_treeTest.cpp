@@ -229,7 +229,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		assertEquals( 1, results.size() );
 
 		assertEquals( 2112, results[0].location.key ); // 2048 with 2nd bit flipped (xor 64)
-		assertEquals( 1, results[0].location.keybits );
+		assertEquals( 2, results[0].location.keybits );
 	}
 
 	// left side
@@ -290,7 +290,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		assertEquals( 1, results.size() );
 
 		assertEquals( 43, results[0].location.key ); // 42 with 8th bit flipped (xor 1)
-		assertEquals( 7, results[0].location.keybits );
+		assertEquals( 8, results[0].location.keybits );
 	}
 
 	// look up a leaf
