@@ -11,7 +11,7 @@ class UdpSocket;
 class UdpServer
 {
 public:
-	UdpServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket);
+	UdpServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned maxPacketSize=1500);
 	~UdpServer();
 
 	bool start();
@@ -30,6 +30,7 @@ protected:
 	bool _running;
 	int _sock;
 	short _port;
+	unsigned _maxPacketSize;
 	std::function<void(const IIpSocket&, std::string&)> _onPacket;
 
 	std::thread  _thread;

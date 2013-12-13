@@ -8,10 +8,11 @@
 #include <string.h>
 #include <unistd.h>
 
-UdpServer::UdpServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket)
+UdpServer::UdpServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned maxPacketSize)
 	: _running(false)
 	, _sock(-1)
 	, _port(port)
+	, _maxPacketSize(maxPacketSize)
 	, _onPacket(onPacket)
 {
 }
@@ -64,7 +65,7 @@ void UdpServer::run()
 	while (_running)
 	{
 		buffer.clear();
-		buffer.resize(1024);
+		buffer.resize(_maxPacketSize);
 		if (udp.recv(buffer) <= 0)
 			continue;
 
