@@ -5,6 +5,7 @@ set(SOURCES
 	FileByteStream.h
 	IByteStream.h
 	IIpSocket.h
+	IPacketServer.h
 	IpAddress.cpp
 	IpAddress.h
 	LocalStreamSocketServer.cpp
