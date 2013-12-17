@@ -1,19 +1,17 @@
 #pragma once
 
-#include "IIpSocket.h"
-#include "IPacketServer.h"
+#include "event/Event.h"
+#include "socket/IPacketServer.h"
 #include <functional>
 #include <memory>
 #include <string>
 #include <thread>
-class IpAddress;
-class UdpSocket;
 
-class UdpServer : public IPacketServer
+class UdtServer : public IPacketServer
 {
 public:
-	UdpServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned maxPacketSize=1450);
-	~UdpServer();
+	UdtServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned maxPacketSize=1450);
+	~UdtServer();
 
 	bool start();
 	void stop();
@@ -24,17 +22,22 @@ public:
 	std::shared_ptr<IIpSocket> sock(const IpAddress& addr);
 
 protected:
+	void accept();
 	void run();
 	void fatalError(const std::string& error);
 
 protected:
+	Event _started;
 	bool _running;
 	int _sock;
+	int _pollPackets;
+
 	short _port;
 	unsigned _maxPacketSize;
-	std::function<void(const IIpSocket&, std::string&)> _onPacket;
+	std::function<void(const IIpSocket&,std::string&)> _onPacket;
 
-	std::thread  _thread;
+	std::thread  _acceptor;
+	std::thread  _runner;
 	std::string _lastError;
 };
 

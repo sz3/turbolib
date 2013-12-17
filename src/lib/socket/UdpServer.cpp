@@ -90,7 +90,9 @@ void UdpServer::fatalError(const std::string& error)
 	_lastError = error;
 }
 
-std::shared_ptr<IIpSocket> UdpServer::sock() const
+std::shared_ptr<IIpSocket> UdpServer::sock(const IpAddress& addr)
 {
-	return std::shared_ptr<IIpSocket>(new UdpSocket(_sock));
+	UdpSocket* res = new UdpSocket(_sock);
+	res->setTarget(addr);
+	return std::shared_ptr<IIpSocket>(res);
 }

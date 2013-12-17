@@ -27,6 +27,8 @@ set (PROJECTS
    src/lib/socket
    test/lib/socket
    src/lib/time
+   #src/lib/udt_socket
+   #test/lib/udt_socket
    src/lib/util
    test/lib/util
 )
