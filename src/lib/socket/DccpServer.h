@@ -1,19 +1,16 @@
 #pragma once
 
+#include "IPacketServer.h"
 #include "event/Event.h"
-#include "socket/IPacketServer.h"
-
-#include "tbb/concurrent_unordered_map.h"
 #include <functional>
-#include <memory>
 #include <string>
 #include <thread>
 
-class UdtServer : public IPacketServer
+class DccpServer : public IPacketServer
 {
 public:
-	UdtServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned maxPacketSize=1450);
-	~UdtServer();
+	DccpServer(short port, std::function<void(const IIpSocket& sock, const std::string&)> onPacket, unsigned maxPacketSize=1450);
+	~DccpServer();
 
 	bool start();
 	void stop();
@@ -32,15 +29,13 @@ protected:
 	Event _started;
 	bool _running;
 	int _sock;
-	int _pollPackets;
 
 	short _port;
 	unsigned _maxPacketSize;
-	std::function<void(const IIpSocket&,std::string&)> _onPacket;
+	std::function<void(const IIpSocket& sock, std::string&)> _onPacket;
 
 	std::thread  _acceptor;
 	std::thread  _runner;
 	std::string _lastError;
-	tbb::concurrent_unordered_map<std::string,int> _connections;
 };
 

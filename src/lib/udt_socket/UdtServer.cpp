@@ -3,11 +3,16 @@
 #include "UdtSocket.h"
 #include <iostream>
 
-#include "udt/udt.h"
+#include "udt4/src/udt.h"
 #include <arpa/inet.h>
 //#include <netinet/in.h>
 #include <string.h>
 //#include <unistd.h>
+
+namespace
+{
+	int _epollEventFlag = EPOLLOpt::UDT_EPOLL_IN ^ EPOLLOpt::UDT_EPOLL_ERR;
+}
 
 UdtServer::UdtServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned maxPacketSize)
 	: _running(false)
@@ -70,6 +75,8 @@ void UdtServer::stop()
 	_running = false;
 	UDT::epoll_release(_pollPackets);
 	UDT::close(_sock);
+	for (tbb::concurrent_unordered_map<std::string,int>::iterator it = _connections.begin(); it != _connections.end(); ++it)
+		UDT::close(it->second);
 	if (_runner.joinable())
 		_runner.join();
 	if (_acceptor.joinable())
@@ -84,8 +91,6 @@ void UdtServer::accept()
 {
 	_started.shutdown();
 
-	int epollEventFlag = EPOLLOpt::UDT_EPOLL_IN ^ EPOLLOpt::UDT_EPOLL_ERR;
-
 	struct sockaddr_in their_addr;
 	int addr_sz = sizeof(their_addr);
 	memset((char*)&their_addr, 0, addr_sz);
@@ -96,7 +101,7 @@ void UdtServer::accept()
 		if (conn == UDT::INVALID_SOCK)
 			continue;
 
-		if (UDT::epoll_add_usock(_pollPackets, conn, &epollEventFlag) < 0)
+		if (UDT::epoll_add_usock(_pollPackets, conn, &_epollEventFlag) < 0)
 		{
 			std::cout << "UDT::epoll_add_usock error." << std::endl;
 			continue;
@@ -129,14 +134,14 @@ void UdtServer::run()
 
 			buffer.resize(_maxPacketSize);
 			if (sock.recv(buffer) <= 0)
-				std::cout << "badness. :(" << std::endl;
-			else
 			{
-				std::cout << buffer << std::endl;
-				_onPacket(sock, buffer);
+				std::cout << "badness. :(" << std::endl;
+				UDT::epoll_remove_usock(_pollPackets, *it);
+				UDT::close(*it);
 			}
-			UDT::epoll_remove_usock(_pollPackets, *it);
-			UDT::close(*it);
+
+			_onPacket(sock, buffer);
+			_connections[sock.getTarget().toString()] = *it;
 		}
 	}
 }
@@ -159,11 +164,24 @@ void UdtServer::fatalError(const std::string& error)
 std::shared_ptr<IIpSocket> UdtServer::sock(const IpAddress& addr)
 {
 	// concurrent unordered map or something
-	UDTSOCKET handle = UDT::socket(AF_INET, SOCK_DGRAM, 0);
-	if (handle == UDT::INVALID_SOCK)
-		return NULL;
-	UdtSocket* res = new UdtSocket(handle);
-	if (!res->connect(addr))
-		return NULL;
+	std::shared_ptr<IIpSocket> res;
+	std::pair< tbb::concurrent_unordered_map<std::string, int>::iterator, bool> pear = _connections.insert( {addr.toString(), -1} );
+	if (pear.first->second < 0)
+	{
+		UDTSOCKET handle = UDT::socket(AF_INET, SOCK_DGRAM, 0);
+		if (handle == UDT::INVALID_SOCK)
+			return NULL;
+
+		UdtSocket* sock = new UdtSocket(handle);
+		res.reset(sock);
+		if (!sock->connect(addr))
+			return NULL;
+		pear.first->second = handle;
+
+		if (UDT::epoll_add_usock(_pollPackets, handle, &_epollEventFlag) < 0)
+			std::cout << "UDT::epoll_add_usock error for client sock." << std::endl;
+	}
+	else
+		res.reset(new UdtSocket(pear.first->second));
 	return std::shared_ptr<IIpSocket>(res);
 }

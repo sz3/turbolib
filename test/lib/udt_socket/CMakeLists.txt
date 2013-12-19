@@ -28,6 +28,7 @@ target_link_libraries(udt_socket_test
 	socket
 
 	pthread
+	tbb
 	udt
 )
 
