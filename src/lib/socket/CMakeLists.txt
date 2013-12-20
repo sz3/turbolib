@@ -10,6 +10,8 @@ set(SOURCES
 	IpAddress.h
 	LocalStreamSocketServer.cpp
 	LocalStreamSocketServer.h
+	StringByteStream.cpp
+	StringByteStream.h
 	UdpClientSocket.cpp
 	UdpClientSocket.h
 	UdpServer.cpp
