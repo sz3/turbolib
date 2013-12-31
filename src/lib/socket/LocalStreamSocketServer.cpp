@@ -69,12 +69,19 @@ void LocalStreamSocketServer::stop()
 {
 	_running = false;
 	::shutdown(_sock, SHUT_RDWR);
+	close(_sock);
 	for (std::list<std::thread>::iterator it = _threads.begin(); it != _threads.end(); ++it)
 	{
 		 if (it->joinable())
 			it->join();
 	}
 	_threads.clear();
+}
+
+void LocalStreamSocketServer::onConnect(int connection)
+{
+	_onConnect(connection);
+	close(connection);
 }
 
 // maybe schedule this on multiple threads at once...
@@ -86,10 +93,10 @@ void LocalStreamSocketServer::run()
 	int connection;
 	while (_running && (connection = ::accept(_sock, (struct sockaddr*)&si_other, &slen)) > -1)
 	{
-		_onConnect(connection);
-		close(connection);
+		onConnect(connection);
+		//std::thread runme( std::bind(&LocalStreamSocketServer::onConnect, this, connection) );
+		//runme.detach();
 	}
-	close(_sock);
 }
 
 bool LocalStreamSocketServer::isRunning() const

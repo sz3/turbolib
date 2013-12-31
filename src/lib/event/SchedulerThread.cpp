@@ -3,7 +3,6 @@
 #include <iostream>
 using namespace std::chrono;
 using std::lock_guard;
-using std::multimap;
 using std::mutex;
 
 namespace {
@@ -55,15 +54,15 @@ bool SchedulerThread::doWork()
 	std::function<void()> work;
 	{
 		lock_guard<mutex> myLock(_mutex);
-		multimap< system_clock::time_point, std::function<void()> >::iterator it = _funs.begin();
-		if (it == _funs.end())
+		if (_funs.empty())
 			return false;
 
-		if (millisFromNow(it->first) > 0) // would like to use operator<, but apparently it doesn't work?
+		const Funct& top = _funs.top();
+		if (millisFromNow(top.time) > 0) // would like to use operator<, but apparently it doesn't work?
 			return false;
 
-		work = it->second;
-		_funs.erase(it);
+		work = top.fun;
+		_funs.pop();
 	}
 	work();
 	return true;
@@ -74,10 +73,10 @@ void SchedulerThread::waitForWork()
 	unsigned interval = ~0;
 	{
 		lock_guard<mutex> myLock(_mutex);
-		multimap< system_clock::time_point, std::function<void()> >::iterator it = _funs.begin();
-		if (it != _funs.end())
+		if (!_funs.empty())
 		{
-			long long duration = millisFromNow(it->first);
+			const Funct& top = _funs.top();
+			long long duration = millisFromNow(top.time);
 			interval = (duration < 0)? 0 : duration;
 		}
 	}
@@ -91,7 +90,7 @@ void SchedulerThread::schedule(const std::function<void()>& fun, unsigned millis
 	system_clock::time_point when = now() + milliseconds(millis);
 	{
 		lock_guard<mutex> myLock(_mutex);
-		_funs.insert( {when, fun} );
+		_funs.push( {when, fun} );
 	}
 	_notifyWork.signal();
 }

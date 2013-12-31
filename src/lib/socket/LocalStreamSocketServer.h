@@ -21,6 +21,7 @@ public:
 	std::string lastError() const;
 
 protected:
+	void onConnect(int connection);
 	void fatalError(const std::string& error);
 
 protected:
