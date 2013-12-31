@@ -10,7 +10,7 @@ void CounterEvent::signal()
 {
 	_seen++;
 	if (_seen == _desired)
-		_event.signal();
+		_event.shutdown();
 }
 
 bool CounterEvent::wait(unsigned millis)

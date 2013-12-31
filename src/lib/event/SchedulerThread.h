@@ -3,12 +3,24 @@
 #include "Event.h"
 #include <functional>
 #include <chrono>
-#include <map>
+#include <queue>
 #include <mutex>
 #include <thread>
 
 class SchedulerThread
 {
+protected:
+	struct Funct
+	{
+		std::chrono::system_clock::time_point time;
+		std::function<void()> fun;
+
+		bool operator<(const Funct& other) const
+		{
+			return time > other.time;
+		}
+	};
+
 public:
 	SchedulerThread();
 	~SchedulerThread();
@@ -29,6 +41,6 @@ protected:
 	std::thread _thread;
 
 	std::mutex _mutex;
-	std::multimap< std::chrono::system_clock::time_point,std::function<void()> > _funs;
+	std::priority_queue<Funct> _funs;
 	Event _notifyWork;
 };

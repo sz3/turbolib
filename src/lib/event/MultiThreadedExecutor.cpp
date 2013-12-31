@@ -23,7 +23,7 @@ bool MultiThreadedExecutor::start()
 
 	for (unsigned i = 0; i < _numThreads; ++i)
 		_threads.push_back( std::thread(std::bind(&MultiThreadedExecutor::run, this)) );
-	return _running = _notifyRunning.wait(5000);
+	return _running = _notifyRunning.wait(10000);
 }
 
 void MultiThreadedExecutor::stop()
