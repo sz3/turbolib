@@ -14,10 +14,11 @@ namespace
 	int _epollEventFlag = EPOLLOpt::UDT_EPOLL_IN ^ EPOLLOpt::UDT_EPOLL_ERR;
 }
 
-UdtServer::UdtServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned maxPacketSize)
+UdtServer::UdtServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned numThreads/*=1*/, unsigned maxPacketSize)
 	: _running(false)
 	, _sock(-1)
 	, _port(port)
+	, _numThreads(numThreads)
 	, _maxPacketSize(maxPacketSize)
 	, _onPacket(onPacket)
 {
@@ -30,6 +31,9 @@ UdtServer::~UdtServer()
 
 bool UdtServer::start()
 {
+	if (_running)
+		return true;
+
 	_running = true;
 	_sock = UDT::socket(AF_INET, SOCK_DGRAM, 0);
 	if (_sock == UDT::INVALID_SOCK)
@@ -65,7 +69,8 @@ bool UdtServer::start()
 	}
 
 	_acceptor = std::thread( std::bind(&UdtServer::accept, this) );
-	_runner = std::thread( std::bind(&UdtServer::run, this) );
+	for (unsigned i = 0; i < _numThreads; ++i)
+		_runners.push_back( std::thread(std::bind(&UdtServer::run, this)) );
 	_started.wait();
 	return _running;
 }
@@ -77,8 +82,13 @@ void UdtServer::stop()
 	UDT::close(_sock);
 	for (tbb::concurrent_unordered_map<std::string,int>::iterator it = _connections.begin(); it != _connections.end(); ++it)
 		UDT::close(it->second);
-	if (_runner.joinable())
-		_runner.join();
+
+	for (std::list<std::thread>::iterator it = _runners.begin(); it != _runners.end(); ++it)
+	{
+		 if (it->joinable())
+			it->join();
+	}
+	_runners.clear();
 	if (_acceptor.joinable())
 		_acceptor.join();
 }

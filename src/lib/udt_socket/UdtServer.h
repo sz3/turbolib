@@ -5,6 +5,7 @@
 
 #include "tbb/concurrent_unordered_map.h"
 #include <functional>
+#include <list>
 #include <memory>
 #include <string>
 #include <thread>
@@ -12,7 +13,7 @@
 class UdtServer : public IPacketServer
 {
 public:
-	UdtServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned maxPacketSize=1450);
+	UdtServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned numThreads=1, unsigned maxPacketSize=1450);
 	~UdtServer();
 
 	bool start();
@@ -35,11 +36,12 @@ protected:
 	int _pollPackets;
 
 	short _port;
+	unsigned _numThreads;
 	unsigned _maxPacketSize;
 	std::function<void(const IIpSocket&,std::string&)> _onPacket;
 
 	std::thread  _acceptor;
-	std::thread  _runner;
+	std::list<std::thread> _runners;
 	std::string _lastError;
 	tbb::concurrent_unordered_map<std::string,int> _connections;
 };

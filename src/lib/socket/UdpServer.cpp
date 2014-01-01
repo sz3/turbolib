@@ -8,10 +8,11 @@
 #include <string.h>
 #include <unistd.h>
 
-UdpServer::UdpServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned maxPacketSize)
+UdpServer::UdpServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned numThreads/*=1*/, unsigned maxPacketSize)
 	: _running(false)
 	, _sock(-1)
 	, _port(port)
+	, _numThreads(numThreads)
 	, _maxPacketSize(maxPacketSize)
 	, _onPacket(onPacket)
 {
@@ -45,7 +46,8 @@ bool UdpServer::start()
 		return _running = false;
 	}
 
-	_thread = std::thread( std::bind(&UdpServer::run, this) );
+	for (unsigned i = 0; i < _numThreads; ++i)
+		_threads.push_back( std::thread(std::bind(&UdpServer::run, this)) );
 	return _running;
 }
 
@@ -54,8 +56,12 @@ void UdpServer::stop()
 	_running = false;
 	::shutdown(_sock, SHUT_RDWR);
 	::close(_sock);
-	if (_thread.joinable())
-		_thread.join();
+	for (std::list<std::thread>::iterator it = _threads.begin(); it != _threads.end(); ++it)
+	{
+		 if (it->joinable())
+			it->join();
+	}
+	_threads.clear();
 }
 
 void UdpServer::run()
