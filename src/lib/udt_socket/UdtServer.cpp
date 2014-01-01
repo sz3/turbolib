@@ -14,6 +14,7 @@ namespace
 	int _epollEventFlag = EPOLLOpt::UDT_EPOLL_IN ^ EPOLLOpt::UDT_EPOLL_ERR;
 }
 
+// TODO: investigate delays/unreliabiliy when using concurrent UDT::epoll_wait(), e.g. numThreads > 1?
 UdtServer::UdtServer(short port, std::function<void(const IIpSocket&, const std::string&)> onPacket, unsigned numThreads/*=1*/, unsigned maxPacketSize)
 	: _running(false)
 	, _sock(-1)
@@ -130,7 +131,7 @@ void UdtServer::run()
 		irrelevant.clear();
 
 		int waiters;
-		if ((waiters = UDT::epoll_wait(_pollPackets, &reads, &irrelevant, 2000)) < 0)
+		if ((waiters = UDT::epoll_wait(_pollPackets, &reads, &irrelevant, 5000)) < 0)
 		{
 			std::cout << "epoll_wait did an error! :( " << waiters << std::endl;
 			continue;
@@ -140,7 +141,7 @@ void UdtServer::run()
 		for (std::set<UDTSOCKET>::const_iterator it = reads.begin(); it != reads.end(); ++it)
 		{
 			UdtSocket sock(*it);
-			std::cout << "new connection: " << sock.getTarget().toString() << std::endl;
+			std::cout << "udt read: " << sock.getTarget().toString() << std::endl;
 
 			buffer.resize(_maxPacketSize);
 			if (sock.recv(buffer) <= 0)
