@@ -1,5 +1,6 @@
 #pragma once
 
+#include "UdtScope.h"
 #include "event/Event.h"
 #include "socket/IPacketServer.h"
 
@@ -30,6 +31,7 @@ protected:
 	void fatalError(const std::string& error);
 
 protected:
+	UdtScope _udt;
 	Event _started;
 	bool _running;
 	int _sock;
