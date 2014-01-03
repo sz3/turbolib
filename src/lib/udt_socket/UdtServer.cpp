@@ -51,12 +51,12 @@ bool UdtServer::start()
 	si_me.sin_addr.s_addr = htonl(INADDR_ANY);
 	if (UDT::bind(_sock, (struct sockaddr*)&si_me, sizeof(si_me)) == UDT::ERROR)
 	{
-		fatalError("couldn't bind to port!");
+		fatalError("couldn't bind to port: " + std::string(UDT::getlasterror().getErrorMessage()));
 		return _running = false;
 	}
 	if (UDT::listen(_sock, 20) == UDT::ERROR)
 	{
-		fatalError("couldn't get udt socket to listen!");
+		fatalError("couldn't get udt socket to listen: " + std::string(UDT::getlasterror().getErrorMessage()));
 		UDT::close(_sock);
 		return _running = false;
 	}
@@ -64,7 +64,7 @@ bool UdtServer::start()
 	_pollPackets = UDT::epoll_create();
 	if (_pollPackets < 0)
 	{
-		fatalError("couldn't get udt epoll to work... :(");
+		fatalError("couldn't get udt epoll to work: " + std::string(UDT::getlasterror().getErrorMessage()));
 		UDT::close(_sock);
 		return _running = false;
 	}
