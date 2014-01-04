@@ -1,5 +1,6 @@
 #include "UdtSocket.h"
 
+#include "socket/IpAddress.h"
 #include "udt4/src/udt.h"
 #include <arpa/inet.h>
 #include <iostream>
@@ -30,6 +31,11 @@ IpAddress UdtSocket::getTarget() const
 	int target_sz = sizeof(target);
 	UDT::getpeername(_sock, (sockaddr*)&target, &target_sz);
 	return IpAddress(inet_ntoa(target.sin_addr), ntohs(target.sin_port));
+}
+
+std::string UdtSocket::destination() const
+{
+	return getTarget().ip();
 }
 
 int UdtSocket::send(const std::string& data) const
