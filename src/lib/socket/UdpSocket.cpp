@@ -30,6 +30,11 @@ IpAddress UdpSocket::getTarget() const
 	return IpAddress(inet_ntoa(_target.sin_addr), ntohs(_target.sin_port));
 }
 
+std::string UdpSocket::destination() const
+{
+	return getTarget().toString();
+}
+
 int UdpSocket::send(const std::string& data) const
 {
 	return send(data.data(), data.size());

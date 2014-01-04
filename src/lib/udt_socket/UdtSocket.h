@@ -10,6 +10,7 @@ public:
 
 	bool connect(const IpAddress& address);
 	IpAddress getTarget() const;
+	std::string destination() const;
 
 	int send(const std::string& data) const;
 	int send(const char* buffer, unsigned size) const;

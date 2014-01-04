@@ -1,6 +1,7 @@
 #include "UdtServer.h"
 
 #include "UdtSocket.h"
+#include "socket/IpAddress.h"
 #include <iostream>
 
 #include "udt4/src/udt.h"
