@@ -15,7 +15,6 @@ endif()
 
 set (PROJECTS
    src/exe/heapsort
-   src/exe/indexer
    src/exe/threadlock
 
    src/lib/algorithm
