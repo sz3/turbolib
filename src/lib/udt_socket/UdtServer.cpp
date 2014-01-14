@@ -138,17 +138,17 @@ void UdtServer::run()
 			std::cout << "epoll_wait did an error! :( " << waiters << std::endl;
 			continue;
 		}
-		std::cout << "epoll says there are " << waiters << " guys ready. Yes, " << reads.size() << " ... ? " << irrelevant.size() << std::endl;
+		//std::cout << "epoll says there are " << waiters << " guys ready. Yes, " << reads.size() << " ... ? " << irrelevant.size() << std::endl;
 
 		for (std::set<UDTSOCKET>::const_iterator it = reads.begin(); it != reads.end(); ++it)
 		{
 			UdtSocket sock(*it);
-			std::cout << "udt read: " << sock.getTarget().toString() << std::endl;
+			//std::cout << "udt read: " << sock.getTarget().toString() << std::endl;
 
 			buffer.resize(_maxPacketSize);
 			if (sock.recv(buffer) <= 0)
 			{
-				std::cout << "badness. :(" << std::endl;
+				std::cout << "udt badness. :(" << std::endl;
 				UDT::epoll_remove_usock(_pollPackets, *it);
 				UDT::close(*it);
 			}
