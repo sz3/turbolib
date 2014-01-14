@@ -15,7 +15,7 @@ TEST_CASE( "critbit_treeTest/testInsertLookup", "[unit]" )
 	critbit_tree<char, const char*> tree;
 
 	std::cout << "insert? " << tree.insert("one") << std::endl;
-	std::cout << "find? " << (unsigned)tree.lower_bound("one") << std::endl;
+	std::cout << "find? " << (unsigned long long)tree.lower_bound("one") << std::endl;
 	std::cout << "contains? " << tree.contains("one") << std::endl;
 
 	assertEquals(2, tree.insert("two") );

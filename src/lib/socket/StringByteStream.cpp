@@ -21,7 +21,7 @@ unsigned StringByteStream::maxPacketLength() const
 
 int StringByteStream::read(char* buffer, unsigned length)
 {
-	unsigned bytes = std::min(_readBuffer.size(), length);
+	unsigned bytes = std::min((unsigned)_readBuffer.size(), length);
 	if (bytes == 0)
 		return 0;
 
