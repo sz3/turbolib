@@ -40,11 +40,11 @@ TEST_CASE( "SchedulerThreadTest/testSchedule", "default" )
 	assertEquals( "5 50 100 100 130", StringUtil::stlJoin(results) );
 
 	assertEquals(5, timing.size());
-	assertInRange(4, 5, timing[0]);
-	assertInRange(48, 50, timing[1]);
-	assertInRange(98, 100, timing[2]);
-	assertInRange(98, 100, timing[3]);
-	assertInRange(128, 130, timing[4]);
+	assertInRange(4, 6, timing[0]);
+	assertInRange(47, 53, timing[1]);
+	assertInRange(97, 103, timing[2]);
+	assertInRange(97, 103, timing[3]);
+	assertInRange(127, 133, timing[4]);
 }
 
 TEST_CASE( "SchedulerThreadTest/testPeriodic", "default" )
@@ -65,8 +65,8 @@ TEST_CASE( "SchedulerThreadTest/testPeriodic", "default" )
 	assertEquals( "30 30 30", StringUtil::stlJoin(results) );
 
 	assertEquals(3, timing.size());
-	assertInRange(28, 30, timing[0]);
-	assertInRange(56, 60, timing[1]);
-	assertInRange(84, 90, timing[2]);
+	assertInRange(27, 33, timing[0]);
+	assertInRange(54, 66, timing[1]);
+	assertInRange(81, 99, timing[2]);
 }
 
