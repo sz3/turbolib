@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 set(SOURCES
 	merkle_experiment.h
 	CallHistory.h
+	FunctionChainer.h
 	Random.h
 )
 
