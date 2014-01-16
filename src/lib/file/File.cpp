@@ -3,7 +3,27 @@
 
 #include <cstdio>
 #include <fstream>
+#include <fcntl.h>
+#include <unistd.h>
 using std::string;
+
+namespace {
+	bool flush(const string& filename)
+	{
+		int fd = ::open(filename.c_str(), O_RDONLY);
+		if (fd == -1)
+			return false;
+		if (::fsync(fd) != 0)
+			return false;
+		::close(fd);	// if this fails, what to do?
+		return true;
+	}
+
+	string dirname(const string& filename)
+	{
+		return filename.substr(0, filename.find_last_of("/"));
+	}
+}
 
 bool File::save(const string& filename, const string& contents)
 {
@@ -14,8 +34,17 @@ bool File::save(const string& filename, const string& contents)
 	if (out.fail())
 		return false;
 
-	::remove(filename.c_str());
-	return ::rename(tempfile.c_str(), filename.c_str()) == 0;
+	// must flush manually - close and rename does not imply fsync
+	// it would be nice to not reopen the file for this, but
+	// ofstream gives no way to get at the file handle.
+	if (!flush(tempfile))
+		return false;
+
+	if (::rename(tempfile.c_str(), filename.c_str()) != 0)
+		return false;
+
+	// must also flush the directory, see man fsync(2)
+	return flush(dirname(filename));
 }
 
 bool File::load(const string& filename, string& contents)
