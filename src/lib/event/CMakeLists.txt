@@ -6,6 +6,7 @@ set(SOURCES
 	Event.cpp
 	Event.h
 	IExecutor.h
+	ISchedulerThread.h
 	MultiThreadedExecutor.cpp
 	MultiThreadedExecutor.h
 	SchedulerThread.cpp

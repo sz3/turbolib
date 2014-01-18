@@ -2,13 +2,14 @@
 #pragma once
 
 #include "Event.h"
+#include "ISchedulerThread.h"
 #include <functional>
 #include <chrono>
 #include <queue>
 #include <mutex>
 #include <thread>
 
-class SchedulerThread
+class SchedulerThread : public ISchedulerThread
 {
 protected:
 	struct Funct
