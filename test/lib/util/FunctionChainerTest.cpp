@@ -46,9 +46,9 @@ TEST_CASE( "FunctionChainerTest/testDefault", "[unit]" )
 	chainFun(2, "two");
 	chainFun(3, "three");
 
-	assertEquals( "one two three", StringUtil::stlJoin(strresults) );
-	assertEquals( "1 2 3", StringUtil::stlJoin(numresults) );
-	assertEquals( "1 2 3", StringUtil::stlJoin(meister._numbers) );
-	assertEquals( "one two three", StringUtil::stlJoin(meister._strings) );
+	assertEquals( "one two three", StringUtil::join(strresults) );
+	assertEquals( "1 2 3", StringUtil::join(numresults) );
+	assertEquals( "1 2 3", StringUtil::join(meister._numbers) );
+	assertEquals( "one two three", StringUtil::join(meister._strings) );
 }
 

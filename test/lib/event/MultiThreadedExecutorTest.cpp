@@ -34,8 +34,8 @@ TEST_CASE( "MultiThreadedExecutorTest/testDefault", "[unit]" )
 		std::cout << threads.queued() << std::endl;
 
 	std::sort(results.begin(), results.end());
-	assertEquals( "0 1 2 3 4 5 6 7 8 9", StringUtil::stlJoin(results) );
+	assertEquals( "0 1 2 3 4 5 6 7 8 9", StringUtil::join(results) );
 
-	std::cout << "times: " << StringUtil::stlJoin(times) << std::endl;
+	std::cout << "times: " << StringUtil::join(times) << std::endl;
 }
 

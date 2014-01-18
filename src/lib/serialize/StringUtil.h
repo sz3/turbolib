@@ -8,7 +8,7 @@
 namespace StringUtil
 {
 	template <class Iter>
-	std::string stlJoin(const Iter& start, const Iter& end, char delim=' ')
+	std::string join(const Iter& start, const Iter& end, char delim=' ')
 	{
 		std::stringstream ss;
 		Iter it = start;
@@ -20,9 +20,9 @@ namespace StringUtil
 	}
 
 	template <class Type>
-	std::string stlJoin(const Type& container, char delim=' ')
+	std::string join(const Type& container, char delim=' ')
 	{
-		return stlJoin(container.begin(), container.end(), delim);
+		return join(container.begin(), container.end(), delim);
 	}
 
 	std::vector<std::string> split(const std::string& input, char delim=' ');

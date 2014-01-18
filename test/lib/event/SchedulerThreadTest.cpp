@@ -37,7 +37,7 @@ TEST_CASE( "SchedulerThreadTest/testSchedule", "default" )
 	scheduler.schedule( [&] () { timing.push_back(time.millis()); }, 60 );
 
 	assertTrue( finished.wait(1000) );
-	assertEquals( "5 50 100 100 130", StringUtil::stlJoin(results) );
+	assertEquals( "5 50 100 100 130", StringUtil::join(results) );
 
 	assertEquals(5, timing.size());
 	assertInRange(4, 6, timing[0]);
@@ -62,7 +62,7 @@ TEST_CASE( "SchedulerThreadTest/testPeriodic", "default" )
 	scheduler.schedulePeriodic( [&] () { timing.push_back(time.millis()); }, 30 );
 
 	assertTrue( finished.wait(1000) );
-	assertEquals( "30 30 30", StringUtil::stlJoin(results) );
+	assertEquals( "30 30 30", StringUtil::join(results) );
 
 	assertEquals(3, timing.size());
 	assertInRange(27, 33, timing[0]);

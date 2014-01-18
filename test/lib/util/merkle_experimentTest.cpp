@@ -56,14 +56,14 @@ TEST_CASE( "merkle_experimentTest/testInsertRemove", "[unit]" )
 	assertEquals( "0 64 2 0 4 0 0 0 8 0 0 0 0 0 0 0"
 				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
 				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 255", StringUtil::stlJoin(merk.values()) );
+				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 255", StringUtil::join(merk.values()) );
 
 	const merkle_tree<unsigned, unsigned>* levelOneOne = merk.subtree(1, 1);
 	assertNotNull( levelOneOne );
 	assertEquals( "1 65 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
 				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
 				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0", StringUtil::stlJoin(levelOneOne->values()) );
+				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0", StringUtil::join(levelOneOne->values()) );
 
 	assertNull( merk.subtree(0) );
 	assertNull( merk.subtree(2) );
@@ -75,7 +75,7 @@ TEST_CASE( "merkle_experimentTest/testInsertRemove", "[unit]" )
 	assertEquals(  "0 1 2 0 4 0 0 0 8 0 0 0 0 0 0 0"
 				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
 				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0"
-				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 255", StringUtil::stlJoin(merk.values()) );
+				  " 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 255", StringUtil::join(merk.values()) );
 	assertNull( merk.subtree(1) );
 }
 

@@ -282,19 +282,19 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		tree.enumerate(fun, "one", "one");
-		assertEquals( "one", StringUtil::stlJoin(words) );
+		assertEquals( "one", StringUtil::join(words) );
 	}
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		tree.enumerate(fun, "o", "one");
-		assertEquals( "one", StringUtil::stlJoin(words) );
+		assertEquals( "one", StringUtil::join(words) );
 	}
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		tree.enumerate(fun, "one", "no");
-		assertEquals( "one", StringUtil::stlJoin(words) );
+		assertEquals( "one", StringUtil::join(words) );
 	}
 
 	// multiple elements
@@ -302,7 +302,7 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		tree.enumerate(fun, "one", "two");
-		assertEquals( "one two", StringUtil::stlJoin(words) );
+		assertEquals( "one two", StringUtil::join(words) );
 	}
 
 	// partial match
@@ -310,7 +310,7 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		tree.enumerate(fun, "forty", "forty-two");
-		assertEquals( "forty-seven forty-two", StringUtil::stlJoin(words) );
+		assertEquals( "forty-seven forty-two", StringUtil::join(words) );
 	}
 
 	// no elements
@@ -321,7 +321,7 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 		tree.enumerate(fun, "no", "no");
 		tree.enumerate(fun, "nope", "none");
 		tree.enumerate(fun, "none", "nope");
-		assertEquals( "", StringUtil::stlJoin(words) );
+		assertEquals( "", StringUtil::join(words) );
 	}
 
 	// inclusive
@@ -329,28 +329,28 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		tree.enumerate(fun, "forty", "two");
-		assertEquals( "forty-seven forty-two one two", StringUtil::stlJoin(words) );
+		assertEquals( "forty-seven forty-two one two", StringUtil::join(words) );
 	}
 
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		tree.enumerate(fun, "forty-two", "one");
-		assertEquals( "forty-two one", StringUtil::stlJoin(words) );
+		assertEquals( "forty-two one", StringUtil::join(words) );
 	}
 
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		tree.enumerate(fun, "forty-seven", "forty-seven");
-		assertEquals( "forty-seven", StringUtil::stlJoin(words) );
+		assertEquals( "forty-seven", StringUtil::join(words) );
 	}
 
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		tree.enumerate(fun, "forty-seven", "forty-two");
-		assertEquals( "forty-seven forty-two", StringUtil::stlJoin(words) );
+		assertEquals( "forty-seven forty-two", StringUtil::join(words) );
 	}
 }
 
@@ -386,19 +386,19 @@ TEST_CASE( "critbit_treeTest/testEnumerate.FunctionSaysStop", "[unit]" )
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return words.size() < 2; };
 		tree.enumerate(fun, "a", "z");
-		assertEquals( "forty-seven forty-two", StringUtil::stlJoin(words) );
+		assertEquals( "forty-seven forty-two", StringUtil::join(words) );
 	}
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return words.size() < 3; };
 		tree.enumerate(fun, "a", "z");
-		assertEquals( "forty-seven forty-two one", StringUtil::stlJoin(words) );
+		assertEquals( "forty-seven forty-two one", StringUtil::join(words) );
 	}
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return false; };
 		tree.enumerate(fun, "a", "z");
-		assertEquals( "forty-seven", StringUtil::stlJoin(words) );
+		assertEquals( "forty-seven", StringUtil::join(words) );
 	}
 }
 
@@ -419,7 +419,7 @@ TEST_CASE( "critbit_treeTest/testEnumerateNode", "[unit]" )
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		assertTrue( tree.enumerate(fun, top) );
-		assertEquals( "forty-seven forty-two", StringUtil::stlJoin(words) );
+		assertEquals( "forty-seven forty-two", StringUtil::join(words) );
 	}
 }
 

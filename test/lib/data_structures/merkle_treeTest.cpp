@@ -394,7 +394,7 @@ TEST_CASE( "merkle_treeTest/testEnumerate", "[unit]" )
 	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return true; };
 	tree.enumerate(fun, 1, 3);
 
-	assertEquals( "one two three", StringUtil::stlJoin(words) );
+	assertEquals( "one two three", StringUtil::join(words) );
 }
 
 TEST_CASE( "merkle_treeTest/testEnumerate.Lots", "[unit]" )
@@ -419,15 +419,15 @@ TEST_CASE( "merkle_treeTest/testEnumerate.Lots", "[unit]" )
 				  "24 280 536 792 25 281 537 793 "
 				  "26 282 538 794 27 283 539 795 "
 				  "28 284 540 796 29 285 541 797 "
-				  "30 286 542 798 31 287 543 799", StringUtil::stlJoin(words) );
+				  "30 286 542 798 31 287 543 799", StringUtil::join(words) );
 
 	words.clear();
 	tree.enumerate(fun, 1, 2);
-	assertEquals( "1 257 513 769 2 258 514 770 3 259 515 771", StringUtil::stlJoin(words) );
+	assertEquals( "1 257 513 769 2 258 514 770 3 259 515 771", StringUtil::join(words) );
 
 	words.clear();
 	tree.enumerate(fun, 52, 52);
-	assertEquals( "52", StringUtil::stlJoin(words) );
+	assertEquals( "52", StringUtil::join(words) );
 }
 
 TEST_CASE( "merkle_treeTest/testEnumerate.Stop", "[unit]" )
@@ -446,5 +446,5 @@ TEST_CASE( "merkle_treeTest/testEnumerate.Stop", "[unit]" )
 	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return words.size() < 5; };
 
 	tree.enumerate(fun, 20, 25);
-	assertEquals( "20 276 532 788 21", StringUtil::stlJoin(words) );
+	assertEquals( "20 276 532 788 21", StringUtil::join(words) );
 }
