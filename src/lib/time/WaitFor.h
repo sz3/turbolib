@@ -5,23 +5,32 @@
 #include <exception>
 #include <iostream>
 
+#define waitFor(s,msg,fun) assertMsg(WaitFor(s,fun).result(), msg)
+
 class WaitFor
 {
 public:
 	template <typename Funct>
 	WaitFor(unsigned seconds, Funct fun)
 	{
+		_result = false;
 		Timer t;
 		while (1)
 		{
-			try {
-				fun();
+			_result = fun();
+			if (_result)
 				break;
-			} catch (...) {
-				if (t.millis() >= seconds*1000)
-					std::rethrow_exception(std::current_exception());
-				CommandLine::run("sleep 5");
-			}
+			if (t.millis() >= seconds*1000)
+				break;
+			CommandLine::run("sleep 5");
 		}
 	}
+
+	bool result() const
+	{
+		return _result;
+	}
+
+protected:
+	bool _result;
 };
