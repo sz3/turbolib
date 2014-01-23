@@ -258,22 +258,25 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 	assertEquals(2, tree.insert("forty-two") );
 	assertEquals(2, tree.insert("forty-seven") );
 	assertEquals(2, tree.insert("one") );
+	assertEquals(2, tree.insert("uno") );
 
 	/*
 	 * for review:
-	 *   't' == 116 == 01110100
 	 *   'f' == 102 == 01100110
 	 *   'o' == 111 == 01101111
+	 *   'q' == 113 == 01110001
 	 *   's' == 115 == 01110011
+	 *   't' == 116 == 01110100
+	 *   'u' == 117 == 01110101
 	 *
 	 * So tree should look like this,
 	 *  where 0:16 means we branch on the 5th (10000 == 16) bit of the 1st (0th) byte:
 	 *
-	 *           0:16
-	 *         /      \
-	 *       0:8      two
-	 *      /    \
-	 *    6:4    one
+	 *            0:16
+	 *          /      \
+	 *       0:8        0:1
+	 *      /   \      /   \
+	 *    6:4   one  two   uno
 	 *   .....
 	 */
 
@@ -328,8 +331,8 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
-		tree.enumerate(fun, "forty", "two");
-		assertEquals( "forty-seven forty-two one two", StringUtil::join(words) );
+		tree.enumerate(fun, "forty", "uno");
+		assertEquals( "forty-seven forty-two one two uno", StringUtil::join(words) );
 	}
 
 	{
@@ -357,14 +360,13 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
-		tree.enumerate(fun, "fuu", "to"); // to the left of "two"
-		assertEquals( "one", StringUtil::join(words) );
+		tree.enumerate(fun, "forty-two", "to"); // to the left of "two"
+		assertEquals( "forty-two one", StringUtil::join(words) );
 	}
-
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
-		tree.enumerate(fun, "forty-two", "to"); // to the left of "two"
+		tree.enumerate(fun, "forty-two", "qno"); // to the left of "two"
 		assertEquals( "forty-two one", StringUtil::join(words) );
 	}
 
@@ -389,6 +391,13 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 		tree.enumerate(fun, "forty-too", "to"); // to the right of "forty-seven" AND to the left of "two"
 		assertEquals( "forty-two one", StringUtil::join(words) );
 	}
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		tree.enumerate(fun, "fuu", "to"); // to the right of forty-two and to the left of "two"
+		assertEquals( "one", StringUtil::join(words) );
+	}
+
 }
 
 TEST_CASE( "critbit_treeTest/testEnumerate.FunctionSaysStop", "[unit]" )
