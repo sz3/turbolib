@@ -167,22 +167,59 @@ public:
 			return;
 
 		// walk tree to first leaf in set.
-		node_ptr p(top);
-		while (p.isNode())
+		ValType* start = walkTreeForBestMember(top, firstkey, firstlen);
+
+		// "start" may not be the right starting point. Specifically, we're worried that start < first
+		ExternalType bestStart = critbit_elem_ops<ValType>::downcast(start);
+		const uint8_t* startKey = (const uint8_t*)bestStart;
+		const size_t startLen = critbit_elem_ops<ValType>::key_size(bestStart);
+
+		uint32_t newbyte;
+		uint32_t newotherbits;
+		int newdirection;
+		if (findCriticalBit(startKey, startLen, firstkey, firstlen, newbyte, newotherbits, newdirection))
 		{
-			Node* q = p.node();
-			int dir = calculateDirection(q, firstkey, firstlen);
-			p = q->child[dir];
+			// direction is inverted, but basically what we're watching out for is that first is a "right branch" that doesn't exist in the tree.
+			// that is, we need to go up one from our hypothetical branch's parent...
+			if (newdirection == 0)
+			{
+				node_ptr node(top);
+				node_ptr parent(top);
+				while (node.isNode())
+				{
+					Node* q = node.node();
+					if (q->byte > newbyte)
+						break;
+					if (q->byte == newbyte && q->otherbits > newotherbits)
+						break;
+					parent = node;
+					int dir = calculateDirection(q, firstkey, firstlen);
+					node = q->child[dir];
+				}
+				// ...and set start to the parent's right branch's leftmost child. (a mouthful...)
+				start = begin(parent.node()->child[1]);
+			}
 		}
-		enumerate(fun, top, p.leaf());
+
+		// walk tree to find last leaf in set.
+		ValType* stop = walkTreeForBestMember(top, lastkey, lastlen);
+
+		// stop isn't quite as convoluted as start, since we're basically in the right place?
+		// But we do need to figure out whether to include the stop node in our enumeration.
+		ExternalType bestStop = critbit_elem_ops<ValType>::downcast(stop);
+		const uint8_t* stopKey = (const uint8_t*)bestStop;
+		const size_t stopLen = critbit_elem_ops<ValType>::key_size(bestStop);
+
+		bool excludeStop = std::string((const char*)lastkey, lastlen) < std::string((const char*)stopKey, stopLen);
+		enumerate(fun, top, start, stop, excludeStop);
 	}
 
-	int enumerate(std::function<bool(ExternalType)> fun, node_ptr top, ValType* start, unsigned state=1) const
+	int enumerate(std::function<bool(ExternalType)> fun, node_ptr top, ValType* start, ValType* stop, bool excludeStop, unsigned state=1) const
 	{
 		enum {
 			STOP = 0,
 			SEARCHING = 1,
-			FOUND = 2
+			FOUND = 2,
 		};
 		if (top.isLeaf())
 		{
@@ -194,10 +231,15 @@ public:
 					state = FOUND;
 
 				case FOUND:
+				{
+					if (excludeStop && top.leaf() == stop)
+						return STOP;
 					if (!fun(critbit_elem_ops<ValType>::downcast(top.leaf())))
 						return STOP;
+					if (top.leaf() == stop)
+						return STOP;
 					break;
-
+				}
 				default:
 					return STOP;
 			}
@@ -206,8 +248,8 @@ public:
 		else
 		{
 			Node* node = top.node();
-			if (state = enumerate(fun, node->child[0], start, state))
-				return enumerate(fun, node->child[1], start, state);
+			if (state = enumerate(fun, node->child[0], start, stop, excludeStop, state))
+				return enumerate(fun, node->child[1], start, stop, excludeStop, state);
 			else
 				return STOP;
 		}
@@ -240,6 +282,23 @@ public:
 		{
 			Node* node = root.node();
 			root = node->child[0];
+		}
+		return root.leaf();
+	}
+
+	ValType* end() const
+	{
+		if (empty())
+			return NULL;
+		return end(_root);
+	}
+
+	ValType* end(node_ptr root) const
+	{
+		while (root.isNode())
+		{
+			Node* node = root.node();
+			root = node->child[1];
 		}
 		return root.leaf();
 	}

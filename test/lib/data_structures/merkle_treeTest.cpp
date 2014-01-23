@@ -412,22 +412,23 @@ TEST_CASE( "merkle_treeTest/testEnumerate.Lots", "[unit]" )
 	std::vector<string> words;
 	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return true; };
 
-	// currently goes and grabs the whole subtree, rather than stopping at 25... =/
-	tree.enumerate(fun, 20, 25);
+	tree.enumerate(fun, 20, 26);
 	assertEquals( "20 276 532 788 21 277 533 789 "
 				  "22 278 534 790 23 279 535 791 "
 				  "24 280 536 792 25 281 537 793 "
-				  "26 282 538 794 27 283 539 795 "
-				  "28 284 540 796 29 285 541 797 "
-				  "30 286 542 798 31 287 543 799", StringUtil::join(words) );
+				  "26", StringUtil::join(words) );
 
 	words.clear();
 	tree.enumerate(fun, 1, 2);
-	assertEquals( "1 257 513 769 2 258 514 770 3 259 515 771", StringUtil::join(words) );
+	assertEquals( "1 257 513 769 2", StringUtil::join(words) );
 
 	words.clear();
 	tree.enumerate(fun, 52, 52);
 	assertEquals( "52", StringUtil::join(words) );
+
+	words.clear();
+	tree.enumerate(fun, 100000, 100000);
+	assertEquals( "", StringUtil::join(words) );
 }
 
 TEST_CASE( "merkle_treeTest/testEnumerate.Stop", "[unit]" )

@@ -293,7 +293,7 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
-		tree.enumerate(fun, "one", "no");
+		tree.enumerate(fun, "one", "poo");
 		assertEquals( "one", StringUtil::join(words) );
 	}
 
@@ -351,6 +351,43 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
 		tree.enumerate(fun, "forty-seven", "forty-two");
 		assertEquals( "forty-seven forty-two", StringUtil::join(words) );
+	}
+
+	// no-man's land match
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		tree.enumerate(fun, "fuu", "to"); // to the left of "two"
+		assertEquals( "one", StringUtil::join(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		tree.enumerate(fun, "forty-two", "to"); // to the left of "two"
+		assertEquals( "forty-two one", StringUtil::join(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		tree.enumerate(fun, "forty-two", "tzo"); // end to the right of "two"
+		assertEquals( "forty-two one two", StringUtil::join(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		tree.enumerate(fun, "fuuuu", "two"); // to the right of "forty"
+		assertEquals( "one two", StringUtil::join(words) );
+	}
+
+	// and the tour de force...
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		tree.enumerate(fun, "forty-too", "to"); // to the right of "forty-seven" AND to the left of "two"
+		assertEquals( "forty-two one", StringUtil::join(words) );
 	}
 }
 
