@@ -360,13 +360,13 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
-		tree.enumerate(fun, "forty-two", "to"); // to the left of "two"
+		tree.enumerate(fun, "forty-two", "to"); // end to the left of "two"
 		assertEquals( "forty-two one", StringUtil::join(words) );
 	}
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
-		tree.enumerate(fun, "forty-two", "qno"); // to the left of "two"
+		tree.enumerate(fun, "forty-two", "qno"); // end to the left of "two", intentionally tricking walkTreeForBestMember() into matching "uno"
 		assertEquals( "forty-two one", StringUtil::join(words) );
 	}
 
@@ -380,7 +380,14 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 	{
 		std::vector<string> words;
 		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
-		tree.enumerate(fun, "fuuuu", "two"); // to the right of "forty"
+		tree.enumerate(fun, "forty-two", "up"); // end to the right of "uno"
+		assertEquals( "forty-two one two uno", StringUtil::join(words) );
+	}
+
+	{
+		std::vector<string> words;
+		std::function<bool(const char*)> fun = [&](const char* word){ words.push_back(string(word)); return true; };
+		tree.enumerate(fun, "fuuuu", "two"); // start to the right of "forty"
 		assertEquals( "one two", StringUtil::join(words) );
 	}
 

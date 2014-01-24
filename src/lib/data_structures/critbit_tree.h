@@ -204,14 +204,54 @@ public:
 		// walk tree to find last leaf in set.
 		ValType* stop = walkTreeForBestMember(top, lastkey, lastlen);
 
-		// stop isn't quite as convoluted as start, since we're basically in the right place?
-		// But we do need to figure out whether to include the stop node in our enumeration.
+		// finding the appropriate stop location is like start, but reversed.
 		ExternalType bestStop = critbit_elem_ops<ValType>::downcast(stop);
 		const uint8_t* stopKey = (const uint8_t*)bestStop;
-		const size_t stopLen = critbit_elem_ops<ValType>::key_size(bestStop);
+		size_t stopLen = critbit_elem_ops<ValType>::key_size(bestStop);
 
-		bool excludeStop = std::string((const char*)lastkey, lastlen) < std::string((const char*)stopKey, stopLen);
+		if (findCriticalBit(stopKey, stopLen, lastkey, lastlen, newbyte, newotherbits, newdirection))
+		{
+			// direction is inverted, but basically what we're watching out for is that last is a "left branch" that doesn't exist in the tree.
+			// that is, we need to go up one from our hypothetical branch's parent...
+			if (newdirection == 1)
+			{
+				node_ptr node(top);
+				node_ptr parent(top);
+				while (node.isNode())
+				{
+					Node* q = node.node();
+					if (q->byte > newbyte)
+						break;
+					if (q->byte == newbyte && q->otherbits > newotherbits)
+						break;
+					parent = node;
+					int dir = calculateDirection(q, lastkey, lastlen);
+					node = q->child[dir];
+				}
+				// ...and set stop to the parent's left branch's rightmost child. (again, a mouthful...)
+				stop = end(parent.node()->child[0]);
+			}
+		}
+
+		ExternalType finalStop = critbit_elem_ops<ValType>::downcast(stop);
+		stopKey = (const uint8_t*)finalStop;
+		stopLen = critbit_elem_ops<ValType>::key_size(finalStop);
+
+		bool excludeStop = (compare(stopKey, stopLen, lastkey, lastlen) > 0);
 		enumerate(fun, top, start, stop, excludeStop);
+	}
+
+	static int compare(const uint8_t* left, size_t leftLen, const uint8_t* right, size_t rightLen)
+	{
+		int res = strncmp((const char*)left, (const char*)right, std::min(leftLen, rightLen));
+		if (res != 0)
+			return res;
+		if (leftLen == rightLen)
+			return 0;
+		else if (leftLen < rightLen)
+			return -1;
+		else
+			return 1;
 	}
 
 	int enumerate(std::function<bool(ExternalType)> fun, node_ptr top, ValType* start, ValType* stop, bool excludeStop, unsigned state=1) const
