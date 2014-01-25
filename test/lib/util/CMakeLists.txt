@@ -6,7 +6,6 @@ set (SOURCES
 	test.cpp
 	CallHistoryTest.cpp
 	FunctionChainerTest.cpp
-	merkle_experimentTest.cpp
 	RandomTest.cpp
 )
 
