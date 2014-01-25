@@ -12,6 +12,7 @@ adapted from DJB's critbit tree for NULL-terminated strings
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include "util/cstrfun.h" // for "strnncmp()"
 
 // base critbit_node class.
 // also possible to inherit from this, add stuff, and pass in as template argument.
@@ -237,21 +238,8 @@ public:
 		stopKey = (const uint8_t*)finalStop;
 		stopLen = critbit_elem_ops<ValType>::key_size(finalStop);
 
-		bool excludeStop = (compare(stopKey, stopLen, lastkey, lastlen) > 0);
+		bool excludeStop = (strnncmp((const char*)stopKey, stopLen, (const char*)lastkey, lastlen) > 0);
 		enumerate(fun, top, start, stop, excludeStop);
-	}
-
-	static int compare(const uint8_t* left, size_t leftLen, const uint8_t* right, size_t rightLen)
-	{
-		int res = strncmp((const char*)left, (const char*)right, std::min(leftLen, rightLen));
-		if (res != 0)
-			return res;
-		if (leftLen == rightLen)
-			return 0;
-		else if (leftLen < rightLen)
-			return -1;
-		else
-			return 1;
 	}
 
 	int enumerate(std::function<bool(ExternalType)> fun, node_ptr top, ValType* start, ValType* stop, bool excludeStop, unsigned state=1) const
