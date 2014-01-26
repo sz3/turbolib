@@ -34,12 +34,12 @@ TEST_CASE( "LocalStreamSocketServerTest/testDefault", "default" )
 
 	{
 		string response = CommandLine::run("echo 'stfu' | nc -U /tmp/iamthebestserver");
-		REQUIRE( response == "back at you: stfu\n" );
+		assertEquals( response, "back at you: stfu\n" );
 	}
 
 	{
 		string response = CommandLine::run("echo 'again' | nc -U /tmp/iamthebestserver");
-		REQUIRE( response == "back at you: again\n" );
+		assertEquals( response, "back at you: again\n" );
 	}
 }
 

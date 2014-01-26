@@ -19,7 +19,7 @@ namespace {
 		FileByteStream stream(fd);
 		if (stream.read(buf, buflen) >= 0)
 		{
-			string message = "back at you: " + string(buf);
+			string message = "back at you: " + string(buf, buflen);
 			stream.write(message.c_str(), message.size());
 		}
 	}
@@ -32,12 +32,12 @@ TEST_CASE( "FileByteStreamTest/testWithServer", "default" )
 
 	{
 		string response = CommandLine::run("echo 'stfu' | nc -U /tmp/iamthebestserver");
-		REQUIRE( response == "back at you: stfu\n" );
+		assertEquals( response, "back at you: stfu\n" );
 	}
 
 	{
 		string response = CommandLine::run("echo 'again' | nc -U /tmp/iamthebestserver");
-		REQUIRE( response == "back at you: again\n" );
+		assertEquals( response, "back at you: again\n" );
 	}
 
 }
