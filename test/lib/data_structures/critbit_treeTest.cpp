@@ -649,3 +649,68 @@ TEST_CASE( "critbit_treeTest/testClassKeyInt_Load", "[unit]" )
 	assertEquals( 10, node->_key );
 	assertEquals( "banana", node->_payload );
 }
+
+
+namespace {
+	class KeyLongLong
+	{
+	public:
+		KeyLongLong(unsigned long long key, const string& payload = "")
+			: _key(key)
+			, _payload(payload)
+		{}
+
+		operator const uint8_t*() const
+		{
+			return (const uint8_t*)&_key;
+		}
+
+		bool operator==(const KeyInt& right) const
+		{
+			return _key == right._key;
+		}
+
+		size_t key_size() const
+		{
+			return sizeof(unsigned long long);
+		}
+
+	public:
+		unsigned long long _key;
+		string _payload;
+	};
+}
+
+TEST_CASE( "critbit_treeTest/testEnumerate.SingleElementTree", "[unit]" )
+{
+	critbit_tree<KeyLongLong> tree;
+
+	tree.insert(KeyLongLong(618012816553500498ULL, "banana"));
+
+	// these values look nonsensical, but they exploit the findCriticalBit() logic for enumerate's "start" variable.
+	// and having a leaf as the tree root node is a special case.
+
+	// banana+1 (big-endian + 1)
+	{
+		std::vector<string> words;
+		auto fun = [&](const KeyLongLong& elem){ words.push_back(elem._payload); return true; };
+		tree.enumerate(fun, KeyLongLong(690070410591428434ULL), KeyLongLong(471020348369484674ULL));
+		assertEquals( "", StringUtil::join(words) );
+	}
+
+	// start iterating with exact match
+	{
+		std::vector<string> words;
+		auto fun = [&](const KeyLongLong& elem){ words.push_back(elem._payload); return true; };
+		tree.enumerate(fun, KeyLongLong(618012816553500498ULL), KeyLongLong(471020348369484674ULL));
+		assertEquals( "banana", StringUtil::join(words) );
+	}
+
+	// everything
+	{
+		std::vector<string> words;
+		auto fun = [&](const KeyLongLong& elem){ words.push_back(elem._payload); return true; };
+		tree.enumerate(fun, KeyLongLong(0), KeyLongLong(~0ULL));
+		assertEquals( "banana", StringUtil::join(words) );
+	}
+}

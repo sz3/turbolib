@@ -397,6 +397,17 @@ TEST_CASE( "merkle_treeTest/testEnumerate", "[unit]" )
 	assertEquals( "one two three", StringUtil::join(words) );
 }
 
+TEST_CASE( "merkle_treeTest/testEnumerate.Empty", "[unit]" )
+{
+	merkle_tree<unsigned, unsigned long long, string> tree;
+
+	std::vector<string> words;
+	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return true; };
+	tree.enumerate(fun, 1, 3);
+
+	assertEquals( "", StringUtil::join(words) );
+}
+
 TEST_CASE( "merkle_treeTest/testEnumerate.Lots", "[unit]" )
 {
 	//  20 == 0001 0100 | 0000 0000 | ...

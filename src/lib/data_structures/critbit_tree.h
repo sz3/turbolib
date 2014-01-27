@@ -198,6 +198,8 @@ public:
 					node = q->child[dir];
 				}
 				// ...and set start to the parent's right branch's leftmost child. (a mouthful...)
+				if (!parent.isNode())
+					return;
 				start = begin(parent.node()->child[1]);
 			}
 		}
@@ -230,7 +232,8 @@ public:
 					node = q->child[dir];
 				}
 				// ...and set stop to the parent's left branch's rightmost child. (again, a mouthful...)
-				stop = end(parent.node()->child[0]);
+				if (parent.isNode())
+					stop = end(parent.node()->child[0]);
 			}
 		}
 

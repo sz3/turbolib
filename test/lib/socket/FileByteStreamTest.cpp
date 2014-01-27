@@ -17,10 +17,11 @@ namespace {
 		char buf[buflen];
 
 		FileByteStream stream(fd);
-		if (stream.read(buf, buflen) >= 0)
+		int bytesRead = stream.read(buf, buflen);
+		if (bytesRead >= 0)
 		{
-			string message = "back at you: " + string(buf, buflen);
-			stream.write(message.c_str(), message.size());
+			string message = "back at you: " + string(buf, bytesRead);
+			stream.write(message.data(), message.size());
 		}
 	}
 }
