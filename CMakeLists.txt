@@ -32,6 +32,8 @@ set (PROJECTS
    test/lib/udt_socket
    src/lib/util
    test/lib/util
+   src/lib/uuid
+   test/lib/uuid
 )
 
 include_directories(
