@@ -32,7 +32,7 @@ TEST_CASE( "cribit_mapTest/testIntMap", "[unit]" )
 	assertTrue(map.empty());
 }
 
-TEST_CASE( "merkle_mapTest/testClassKeyInt_Load", "[unit]" )
+TEST_CASE( "critbit_mapTest/testClassKeyInt_Load", "[unit]" )
 {
 	critbit_map<unsigned long long, string> map;
 

@@ -4,6 +4,7 @@ project(data_structures_test)
 
 set (SOURCES
 	test.cpp
+	bounded_version_vectorTest.cpp
 	critbit_mapTest.cpp
 	critbit_treeTest.cpp
 	merkle_treeTest.cpp

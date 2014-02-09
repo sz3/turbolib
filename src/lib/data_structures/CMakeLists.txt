@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
+	bounded_version_vector.h
 	critbit_map.h
 	critbit_tree.h
 	merkle_location.h
