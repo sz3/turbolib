@@ -6,7 +6,7 @@
 #include <set>
 #include <utility>
 
-template <typename KeyType>
+template <typename KeyType, unsigned _limit=10>
 class bounded_version_vector
 {
 public:
@@ -34,13 +34,10 @@ public:
 	};
 
 public:
-	bounded_version_vector(unsigned limit=10)
-		: _limit(limit)
-	{}
+	bounded_version_vector() {}
 
-	bounded_version_vector(const std::deque<clock>& clocks, unsigned limit=10)
+	bounded_version_vector(const std::deque<clock>& clocks)
 		: _clocks(clocks)
-		, _limit(limit)
 	{
 	}
 
@@ -54,6 +51,8 @@ public:
 			_clocks.push_front(clock{key, it->count+1});
 			_clocks.erase(it);
 		}
+		if (_clocks.size() > _limit)
+			_clocks.pop_back();
 	}
 
 	COMPARE compare(const bounded_version_vector& other) const
@@ -73,7 +72,33 @@ public:
 
 	void merge(const bounded_version_vector& other)
 	{
+		typename std::deque<clock>::const_iterator otherEnd = findEnd(other._clocks, _clocks.size(), _clocks.back());
+		typename std::deque<clock>::iterator prev = _clocks.begin();
+		for (typename std::deque<clock>::const_iterator it = other._clocks.begin(); it != otherEnd; ++it)
+		{
+			typename std::deque<clock>::iterator current = std::find(_clocks.begin(), _clocks.end(), *it);
+			if (current == _clocks.end())
+				_clocks.insert(prev, *it);
+			else if (current->count < it->count)
+			{
+				_clocks.erase(current);
+				_clocks.insert(prev, *it);
+			}
+			else if (current->count > it->count)
+			{
+				if (prev <= current)
+					prev = ++current;
+			}
+			else // current->count == it->count)
+				prev = ++current;
+		}
+		while (_clocks.size() > _limit)
+			_clocks.pop_back();
+	}
 
+	void clear()
+	{
+		_clocks.clear();
 	}
 
 	std::deque<clock> clocks() const
@@ -82,14 +107,32 @@ public:
 	}
 
 protected:
+	typename std::deque<clock>::const_iterator findElem(const std::deque<clock>& clocks, const clock& elem) const
+	{
+		typename std::deque<clock>::const_iterator it = std::find(clocks.begin(), clocks.end(), elem);
+		if (it != clocks.end() && it->count <= elem.count)
+			return it;
+		return clocks.end();
+	}
+
+	typename std::deque<clock>::const_iterator findEnd(const std::deque<clock>& clocks, unsigned elemPos, const clock& elem) const
+	{
+		if (elemPos >= _limit)
+			return findElem(clocks, elem);
+		return clocks.end();
+	}
+
 	unsigned compare(const std::deque<clock>& lesser, const std::deque<clock>& greater) const
 	{
 		unsigned result = EQUAL;
 
+		typename std::deque<clock>::const_iterator lesserEnd = findEnd(lesser, greater.size(), greater.back());
+		typename std::deque<clock>::const_iterator greaterEnd = findEnd(greater, lesser.size(), lesser.back());
+
 		std::set<clock> first;
-		std::copy(lesser.begin(), lesser.end(), std::inserter(first, first.begin()));
+		std::copy(lesser.begin(), lesserEnd, std::inserter(first, first.begin()));
 		std::set<clock> second;
-		std::copy(greater.begin(), greater.end(), std::inserter(second, second.begin()));
+		std::copy(greater.begin(), greaterEnd, std::inserter(second, second.begin()));
 
 		for (typename std::set<clock>::const_iterator it = first.begin(); it != first.end(); ++it)
 		{
@@ -113,5 +156,4 @@ protected:
 
 protected:
 	std::deque<clock> _clocks;
-	unsigned _limit;
 };

@@ -13,6 +13,12 @@ namespace {
 		outstream << clock.key << ":" << clock.count;
 		return outstream;
 	}
+
+	std::ostream& operator<<(std::ostream& outstream, const bounded_version_vector<string,4>::clock& clock)
+	{
+		outstream << clock.key << ":" << clock.count;
+		return outstream;
+	}
 }
 
 TEST_CASE( "bounded_version_vectorTest/testIncrement", "[unit]" )
@@ -28,6 +34,22 @@ TEST_CASE( "bounded_version_vectorTest/testIncrement", "[unit]" )
 	version.increment("oof");
 	assertEquals( "oof:1 foo:2 bar:1", StringUtil::join(version.clocks()) );
 }
+
+TEST_CASE( "bounded_version_vectorTest/testLimits", "[unit]" )
+{
+	using VectorClock = bounded_version_vector<string, 4>;
+
+	VectorClock version;
+	version.increment("get out");
+	version.increment("get out");
+	version.increment("foo");
+	version.increment("bar");
+	version.increment("oof");
+	version.increment("rab");
+
+	assertEquals( "rab:1 oof:1 bar:1 foo:1", StringUtil::join(version.clocks()) );
+}
+
 
 TEST_CASE( "bounded_version_vectorTest/testConstructors", "[unit]" )
 {
@@ -77,3 +99,141 @@ TEST_CASE( "bounded_version_vectorTest/testCompare", "[unit]" )
 	assertEquals( VectorClock::CONFLICT, alternate.compare(two) );
 	assertEquals( VectorClock::EQUAL, alternate.compare(alternate) );
 }
+
+TEST_CASE( "bounded_version_vectorTest/testCompare.Limit", "[unit]" )
+{
+	// since we keep a finite amount of clocks, there's special logic to "discard" old ones
+	//   if the conditions are right
+	// we'll get a GREATER_THAN (or LESS_THAN) where a standard comparison would return CONFLICT
+
+	using VectorClock = bounded_version_vector<string, 4>;
+
+	VectorClock old;
+	old.increment("busted");
+	old.increment("old");
+	old.increment("foo");
+	old.increment("bar");
+
+	VectorClock current;
+	current.increment("foo");
+	current.increment("bar");
+	current.increment("hotness");
+	current.increment("new");
+
+	// implication here is that we had two updates, ("hotness", then "new"),
+	// which bumped our record of "old" and "busted" out of the current version vector.
+
+	assertEquals( VectorClock::GREATER_THAN, current.compare(old) );
+	assertEquals( VectorClock::LESS_THAN, old.compare(current) );
+}
+
+TEST_CASE( "bounded_version_vectorTest/testMerge", "[unit]" )
+{
+	using VectorClock = bounded_version_vector<string>;
+
+	VectorClock version;
+
+	VectorClock one;
+	one.increment("foo");
+
+	version.merge(one);
+	assertEquals( "foo:1", StringUtil::join(version.clocks()) );
+
+	VectorClock two;
+	two.increment("foo");
+	two.increment("bar");
+
+	version.merge(two);
+	assertEquals( "bar:1 foo:1", StringUtil::join(version.clocks()) );
+
+	one.increment("foo");
+	version.merge(one);
+	assertEquals( "foo:2 bar:1", StringUtil::join(version.clocks()) );
+}
+
+TEST_CASE( "bounded_version_vectorTest/testMerge.NewConflict", "[unit]" )
+{
+	using VectorClock = bounded_version_vector<string>;
+
+	VectorClock version;
+	version.increment("foo");
+
+	VectorClock two;
+	two.increment("bar");
+
+	version.merge(two);
+	assertEquals( "bar:1 foo:1", StringUtil::join(version.clocks()) );
+
+	VectorClock three;
+	three.increment("foo");
+	three.increment("oof");
+
+	version.merge(three);
+	assertEquals( "oof:1 bar:1 foo:1", StringUtil::join(version.clocks()) );
+}
+
+TEST_CASE( "bounded_version_vectorTest/testMerge.OldConflict.CountGt", "[unit]" )
+{
+	using VectorClock = bounded_version_vector<string>;
+
+	VectorClock version;
+	version.increment("foo");
+	version.increment("bar");
+	version.increment("foo");
+
+	VectorClock three;
+	three.increment("oof");
+	three.increment("foo");
+
+	version.merge(three);
+	assertEquals( "foo:2 oof:1 bar:1", StringUtil::join(version.clocks()) );
+}
+
+TEST_CASE( "bounded_version_vectorTest/testMerge.OldConflict.CountEq", "[unit]" )
+{
+	using VectorClock = bounded_version_vector<string>;
+
+	VectorClock version;
+	version.increment("foo");
+	version.increment("bar");
+	version.increment("foo");
+
+	VectorClock three;
+	three.increment("oof");
+	three.increment("foo");
+	three.increment("foo");
+
+	version.merge(three);
+	assertEquals( "foo:2 oof:1 bar:1", StringUtil::join(version.clocks()) );
+}
+
+
+TEST_CASE( "bounded_version_vectorTest/testMerge.Limit", "[unit]" )
+{
+	using VectorClock = bounded_version_vector<string, 4>;
+
+	VectorClock version;
+	version.increment("1");
+	version.increment("2");
+	version.increment("3");
+	version.increment("4");
+
+	VectorClock other;
+	other.increment("3");
+	other.increment("4");
+	other.increment("5");
+	other.increment("6");
+
+	version.merge(other);
+	assertEquals( "6:1 5:1 4:1 3:1", StringUtil::join(version.clocks()) );
+
+	other.clear();
+	other.increment("6");
+	other.increment("3");
+	other.increment("3");
+	other.increment("7");
+	other.increment("8");
+	version.merge(other);
+	assertEquals( "8:1 7:1 3:2 6:1", StringUtil::join(version.clocks()) );
+}
+
