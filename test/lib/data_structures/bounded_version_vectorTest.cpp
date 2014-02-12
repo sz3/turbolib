@@ -162,14 +162,14 @@ TEST_CASE( "bounded_version_vectorTest/testMerge.NewConflict", "[unit]" )
 	two.increment("bar");
 
 	version.merge(two);
-	assertEquals( "bar:1 foo:1", StringUtil::join(version.clocks()) );
+	assertEquals( "foo:1 bar:1", StringUtil::join(version.clocks()) );
 
 	VectorClock three;
 	three.increment("foo");
 	three.increment("oof");
 
 	version.merge(three);
-	assertEquals( "oof:1 bar:1 foo:1", StringUtil::join(version.clocks()) );
+	assertEquals( "oof:1 foo:1 bar:1", StringUtil::join(version.clocks()) );
 }
 
 TEST_CASE( "bounded_version_vectorTest/testMerge.OldConflict.CountGt", "[unit]" )
@@ -207,7 +207,6 @@ TEST_CASE( "bounded_version_vectorTest/testMerge.OldConflict.CountEq", "[unit]" 
 	assertEquals( "foo:2 oof:1 bar:1", StringUtil::join(version.clocks()) );
 }
 
-
 TEST_CASE( "bounded_version_vectorTest/testMerge.Limit", "[unit]" )
 {
 	using VectorClock = bounded_version_vector<string, 4>;
@@ -235,5 +234,33 @@ TEST_CASE( "bounded_version_vectorTest/testMerge.Limit", "[unit]" )
 	other.increment("8");
 	version.merge(other);
 	assertEquals( "8:1 7:1 3:2 6:1", StringUtil::join(version.clocks()) );
+}
+
+TEST_CASE( "bounded_version_vectorTest/testMerge.Conflict.VerifyCompareGreater", "[unit]" )
+{
+	using VectorClock = bounded_version_vector<string, 4>;
+
+	VectorClock version;
+
+	VectorClock one;
+	one.increment("1");
+	one.increment("2");
+	one.increment("3");
+	one.increment("4");
+	version.merge(one);
+	assertEquals( "4:1 3:1 2:1 1:1", StringUtil::join(version.clocks()) );
+
+	VectorClock two;
+	two.increment("5");
+	two.increment("6");
+	two.increment("7");
+	two.increment("8");
+
+	version.merge(two);
+	// no point of reference, interlace
+	assertEquals( "4:1 8:1 3:1 7:1", StringUtil::join(version.clocks()) );
+
+	assertEquals( VectorClock::GREATER_THAN, version.compare(one) );
+	assertEquals( VectorClock::GREATER_THAN, version.compare(two) );
 }
 
