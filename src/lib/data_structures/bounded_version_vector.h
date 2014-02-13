@@ -72,7 +72,7 @@ public:
 
 	void merge(const bounded_version_vector& other)
 	{
-		unsigned initialSize = _clocks.size();
+		unsigned noMatch = true;
 		unsigned prevIndex = 0; // track the insert location based on whether we find a common pair, etc...
 		for (typename std::deque<clock>::const_iterator it = other._clocks.begin(); it != other._clocks.end(); ++it)
 		{
@@ -82,31 +82,21 @@ public:
 			else if (current->count < it->count)
 			{
 				_clocks.erase(current);
-				// TODO: how to adjust prevIndex here?
-				_clocks.insert(_clocks.begin()+prevIndex, *it);
+				_clocks.insert(_clocks.begin()+prevIndex++, *it);
 			}
 			else //if (current->count >= it->count)
 			{
 				unsigned currentIndex = (current - _clocks.begin());
+				if (noMatch)
+					noMatch = reorient(prevIndex, currentIndex); // reorient to old prevIndex
+
 				if (prevIndex <= currentIndex)
 					prevIndex = currentIndex+1;
 			}
 		}
-		if (_clocks.size() == initialSize + other._clocks.size())
-		{
-			// if no shared terms, interlace
-			//   other's list is currently at the front,
-			//   ours is at the back.
-			unsigned len = std::min(other._clocks.size(), initialSize);
-			unsigned index = 0;
-			for (unsigned i = 0; i < len; ++i)
-			{
-				typename std::deque<clock>::iterator it = _clocks.begin() + other._clocks.size() + i;
-				clock movingOnUp = *it;
-				_clocks.erase(it);
-				_clocks.insert(_clocks.begin()+(i<<1), movingOnUp);
-			}
-		}
+		if (noMatch)
+			reorient(other._clocks.size(), _clocks.size());
+
 		while (_clocks.size() > _limit)
 			_clocks.pop_back();
 	}
@@ -130,10 +120,18 @@ protected:
 		return clocks.end();
 	}
 
-	typename std::deque<clock>::const_iterator findEnd(const std::deque<clock>& clocks, unsigned elemPos, const clock& elem) const
+	typename std::deque<clock>::const_iterator findEnd(const std::deque<clock>& clocks, const std::deque<clock>& candidates) const
 	{
-		if (elemPos >= _limit)
-			return findElem(clocks, elem);
+		if (candidates.size() >= _limit)
+		{
+			typename std::deque<clock>::const_iterator next = candidates.end()-(_limit>>1);
+			for (; next != candidates.end(); ++next)
+			{
+				typename std::deque<clock>::const_iterator it = findElem(clocks, *next);
+				if (it != clocks.end())
+					return it;
+			}
+		}
 		return clocks.end();
 	}
 
@@ -141,8 +139,8 @@ protected:
 	{
 		unsigned result = EQUAL;
 
-		typename std::deque<clock>::const_iterator lesserEnd = findEnd(lesser, greater.size(), greater.back());
-		typename std::deque<clock>::const_iterator greaterEnd = findEnd(greater, lesser.size(), lesser.back());
+		typename std::deque<clock>::const_iterator lesserEnd = findEnd(lesser, greater);
+		typename std::deque<clock>::const_iterator greaterEnd = findEnd(greater, lesser);
 
 		std::set<clock> first;
 		std::copy(lesser.begin(), lesserEnd, std::inserter(first, first.begin()));
@@ -167,6 +165,23 @@ protected:
 		if (!second.empty())
 			result |= LESS_THAN;
 		return result;
+	}
+
+	// attempt to restore a fair(ish) clock order after merging a conflict.
+	bool reorient(unsigned additions, unsigned total)
+	{
+		// if no shared terms, interlace
+		//   additions list is currently at the front [0-additions),
+		//   ours is at the back. [additions-total)
+		unsigned len = std::min(additions, total-additions);
+		for (unsigned i = 0; i < len; ++i)
+		{
+			typename std::deque<clock>::iterator it = _clocks.begin() + additions + i;
+			clock movingOnUp = *it;
+			_clocks.erase(it);
+			_clocks.insert(_clocks.begin()+(i<<1), movingOnUp);
+		}
+		return false;
 	}
 
 protected:
