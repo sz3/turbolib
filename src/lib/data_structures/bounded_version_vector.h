@@ -156,9 +156,9 @@ protected:
 				continue;
 			}
 
-			if (*it < *other)
+			if (it->count < other->count)
 				result |= LESS_THAN;
-			else if (*other < *it)
+			else if (other->count < it->count)
 				result |= GREATER_THAN;
 			second.erase(other);
 		}

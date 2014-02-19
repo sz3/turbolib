@@ -100,6 +100,37 @@ TEST_CASE( "bounded_version_vectorTest/testCompare", "[unit]" )
 	assertEquals( VectorClock::EQUAL, alternate.compare(alternate) );
 }
 
+TEST_CASE( "bounded_version_vectorTest/testCompare.More", "[unit]" )
+{
+	using VectorClock = bounded_version_vector<string>;
+
+	VectorClock one;
+	one.increment("bar");
+	one.increment("foo");
+
+	VectorClock two;
+	two.increment("bar");
+	two.increment("foo");
+	two.increment("foo");
+
+	VectorClock invertTwo;
+	invertTwo.increment("bar");
+	invertTwo.increment("foo");
+	invertTwo.increment("bar");
+
+	assertEquals( VectorClock::EQUAL, one.compare(one) );
+	assertEquals( VectorClock::LESS_THAN, one.compare(two) );
+	assertEquals( VectorClock::LESS_THAN, one.compare(invertTwo) );
+
+	assertEquals( VectorClock::GREATER_THAN, two.compare(one) );
+	assertEquals( VectorClock::EQUAL, two.compare(two) );
+	assertEquals( VectorClock::CONFLICT, two.compare(invertTwo) );
+
+	assertEquals( VectorClock::GREATER_THAN, invertTwo.compare(one) );
+	assertEquals( VectorClock::CONFLICT, invertTwo.compare(two) );
+	assertEquals( VectorClock::EQUAL, invertTwo.compare(invertTwo) );
+}
+
 TEST_CASE( "bounded_version_vectorTest/testCompare.Limit", "[unit]" )
 {
 	// since we keep a finite amount of clocks, there's special logic to "discard" old ones
