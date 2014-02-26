@@ -35,6 +35,21 @@ TEST_CASE( "bounded_version_vectorTest/testIncrement", "[unit]" )
 	assertEquals( "oof:1 foo:2 bar:1", StringUtil::join(version.clocks()) );
 }
 
+TEST_CASE( "bounded_version_vectorTest/testEmpty", "[unit]" )
+{
+	bounded_version_vector<string> version;
+	assertTrue( version.empty() );
+
+	version.increment("foo");
+	assertFalse( version.empty() );
+
+	version.increment("bar");
+	assertFalse( version.empty() );
+
+	version.clear();
+	assertTrue( version.empty() );
+}
+
 TEST_CASE( "bounded_version_vectorTest/testLimits", "[unit]" )
 {
 	using VectorClock = bounded_version_vector<string, 4>;
@@ -49,7 +64,6 @@ TEST_CASE( "bounded_version_vectorTest/testLimits", "[unit]" )
 
 	assertEquals( "rab:1 oof:1 bar:1 foo:1", StringUtil::join(version.clocks()) );
 }
-
 
 TEST_CASE( "bounded_version_vectorTest/testConstructors", "[unit]" )
 {

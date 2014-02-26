@@ -106,6 +106,11 @@ public:
 		_clocks.clear();
 	}
 
+	bool empty() const
+	{
+		return _clocks.empty();
+	}
+
 	std::deque<clock> clocks() const
 	{
 		return _clocks;
