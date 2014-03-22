@@ -40,9 +40,9 @@ struct merkle_point
 
 	bool operator==(const merkle_point<KeyType,HashType>& other) const
 	{
-		return location.key == other.location.key
-				&& location.keybits == other.location.keybits
-				&& hash == other.hash;
+		return hash == other.hash
+				&& location.key == other.location.key
+				&& location.keybits == other.location.keybits;
 	}
 };
 

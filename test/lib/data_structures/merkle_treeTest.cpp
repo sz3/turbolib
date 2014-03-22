@@ -211,7 +211,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	{
 		// bad hash at root
 		results = tree.diff( merkle_location<unsigned>(0, 0), 0xF00 );
-		assertEquals( 2, results.size() );
+		assertEquals( 3, results.size() );
 
 		// left child -- location of next lookup
 		assertEquals( (32810 xor 42 xor 2048), results[0].hash );
@@ -222,6 +222,11 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		assertEquals( 128, results[1].hash );
 		assertEquals( 128, results[1].location.key );
 		assertEquals( 32, results[1].location.keybits );
+
+		// passed in location w/ disagreement hash (root, in this case)
+		assertEquals( (32810 xor 42 xor 2048 xor 128), results[2].hash );
+		assertEquals( 0, results[2].location.key );
+		assertEquals( 0, results[2].location.keybits );
 	}
 
 	{
@@ -240,7 +245,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	{
 		// bad hash at branch bit -> we have diffs
 		results = tree.diff( merkle_location<unsigned>(2048, 2), 0xF00 );
-		assertEquals( 2, results.size() );
+		assertEquals( 3, results.size() );
 
 		// left child
 		assertEquals( 2048, results[0].hash );
@@ -251,6 +256,11 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		assertEquals( (42 xor 32810), results[1].hash );
 		assertEquals( 42, results[1].location.key );
 		assertEquals( 8, results[1].location.keybits );
+
+		// passed in location w/ disagreement hash
+		assertEquals( (32810 xor 42 xor 2048), results[2].hash );
+		assertEquals( 2048, results[2].location.key );
+		assertEquals( 2, results[2].location.keybits );
 	}
 
 	results = tree.diff( merkle_location<unsigned>(2048, 3), 2048 );
@@ -272,7 +282,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	{
 		// bad hash, exact bit match
 		results = tree.diff( merkle_location<unsigned>(42, 8), 0xF00 );
-		assertEquals( 2, results.size() );
+		assertEquals( 3, results.size() );
 
 		// left
 		assertEquals( 42, results[0].hash );
@@ -283,6 +293,11 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		assertEquals( 32810, results[1].hash );
 		assertEquals( 32810, results[1].location.key );
 		assertEquals( 32, results[1].location.keybits );
+
+		// passed in location w/ disagreement hash
+		assertEquals( (42 xor 32810), results[2].hash );
+		assertEquals( 42, results[2].location.key );
+		assertEquals( 8, results[2].location.keybits );
 	}
 
 	{
@@ -343,19 +358,19 @@ TEST_CASE( "merkle_treeTest/testDiffTraverse", "[unit]" )
 	std::deque<mpoint> results = tree.diff( top.location, top.hash );
 	assertEquals( 0, results.size() );
 	results = tree.diff( top.location, 0xF00 );
-	assertEquals( 2, results.size() );
+	assertEquals( 3, results.size() );
 
 	mpoint leftAtBit2 = results[0];
 	results = tree.diff( leftAtBit2.location, leftAtBit2.hash );
 	assertEquals( 0, results.size() );
 	results = tree.diff( leftAtBit2.location, 0xF00 );
-	assertEquals( 2, results.size() );
+	assertEquals( 3, results.size() );
 
 	mpoint rightAtBit3 = results[1];
 	results = tree.diff( rightAtBit3.location, rightAtBit3.hash );
 	assertEquals( 0, results.size() );
 	results = tree.diff( rightAtBit3.location, 0xF00 );
-	assertEquals( 2, results.size() );
+	assertEquals( 3, results.size() );
 
 	mpoint leaf42 = results[0];
 	assertEquals( 42, leaf42.hash );

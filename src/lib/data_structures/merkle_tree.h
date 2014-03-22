@@ -170,8 +170,8 @@ public:
 		}
 
 		HashType myhash;
-		typename tree_type::node_ptr node_ptr = nearest_subtree(location);
-		if (node_ptr.isNull())
+		typename tree_type::node_ptr nodep = nearest_subtree(location);
+		if (nodep.isNull())
 		{
 			merkle_point<KeyType,HashType> nothing;
 			nothing.location = location;
@@ -180,22 +180,22 @@ public:
 			return diffs;
 		}
 
-		getHash(node_ptr, myhash);
+		getHash(nodep, myhash);
 		if (hash == myhash)
 			return diffs; // no differences
 
 		// case 3: leaf
-		if (node_ptr.isLeaf())
+		if (nodep.isLeaf())
 		{
 			merkle_point<KeyType,HashType> current;
-			current.location = merkle_location<KeyType>(node_ptr.leaf()->first);
+			current.location = merkle_location<KeyType>(nodep.leaf()->first);
 			current.hash = myhash;
 			diffs.push_back(current);
 			return diffs;
 		}
 
-		pair* leftLeaf = _tree.begin(node_ptr);
-		merkle_node<HashType>* branchNode = node_ptr.node();
+		pair* leftLeaf = _tree.begin(nodep);
+		merkle_node<HashType>* branchNode = nodep.node();
 		unsigned branchKeybits = keybits(branchNode->byte, branchNode->otherbits xor 0xFF)-1;
 
 		// case 4: branch, but the location parameter seemed to expect a branch sooner
@@ -224,6 +224,13 @@ public:
 			pair* rightLeaf = _tree.begin(right);
 			merkle_point<KeyType, HashType> diff = getPoint(rightLeaf->first, right);
 			diffs.push_back(diff);
+		}
+		// and passed in loc with disagreement hash as 3rd element
+		{
+			merkle_point<KeyType,HashType> current;
+			current.location = location;
+			current.hash = myhash;
+			diffs.push_back(current);
 		}
 
 		return diffs;
