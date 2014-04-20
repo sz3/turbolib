@@ -3,6 +3,9 @@ cmake_minimum_required(VERSION 2.6)
 project ( corelib )
 enable_testing()
 
+set(BUILD_UUID "TRUE" CACHE BOOL "build uuid lib (uses boost)")
+set(EXTRA_INCLUDE_DIRS "" CACHE STRING "any extra directories you want on the include path (ex: wacky library locations)")
+
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2 -fPIC")
@@ -32,12 +35,19 @@ set (PROJECTS
    test/lib/udt_socket
    src/lib/util
    test/lib/util
-   src/lib/uuid
-   test/lib/uuid
 )
+
+if (BUILD_UUID)
+   set (PROJECTS
+      ${PROJECTS}
+      src/lib/uuid
+      test/lib/uuid
+   )
+endif()
 
 include_directories(
 	${corelib_SOURCE_DIR}/src/lib
+	${EXTRA_INCLUDE_DIRS}
 )
 
 foreach(proj ${PROJECTS})
