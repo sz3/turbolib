@@ -16,6 +16,7 @@ public:
 	~HttpParser();
 
 	bool parseBuffer(const std::string& buffer);
+	bool parseBuffer(const char* buffer, unsigned size);
 
 	void setOnMessageBegin(callback fun);
 	void setOnMessageComplete(callback fun);

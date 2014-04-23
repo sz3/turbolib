@@ -8,6 +8,7 @@ class HttpParser::Impl
 public:
 	Impl()
 		: _parser(new http_parser)
+		, _settings{0}
 	{
 		http_parser_init(_parser.get(), HTTP_REQUEST);
 	}
@@ -86,6 +87,11 @@ HttpParser::~HttpParser()
 bool HttpParser::parseBuffer(const std::string& buffer)
 {
 	_pimpl->parseBuffer(buffer.data(), buffer.size());
+}
+
+bool HttpParser::parseBuffer(const char* buffer, unsigned size)
+{
+	_pimpl->parseBuffer(buffer, size);
 }
 
 void HttpParser::setOnMessageBegin(callback fun)

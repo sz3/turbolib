@@ -6,26 +6,82 @@
 #include <iostream>
 using std::string;
 
-TEST_CASE( "HttpParserTest/testSimple", "[unit]" )
+TEST_CASE( "HttpParserTest/testParseRequest", "[unit]" )
 {
 	CallHistory history;
 	HttpParser parser;
 
-	auto mbegin = [&] () {
+	parser.setOnMessageBegin( [&] () {
 		history.call("begin");
 		return 0;
-	};
-	parser.setOnMessageBegin(mbegin);
-
-	auto onurl = [&] (const char* buff, size_t len) {
-		history.call("onUrl", string(buff,len), len );
+	} );
+	parser.setOnMessageComplete( [&] () {
+		history.call("complete");
 		return 0;
-	};
-	parser.setOnUrl(onurl);
+	} );
 
-	parser.parseBuffer("GET /index.html HTTP/1.1\n");
-	parser.parseBuffer("host: gotham.com\n");
-	parser.parseBuffer("user-agent: batman\n\n");
+	parser.setOnUrl( [&] (const char* buff, size_t len) {
+		history.call("onUrl", string(buff,len));
+		return 0;
+	} );
 
-	assertEquals("begin()|onUrl(/index.html,11)", history.calls());
+	parser.setOnHeaderField( [&] (const char* buff, size_t len) {
+		history.call("onHeaderField", string(buff,len));
+		return 0;
+	} );
+	parser.setOnHeaderValue( [&] (const char* buff, size_t len) {
+		history.call("onHeaderValue", string(buff,len));
+		return 0;
+	} );
+	parser.setOnHeadersComplete( [&] () {
+		history.call("onHeadersComplete");
+		return 0;
+	} );
+
+	parser.setOnStatus( [&] (const char* buff, size_t len) {
+		history.call("onStatus", string(buff,len));
+		return 0;
+	} );
+	parser.setOnBody( [&] (const char* buff, size_t len) {
+		history.call("onBody", string(buff,len));
+		return 0;
+	} );
+
+	parser.parseBuffer("POST /index.html HTTP/1.1\r\n");
+	parser.parseBuffer("host: gotham.com\r\n");
+	parser.parseBuffer("content-length: 10\r\n\r\n");
+	parser.parseBuffer("0123456789");
+
+	assertEquals("begin()|onUrl(/index.html)"
+				 "|onHeaderField(host)|onHeaderValue(gotham.com)"
+				 "|onHeaderField(content-length)|onHeaderValue(10)"
+				 "|onHeadersComplete()"
+				 "|onBody(0123456789)"
+				 "|complete()", history.calls());
+}
+
+TEST_CASE( "HttpParserTest/testParseRequest.Chunked", "[unit]" )
+{
+	CallHistory history;
+	HttpParser parser;
+
+	parser.setOnUrl( [&] (const char* buff, size_t len) {
+		history.call("onUrl", string(buff,len));
+		return 0;
+	} );
+
+	parser.setOnBody( [&] (const char* buff, size_t len) {
+		history.call("onBody", string(buff,len));
+		return 0;
+	} );
+
+	parser.parseBuffer("POST /index.html HTTP/1.1\r\n");
+	parser.parseBuffer("transfer-encoding: chunked\r\n\r\n");
+	parser.parseBuffer("4\r\n");
+	parser.parseBuffer("0123\r\n");
+	parser.parseBuffer("6\r\n");
+	parser.parseBuffer("456789\r\n");
+	parser.parseBuffer("0\r\n\r\n");
+
+	assertEquals("onUrl(/index.html)|onBody(0123)|onBody(456789)", history.calls());
 }
