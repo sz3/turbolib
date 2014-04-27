@@ -18,7 +18,7 @@ namespace {
 	}
 }
 
-TEST_CASE( "StringUtilTest/testStlJoinPrimitive", "description" )
+TEST_CASE( "StringUtilTest/testJoinPrimitive", "description" )
 {
 	std::vector<int> numbers;
 	for (int i = 0; i < 10; ++i)
@@ -28,7 +28,7 @@ TEST_CASE( "StringUtilTest/testStlJoinPrimitive", "description" )
 	assertEquals( "0 1 2 3 4 5 6 7 8 9", toStr );
 }
 
-TEST_CASE( "StringUtilTest/testStlJoin", "description" )
+TEST_CASE( "StringUtilTest/testJoin", "description" )
 {
 	std::deque<string> words = {"go", "pack", "go"};
 
@@ -36,7 +36,7 @@ TEST_CASE( "StringUtilTest/testStlJoin", "description" )
 	assertEquals( "go pack go", toStr );
 }
 
-TEST_CASE( "StringUtilTest/testStlJoinCustomDelimiter", "description" )
+TEST_CASE( "StringUtilTest/testJoinCustomDelimiter", "description" )
 {
 	std::set<string> words = {"Brady", "Manning"};
 
@@ -44,7 +44,7 @@ TEST_CASE( "StringUtilTest/testStlJoinCustomDelimiter", "description" )
 	assertEquals( "Brady<Manning", toStr );
 }
 
-TEST_CASE( "StringUtilTest/testStlJoinMap", "description" )
+TEST_CASE( "StringUtilTest/testJoinMap", "description" )
 {
 	map<int,int> grid;
 	for (int i = 0; i < 5; ++i)
@@ -52,5 +52,37 @@ TEST_CASE( "StringUtilTest/testStlJoinMap", "description" )
 
 	string toStr = StringUtil::join(grid);
 	assertEquals( "0=0 1=10 2=20 3=30 4=40", toStr );
+}
+
+TEST_CASE( "StringUtilTest/testSplit", "[unit]" )
+{
+	std::vector<string> split = StringUtil::split("0=0|1=10|2=20|3=30|4=40", '|');
+	assertEquals( "0=0 1=10 2=20 3=30 4=40", StringUtil::join(split) );
+	assertEquals( 5, split.size() );
+}
+
+TEST_CASE( "StringUtilTest/testSplitOne", "[unit]" )
+{
+	std::vector<string> split = StringUtil::split("hello", ' ');
+	assertEquals( "hello", StringUtil::join(split) );
+	assertEquals( 1, split.size() );
+}
+
+TEST_CASE( "StringUtilTest/testSplitNone", "[unit]" )
+{
+	std::vector<string> split = StringUtil::split("", ' ');
+	assertEquals( 0, split.size() );
+}
+
+TEST_CASE( "StringUtilTest/testSplitEmpty", "[unit]" )
+{
+	string toSplit = " blah  blah blah ";
+	std::vector<string> keepEmpty = StringUtil::split(toSplit, ' ');
+	assertEquals( toSplit, StringUtil::join(keepEmpty) );
+	assertEquals( 6, keepEmpty.size() );
+
+	std::vector<string> tossEmpty = StringUtil::split(toSplit, ' ', true);
+	assertEquals( "blah blah blah", StringUtil::join(tossEmpty) );
+	assertEquals( 3, tossEmpty.size() );
 }
 

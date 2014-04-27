@@ -5,6 +5,7 @@ project(http_test)
 set (SOURCES
 	test.cpp
 	HttpParserTest.cpp
+	UrlTest.cpp
 )
 
 include_directories(
@@ -22,5 +23,6 @@ add_test(http_test http_test)
 
 target_link_libraries(http_test
 	http
+	serialize
 )
 

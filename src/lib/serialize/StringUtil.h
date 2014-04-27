@@ -25,7 +25,7 @@ namespace StringUtil
 		return join(container.begin(), container.end(), delim);
 	}
 
-	std::vector<std::string> split(const std::string& input, char delim=' ');
+	std::vector<std::string> split(const std::string& input, char delim=' ', bool ignoreEmpty=false);
 
 	template <typename Type>
 	std::string str(const Type& val)
