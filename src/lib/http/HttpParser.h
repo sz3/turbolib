@@ -9,8 +9,22 @@
 class HttpParser
 {
 public:
+	class Status
+	{
+	public:
+		unsigned method() const;
+		unsigned code() const;
+
+	public:
+		Status(void*);
+
+	private:
+		void* _parser;
+	};
+
 	using callback = std::function<int()>;
 	using dataCallback = std::function<int(const char*, size_t)>;
+	using infoCallback = std::function<int(Status)>;
 public:
 	HttpParser();
 	~HttpParser();
@@ -24,7 +38,7 @@ public:
 	void setOnUrl(dataCallback fun);
 	void setOnHeaderField(dataCallback fun);
 	void setOnHeaderValue(dataCallback fun);
-	void setOnHeadersComplete(callback fun);
+	void setOnHeadersComplete(infoCallback fun);
 	void setOnStatus(dataCallback fun);
 	void setOnBody(dataCallback fun);
 

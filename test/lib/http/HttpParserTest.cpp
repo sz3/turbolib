@@ -33,8 +33,8 @@ TEST_CASE( "HttpParserTest/testParseRequest", "[unit]" )
 		history.call("onHeaderValue", string(buff,len));
 		return 0;
 	} );
-	parser.setOnHeadersComplete( [&] () {
-		history.call("onHeadersComplete");
+	parser.setOnHeadersComplete( [&] (HttpParser::Status status) {
+		history.call("onHeadersComplete", status.method());
 		return 0;
 	} );
 
@@ -55,7 +55,7 @@ TEST_CASE( "HttpParserTest/testParseRequest", "[unit]" )
 	assertEquals("begin()|onUrl(/index.html)"
 				 "|onHeaderField(host)|onHeaderValue(gotham.com)"
 				 "|onHeaderField(content-length)|onHeaderValue(10)"
-				 "|onHeadersComplete()"
+				 "|onHeadersComplete(3)"
 				 "|onBody(0123456789)"
 				 "|complete()", history.calls());
 }
@@ -84,4 +84,29 @@ TEST_CASE( "HttpParserTest/testParseRequest.Chunked", "[unit]" )
 	parser.parseBuffer("0\r\n\r\n");
 
 	assertEquals("onUrl(/index.html)|onBody(0123)|onBody(456789)", history.calls());
+}
+
+TEST_CASE( "HttpParserTest/testParseRequest.ResumeUrl", "[unit]" )
+{
+	CallHistory history;
+	HttpParser parser;
+
+	parser.setOnUrl( [&] (const char* buff, size_t len) {
+		history.call("onUrl", string(buff,len));
+		return 0;
+	} );
+	parser.setOnHeadersComplete( [&] (HttpParser::Status status) {
+		history.call("onHeadersComplete", status.method());
+		return 0;
+	} );
+	parser.setOnBody( [&] (const char* buff, size_t len) {
+		history.call("onBody", string(buff,len));
+		return 0;
+	} );
+
+	parser.parseBuffer("GET /whoa/this/is/really/a/very");
+	parser.parseBuffer("long/url/index.html HTTP/1.1\r\n");
+	parser.parseBuffer("\r\n");
+
+	assertEquals("onUrl(/whoa/this/is/really/a/very)|onUrl(long/url/index.html)|onHeadersComplete(1)", history.calls());
 }

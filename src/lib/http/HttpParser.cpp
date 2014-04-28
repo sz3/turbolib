@@ -3,6 +3,21 @@
 #include "http_parser/http_parser.h"
 #include <memory>
 
+HttpParser::Status::Status(void* parser)
+	: _parser(parser)
+{
+}
+
+unsigned HttpParser::Status::method() const
+{
+	return static_cast<http_parser*>(_parser)->method;
+}
+
+unsigned HttpParser::Status::code() const
+{
+	return static_cast<http_parser*>(_parser)->status_code;
+}
+
 class HttpParser::Impl
 {
 public:
@@ -51,10 +66,10 @@ public:
 		_settings.on_header_value = [](http_parser*, const char* buff, size_t len){ return wrapper(buff, len); };
 	}
 
-	void setOnHeadersComplete(const callback& fun)
+	void setOnHeadersComplete(const infoCallback& fun)
 	{
 		static auto wrapper = fun;
-		_settings.on_headers_complete = [](http_parser*){ return wrapper(); };
+		_settings.on_headers_complete = [](http_parser* parser){ return wrapper(HttpParser::Status(parser)); };
 	}
 
 	void setOnStatus(const dataCallback& fun)
@@ -86,12 +101,12 @@ HttpParser::~HttpParser()
 
 bool HttpParser::parseBuffer(const std::string& buffer)
 {
-	_pimpl->parseBuffer(buffer.data(), buffer.size());
+	return _pimpl->parseBuffer(buffer.data(), buffer.size());
 }
 
 bool HttpParser::parseBuffer(const char* buffer, unsigned size)
 {
-	_pimpl->parseBuffer(buffer, size);
+	return _pimpl->parseBuffer(buffer, size);
 }
 
 void HttpParser::setOnMessageBegin(callback fun)
@@ -119,7 +134,7 @@ void HttpParser::setOnHeaderValue(dataCallback fun)
 	_pimpl->setOnHeaderValue(fun);
 }
 
-void HttpParser::setOnHeadersComplete(callback fun)
+void HttpParser::setOnHeadersComplete(infoCallback fun)
 {
 	_pimpl->setOnHeadersComplete(fun);
 }
