@@ -36,9 +36,9 @@ std::vector<std::string> Url::components() const
 std::string Url::queryString() const
 {
 	size_t pos = _url.find('?');
-	if (pos == string::npos)
+	if (pos >= _url.size()-1)
 		return "";
-	return _url.substr(pos);
+	return _url.substr(pos+1);
 }
 
 std::map<std::string,std::string> Url::params() const
@@ -49,10 +49,10 @@ std::map<std::string,std::string> Url::params() const
 	{
 		const string& token = *it;
 		size_t equalPos = token.find('=');
-		if (equalPos == string::npos)
+		if (equalPos >= token.size()-1)
 			params[token] = "";
 		else
-			params[token.substr(0,equalPos)] = token.substr(equalPos);
+			params[token.substr(0,equalPos)] = token.substr(equalPos+1);
 	}
 	return params;
 }
