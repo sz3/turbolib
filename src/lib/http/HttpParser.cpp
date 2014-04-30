@@ -38,49 +38,57 @@ public:
 public:
 	void setOnMessageBegin(const callback& fun)
 	{
-		static auto wrapper = fun;
+		static thread_local callback wrapper;
+		wrapper = fun;
 		_settings.on_message_begin = [](http_parser*){ return wrapper(); };
 	}
 
 	void setOnMessageComplete(const callback& fun)
 	{
-		static auto wrapper = fun;
+		static thread_local callback wrapper;
+		wrapper = fun;
 		_settings.on_message_complete = [](http_parser*){ return wrapper(); };
 	}
 
 	void setOnUrl(const dataCallback& fun)
 	{
-		static auto wrapper = fun;
+		static thread_local dataCallback wrapper;
+		wrapper = fun;
 		_settings.on_url = [](http_parser*, const char* buff, size_t len){ return wrapper(buff, len); };
 	}
 
 	void setOnHeaderField(const dataCallback& fun)
 	{
-		static auto wrapper = fun;
+		static thread_local dataCallback wrapper;
+		wrapper = fun;
 		_settings.on_header_field = [](http_parser*, const char* buff, size_t len){ return wrapper(buff, len); };
 	}
 
 	void setOnHeaderValue(const dataCallback& fun)
 	{
-		static auto wrapper = fun;
+		static thread_local dataCallback wrapper;
+		wrapper = fun;
 		_settings.on_header_value = [](http_parser*, const char* buff, size_t len){ return wrapper(buff, len); };
 	}
 
 	void setOnHeadersComplete(const infoCallback& fun)
 	{
-		static auto wrapper = fun;
+		static thread_local infoCallback wrapper;
+		wrapper = fun;
 		_settings.on_headers_complete = [](http_parser* parser){ return wrapper(HttpParser::Status(parser)); };
 	}
 
 	void setOnStatus(const dataCallback& fun)
 	{
-		static auto wrapper = fun;
+		static thread_local dataCallback wrapper;
+		wrapper = fun;
 		_settings.on_status = [](http_parser*, const char* buff, size_t len){ return wrapper(buff, len); };
 	}
 
 	void setOnBody(const dataCallback& fun)
 	{
-		static auto wrapper = fun;
+		static thread_local dataCallback wrapper;
+		wrapper = fun;
 		_settings.on_body = [](http_parser*, const char* buff, size_t len){ return wrapper(buff, len); };
 	}
 
