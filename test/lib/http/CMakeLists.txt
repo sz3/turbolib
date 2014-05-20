@@ -4,7 +4,10 @@ project(http_test)
 
 set (SOURCES
 	test.cpp
+	HttpByteStreamTest.cpp
 	HttpParserTest.cpp
+	HttpResponseTest.cpp
+	StatusCodeTest.cpp
 	UrlTest.cpp
 )
 
@@ -24,5 +27,6 @@ add_test(http_test http_test)
 target_link_libraries(http_test
 	http
 	serialize
+	socket
 )
 

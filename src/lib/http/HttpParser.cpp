@@ -25,7 +25,7 @@ public:
 		: _parser(new http_parser)
 		, _settings{0}
 	{
-		http_parser_init(_parser.get(), HTTP_REQUEST);
+		http_parser_init(_parser.get(), HTTP_BOTH);
 	}
 
 	bool parseBuffer(const char* buffer, unsigned size)

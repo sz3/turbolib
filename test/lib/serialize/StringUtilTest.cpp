@@ -86,3 +86,11 @@ TEST_CASE( "StringUtilTest/testSplitEmpty", "[unit]" )
 	assertEquals( 3, tossEmpty.size() );
 }
 
+TEST_CASE( "StringUtilTest/testHexStr", "[unit]" )
+{
+	assertEquals( "5", StringUtil::hexStr(5) );
+	assertEquals( "F", StringUtil::hexStr(15) );
+	assertEquals( "F00", StringUtil::hexStr(0xF00) );
+	assertEquals( "1234567812345678", StringUtil::hexStr(0x1234567812345678ULL) );
+}
+

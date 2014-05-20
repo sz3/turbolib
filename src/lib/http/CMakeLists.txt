@@ -1,8 +1,14 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
+	IHttpByteStream.h
+	HttpByteStream.cpp
+	HttpByteStream.h
 	HttpParser.cpp
 	HttpParser.h
+	HttpResponse.cpp
+	HttpResponse.h
+	StatusCode.h
 	Url.cpp
 	Url.h
 

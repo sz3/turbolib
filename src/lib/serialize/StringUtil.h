@@ -34,4 +34,13 @@ namespace StringUtil
 		ss << val;
 		return ss.str();
 	}
+
+	template <typename Integer>
+	std::string hexStr(const Integer& number)
+	{
+		std::stringstream ss;
+		ss << std::hex << number;
+		return ss.str();
+	}
+
 }
