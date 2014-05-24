@@ -51,8 +51,8 @@ public:
 
 protected:
 	const Timer* _timer;
-	std::thread  _thread;
 	std::stringstream  _results;
+	std::thread  _thread;
 };
 
 TEST_CASE( "EventTest/testDefault", "default" )

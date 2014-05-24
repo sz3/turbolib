@@ -89,8 +89,8 @@ TEST_CASE( "StringUtilTest/testSplitEmpty", "[unit]" )
 TEST_CASE( "StringUtilTest/testHexStr", "[unit]" )
 {
 	assertEquals( "5", StringUtil::hexStr(5) );
-	assertEquals( "F", StringUtil::hexStr(15) );
-	assertEquals( "F00", StringUtil::hexStr(0xF00) );
+	assertEquals( "f", StringUtil::hexStr(15) );
+	assertEquals( "f00", StringUtil::hexStr(0xF00) );
 	assertEquals( "1234567812345678", StringUtil::hexStr(0x1234567812345678ULL) );
 }
 

@@ -14,8 +14,13 @@ HttpResponse::HttpResponse()
 
 HttpResponse& HttpResponse::parse(const std::string& msg)
 {
+	return parse(msg.data(), msg.size());
+}
+
+HttpResponse& HttpResponse::parse(const char* msg, unsigned length)
+{
 	// TODO: do something with errors.
-	_parser.parseBuffer(msg.data(), msg.size());
+	_parser.parseBuffer(msg, length);
 	return *this;
 }
 

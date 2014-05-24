@@ -11,6 +11,7 @@ public:
 	HttpResponse();
 
 	HttpResponse& parse(const std::string& msg);
+	HttpResponse& parse(const char* msg, unsigned length);
 
 	StatusCode status() const;
 	std::string body() const;
