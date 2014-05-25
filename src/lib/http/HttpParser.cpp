@@ -31,7 +31,15 @@ public:
 	bool parseBuffer(const char* buffer, unsigned size)
 	{
 		int parsedSize = http_parser_execute(_parser.get(), &_settings, buffer, size);
-		return parsedSize == size;
+		bool res = parsedSize == size;
+		if (!res)
+			_lastError = http_errno_description(HTTP_PARSER_ERRNO(_parser.get()));
+		return res;
+	}
+
+	std::string lastError() const
+	{
+		return _lastError;
 	}
 
 //callbacks
@@ -95,6 +103,7 @@ public:
 protected:
 	std::unique_ptr<http_parser> _parser;
 	http_parser_settings _settings;
+	std::string _lastError;
 };
 
 HttpParser::HttpParser()
@@ -155,4 +164,9 @@ void HttpParser::setOnStatus(dataCallback fun)
 void HttpParser::setOnBody(dataCallback fun)
 {
 	_pimpl->setOnBody(fun);
+}
+
+std::string HttpParser::lastError() const
+{
+	return _pimpl->lastError();
 }

@@ -111,6 +111,38 @@ TEST_CASE( "HttpParserTest/testParseRequest.ResumeUrl", "[unit]" )
 	assertEquals("onUrl(/whoa/this/is/really/a/very)|onUrl(long/url/index.html)|onHeadersComplete(1)", history.calls());
 }
 
+TEST_CASE( "HttpParserTest/testParseRequest.Bad", "[unit]" )
+{
+	CallHistory history;
+	HttpParser parser;
+
+	parser.setOnMessageBegin( [&] () {
+		history.call("begin");
+		return 0;
+	} );
+	parser.setOnMessageComplete( [&] () {
+		history.call("complete");
+		return 0;
+	} );
+
+	parser.setOnUrl( [&] (const char* buff, size_t len) {
+		history.call("onUrl", string(buff,len));
+		return 0;
+	} );
+	parser.setOnHeadersComplete( [&] (HttpParser::Status status) {
+		history.call("onHeadersComplete", status.method());
+		return 0;
+	} );
+	parser.setOnBody( [&] (const char* buff, size_t len) {
+		history.call("onBody", string(buff,len));
+		return 0;
+	} );
+
+	assertFalse( parser.parseBuffer("PUT HTTP/Foo.Bar 200 OK\r\n\r\n") );
+	assertEquals("invalid URL", parser.lastError());
+	assertEquals("begin()", history.calls());
+}
+
 TEST_CASE( "HttpParserTest/testParseResponse", "[unit]" )
 {
 	CallHistory history;
@@ -236,5 +268,3 @@ TEST_CASE( "HttpParserTest/testParseResponse.Chunked", "[unit]" )
 				 "|onBody(xyz)"
 				 "|complete()", history.calls());
 }
-
-

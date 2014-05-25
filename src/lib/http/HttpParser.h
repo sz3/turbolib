@@ -31,6 +31,7 @@ public:
 
 	bool parseBuffer(const std::string& buffer);
 	bool parseBuffer(const char* buffer, unsigned size);
+	std::string lastError() const;
 
 	void setOnMessageBegin(callback fun);
 	void setOnMessageComplete(callback fun);
