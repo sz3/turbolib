@@ -4,7 +4,9 @@
 #include "UdtScope.h"
 #include "UdtServer.h"
 #include "UdtSocket.h"
+#include "serialize/StringUtil.h"
 #include "socket/IpAddress.h"
+#include "time/WaitFor.h"
 #include "util/CallHistory.h"
 
 #include "udt/udt.h"
@@ -92,4 +94,31 @@ TEST_CASE( "UdtServerTest/testServerCrosstalk", "default" )
 
 		assertEquals( "127.0.0.1:8487", _serverLastAddr.toString() );
 	}
+}
+
+TEST_CASE( "UdtServerTest/testSpam", "default" )
+{
+	UdtScope udt;
+
+	unsigned bytesRecv = 0;
+	auto fun = [&bytesRecv] (const IIpSocket& sock, const std::string& buffer) { bytesRecv += buffer.size(); };
+
+	UdtServer server(8487, fun);
+	assertMsg( server.start(), server.lastError() );
+
+	UDTSOCKET handle = UDT::socket(AF_INET, SOCK_DGRAM, 0);
+	assertMsg( handle != UDT::INVALID_SOCK, UDT::getlasterror().getErrorMessage() );
+
+	UdtSocket sock(handle);
+	assertTrue( sock.connect(IpAddress("127.0.0.1", 8487)) );
+
+	string packet = "01234567890123456789012345678901234567890123456789abcdef";
+	for (int i = 0; i < 100000; ++i)
+		assertEquals( 56, sock.send(packet.data(), packet.size()) );
+
+	unsigned expected = 56*100000;
+	waitFor(2, StringUtil::str(expected) + " != " + StringUtil::str(bytesRecv), [&]()
+	{
+		return expected == bytesRecv;
+	});
 }

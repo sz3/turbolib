@@ -114,6 +114,7 @@ void UdtServer::accept()
 		if (conn == UDT::INVALID_SOCK)
 			continue;
 
+		UdtSocket::setAsyncWrites(conn, true);
 		if (UDT::epoll_add_usock(_pollPackets, conn, &_epollEventFlag) < 0)
 		{
 			std::cout << "UDT::epoll_add_usock error." << std::endl;
@@ -176,7 +177,7 @@ void UdtServer::fatalError(const std::string& error)
 
 std::shared_ptr<IIpSocket> UdtServer::sock(const IpAddress& addr)
 {
-	// concurrent unordered map or something
+	// if we already got one, return it
 	std::shared_ptr<IIpSocket> res;
 	std::pair< tbb::concurrent_unordered_map<std::string, int>::iterator, bool> pear = _connections.insert( {addr.toString(), -1} );
 	if (pear.first->second < 0)

@@ -2,6 +2,7 @@
 #pragma once
 
 #include "Timer.h"
+#include "command_line/CommandLine.h"
 #include <exception>
 #include <iostream>
 
