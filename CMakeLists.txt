@@ -27,6 +27,7 @@ set (PROJECTS
    test/lib/event
    src/lib/file
    test/lib/file
+   src/lib/mutex
    src/lib/serialize
    test/lib/serialize
    src/lib/socket
