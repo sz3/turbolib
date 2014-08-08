@@ -36,6 +36,11 @@ std::string UdpSocket::destination() const
 	return getTarget().toString();
 }
 
+int UdpSocket::handle() const
+{
+	return _sock;
+}
+
 int UdpSocket::try_send(const char* buffer, unsigned size) const
 {
 	return sendto(_sock, buffer, size, MSG_DONTWAIT, (const sockaddr*)&_target, sizeof(_target));

@@ -11,6 +11,7 @@ public:
 
 	virtual IpAddress getTarget() const = 0;
 	virtual std::string destination() const = 0;
+	virtual int handle() const = 0;
 
 	virtual int try_send(const char* buffer, unsigned size) const = 0;
 	virtual int send(const char* buffer, unsigned size) const = 0;

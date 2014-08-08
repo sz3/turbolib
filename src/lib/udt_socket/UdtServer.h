@@ -25,6 +25,7 @@ public:
 	std::string lastError() const;
 
 	std::shared_ptr<IIpSocket> sock(const IpAddress& addr);
+	int handle(const IpAddress& addr);
 
 protected:
 	void accept();
@@ -36,7 +37,7 @@ protected:
 	Event _started;
 	bool _running;
 	int _sock;
-	int _pollPackets;
+	int _pollReads;
 
 	short _port;
 	unsigned _numThreads;

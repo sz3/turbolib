@@ -15,6 +15,7 @@ public:
 	bool connect(const IpAddress& address);
 	IpAddress getTarget() const;
 	std::string destination() const;
+	int handle() const;
 
 	int try_send(const char* buffer, unsigned size) const;
 	int send(const char* buffer, unsigned size) const;

@@ -13,7 +13,7 @@
 
 namespace
 {
-	int _epollEventFlag = EPOLLOpt::UDT_EPOLL_IN ^ EPOLLOpt::UDT_EPOLL_ERR;
+	int _epollReadFlag = EPOLLOpt::UDT_EPOLL_IN ^ EPOLLOpt::UDT_EPOLL_ERR;
 }
 
 // TODO: investigate delays/unreliabiliy when using concurrent UDT::epoll_wait(), e.g. numThreads > 1?
@@ -63,10 +63,10 @@ bool UdtServer::start()
 		return _running = false;
 	}
 
-	_pollPackets = UDT::epoll_create();
-	if (_pollPackets < 0)
+	_pollReads = UDT::epoll_create();
+	if (_pollReads < 0)
 	{
-		fatalError("couldn't get udt epoll to work: " + std::string(UDT::getlasterror().getErrorMessage()));
+		fatalError("couldn't get udt epoll to work for reads: " + std::string(UDT::getlasterror().getErrorMessage()));
 		UDT::close(_sock);
 		return _running = false;
 	}
@@ -81,7 +81,7 @@ bool UdtServer::start()
 void UdtServer::stop()
 {
 	_running = false;
-	UDT::epoll_release(_pollPackets);
+	UDT::epoll_release(_pollReads);
 	UDT::close(_sock);
 	for (tbb::concurrent_unordered_map<std::string,int>::iterator it = _connections.begin(); it != _connections.end(); ++it)
 		UDT::close(it->second);
@@ -115,7 +115,7 @@ void UdtServer::accept()
 			continue;
 
 		UdtSocket::setAsyncWrites(conn, true);
-		if (UDT::epoll_add_usock(_pollPackets, conn, &_epollEventFlag) < 0)
+		if (UDT::epoll_add_usock(_pollReads, conn, &_epollReadFlag) < 0)
 		{
 			std::cout << "UDT::epoll_add_usock error." << std::endl;
 			continue;
@@ -126,17 +126,17 @@ void UdtServer::accept()
 void UdtServer::run()
 {
 	std::string buffer;
-	std::set<UDTSOCKET> irrelevant;
 	std::set<UDTSOCKET> reads;
+	std::set<UDTSOCKET> irrelevant;
 	while (_running)
 	{
 		reads.clear();
 		irrelevant.clear();
 
 		int waiters;
-		if ((waiters = UDT::epoll_wait(_pollPackets, &reads, &irrelevant, 5000)) < 0)
+		if ((waiters = UDT::epoll_wait(_pollReads, &reads, &irrelevant, 5000)) < 0)
 		{
-			std::cout << "epoll_wait did an error! :( " << waiters << std::endl;
+			std::cout << "epoll_wait for reads did an error! :( " << waiters << std::endl;
 			continue;
 		}
 		//std::cout << "epoll says there are " << waiters << " guys ready. Yes, " << reads.size() << " ... ? " << irrelevant.size() << std::endl;
@@ -150,7 +150,7 @@ void UdtServer::run()
 			if (sock.recv(buffer) <= 0)
 			{
 				std::cout << "udt badness. :(" << std::endl;
-				UDT::epoll_remove_usock(_pollPackets, *it);
+				UDT::epoll_remove_usock(_pollReads, *it);
 				UDT::close(*it);
 			}
 
@@ -192,7 +192,7 @@ std::shared_ptr<IIpSocket> UdtServer::sock(const IpAddress& addr)
 			return NULL;
 		pear.first->second = handle;
 
-		if (UDT::epoll_add_usock(_pollPackets, handle, &_epollEventFlag) < 0)
+		if (UDT::epoll_add_usock(_pollReads, handle, &_epollReadFlag) < 0)
 			std::cout << "UDT::epoll_add_usock error for client sock." << std::endl;
 	}
 	else

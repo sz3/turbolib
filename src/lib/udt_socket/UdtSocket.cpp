@@ -68,6 +68,11 @@ std::string UdtSocket::destination() const
 	return getTarget().ip();
 }
 
+int UdtSocket::handle() const
+{
+	return _sock;
+}
+
 int UdtSocket::try_send(const char* buffer, unsigned size) const
 {
 	return UDT::sendmsg(_sock, buffer, size, -1, true);

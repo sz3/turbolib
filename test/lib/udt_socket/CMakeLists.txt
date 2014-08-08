@@ -4,6 +4,7 @@ project(udt_socket_test)
 
 set (SOURCES
 	test.cpp
+	UdtEpollTest.cpp
 	UdtServerTest.cpp
 )
 

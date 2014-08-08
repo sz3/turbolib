@@ -1,6 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
+#include <algorithm>
 #include <deque>
 #include <sstream>
 #include <string>
@@ -26,6 +27,12 @@ public:
 		for (; it != _calls.end(); ++it)
 			ss << "|" << *it;
 		return ss.str();
+	}
+
+	CallHistory& sort()
+	{
+		std::sort(_calls.begin(), _calls.end());
+		return *this;
 	}
 
 	void clear()
