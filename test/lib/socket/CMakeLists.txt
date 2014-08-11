@@ -7,6 +7,8 @@ set (SOURCES
 	FileByteStreamTest.cpp
 	IpAddressTest.cpp
 	LocalStreamSocketServerTest.cpp
+	SocketWriterTest.cpp
+	StatelessSocketServerTest.cpp
 	UdpServerTest.cpp
 )
 

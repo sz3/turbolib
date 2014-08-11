@@ -9,6 +9,10 @@ set(SOURCES
 	UdtServer.h
 	UdtSocket.cpp
 	UdtSocket.h
+	udt_socket.cpp
+	udt_socket.h
+	udt_socket_set.cpp
+	udt_socket_set.h
 )
 
 include_directories(

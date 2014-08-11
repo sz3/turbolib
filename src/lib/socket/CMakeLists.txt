@@ -6,10 +6,14 @@ set(SOURCES
 	IByteStream.h
 	IIpSocket.h
 	IPacketServer.h
+	ISocketServer.h
+	ISocketWriter.h
 	IpAddress.cpp
 	IpAddress.h
 	LocalStreamSocketServer.cpp
 	LocalStreamSocketServer.h
+	PooledSocketServer.h
+	SocketWriter.h
 	StringByteStream.cpp
 	StringByteStream.h
 	UdpClientSocket.cpp
@@ -18,6 +22,10 @@ set(SOURCES
 	UdpServer.h
 	UdpSocket.cpp
 	UdpSocket.h
+
+	StatelessSocketServer.h
+	udp_socket.cpp
+	udp_socket.h
 )
 
 include_directories(
