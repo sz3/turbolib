@@ -9,7 +9,6 @@ set (SOURCES
 	LocalStreamSocketServerTest.cpp
 	SocketWriterTest.cpp
 	StatelessSocketServerTest.cpp
-	UdpServerTest.cpp
 )
 
 include_directories(

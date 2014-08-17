@@ -5,8 +5,6 @@ set(SOURCES
 	UdtEpoll.h
 	UdtScope.cpp
 	UdtScope.h
-	UdtServer.cpp
-	UdtServer.h
 	UdtSocket.cpp
 	UdtSocket.h
 	udt_socket.cpp

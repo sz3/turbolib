@@ -18,8 +18,6 @@ set(SOURCES
 	StringByteStream.h
 	UdpClientSocket.cpp
 	UdpClientSocket.h
-	UdpServer.cpp
-	UdpServer.h
 	UdpSocket.cpp
 	UdpSocket.h
 

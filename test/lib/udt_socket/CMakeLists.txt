@@ -5,8 +5,6 @@ project(udt_socket_test)
 set (SOURCES
 	test.cpp
 	PooledSocketServerTest.cpp
-	UdtEpollTest.cpp
-	UdtServerTest.cpp
 )
 
 include_directories(
