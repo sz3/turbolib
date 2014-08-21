@@ -13,13 +13,14 @@
 #include "tbb/concurrent_unordered_map.h"
 #include <deque>
 #include <functional>
+#include <iostream>
 #include <thread>
 
 template <typename Socket, typename SocketSet>
 class PooledSocketServer : public ISocketServer
 {
 public:
-	PooledSocketServer(short port, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numRunners=1, unsigned maxReadSize=1450);
+	PooledSocketServer(short port, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders=1, unsigned maxReadSize=1450);
 	~PooledSocketServer();
 
 	bool start();
@@ -46,20 +47,19 @@ protected:
 	unsigned _maxReadSize;
 
 	Event _started;
-	unsigned _numRunners;
+	unsigned _numReaders;
 	std::deque<std::thread> _runners;
 	std::thread _acceptor;
 	std::string _lastError;
-
 };
 
 template <typename Socket, typename SocketSet>
-PooledSocketServer<Socket,SocketSet>::PooledSocketServer(short port, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numRunners, unsigned maxReadSize)
+PooledSocketServer<Socket,SocketSet>::PooledSocketServer(short port, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders, unsigned maxReadSize)
 	: _running(false)
 	, _port(port)
 	, _socketSet(SocketSet::READS)
 	, _onRead(onRead)
-	, _numRunners(numRunners)
+	, _numReaders(numReaders)
 	, _maxReadSize(maxReadSize)
 {
 
@@ -96,11 +96,11 @@ bool PooledSocketServer<Socket,SocketSet>::start()
 	if (!_sock.listen(20))
 	{
 		_sock.close();
-		return fatalError("couldn't get udt socket to listen: " + _sock.getErrorMessage());
+		return fatalError("couldn't get socket to listen: " + _sock.getErrorMessage());
 	}
 
 	_acceptor = std::thread( std::bind(&PooledSocketServer<Socket,SocketSet>::accept, this) );
-	for (unsigned i = 0; i < _numRunners; ++i)
+	for (unsigned i = 0; i < _numReaders; ++i)
 		_runners.push_back( std::thread(std::bind(&PooledSocketServer<Socket,SocketSet>::run, this)) );
 	_started.wait();
 	return _running;
@@ -140,7 +140,7 @@ void PooledSocketServer<Socket,SocketSet>::accept()
 			continue;
 
 		if (!_socketSet.add(conn.handle()))
-			std::cout << "UDT::epoll_add_usock error." << std::endl;
+			std::cout << "couldn't add socket to socket_set." << std::endl;
 	}
 }
 

@@ -1,7 +1,6 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "udt_socket_set.h"
 
-#include "UdtSocket.h"
 #include "udt/udt.h"
 #include <iostream>
 

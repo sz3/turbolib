@@ -61,6 +61,11 @@ bool udt_socket::good() const
 	return _sock != UDT::INVALID_SOCK;
 }
 
+std::string udt_socket::target() const
+{
+	return endpoint().ip();
+}
+
 IpAddress udt_socket::endpoint() const
 {
 	struct sockaddr_in endpoint;
@@ -115,13 +120,13 @@ udt_socket udt_socket::accept()
 bool udt_socket::close()
 {
 	UDT::close(_sock);
-	// TODO: use return code, yo
 	return true;
 }
 
 bool udt_socket::shutdown()
 {
-	return false;
+	setAsyncWrites(_sock, false);
+	return close();
 }
 
 int udt_socket::try_send(const char* buffer, unsigned size)

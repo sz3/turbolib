@@ -14,6 +14,7 @@ public:
 
 	int handle() const;
 	bool good() const;
+	std::string target() const;
 	IpAddress endpoint() const;
 	bool setEndpoint(const IpAddress& endpoint);
 

@@ -13,6 +13,7 @@ public:
 
 	int handle() const;
 	bool good() const;
+	std::string target() const;
 	IpAddress endpoint() const;
 	bool connect(const IpAddress& endpoint);
 

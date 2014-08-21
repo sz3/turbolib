@@ -4,24 +4,19 @@ set(SOURCES
 	FileByteStream.cpp
 	FileByteStream.h
 	IByteStream.h
-	IIpSocket.h
-	IPacketServer.h
 	ISocketServer.h
 	ISocketWriter.h
 	IpAddress.cpp
 	IpAddress.h
 	LocalStreamSocketServer.cpp
 	LocalStreamSocketServer.h
+	MockSocketServer.h
+	MockSocketWriter.h
 	PooledSocketServer.h
 	SocketWriter.h
+	StatelessSocketServer.h
 	StringByteStream.cpp
 	StringByteStream.h
-	UdpClientSocket.cpp
-	UdpClientSocket.h
-	UdpSocket.cpp
-	UdpSocket.h
-
-	StatelessSocketServer.h
 	udp_socket.cpp
 	udp_socket.h
 )

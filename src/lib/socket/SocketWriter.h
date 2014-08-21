@@ -30,4 +30,9 @@ public:
 	{
 		return Socket::endpoint();
 	}
+
+	std::string target() const
+	{
+		return Socket::target();
+	}
 };

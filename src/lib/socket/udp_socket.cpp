@@ -34,6 +34,11 @@ bool udp_socket::good() const
 	return _sock != -1;
 }
 
+std::string udp_socket::target() const
+{
+	return endpoint().toString();
+}
+
 IpAddress udp_socket::endpoint() const
 {
 	return IpAddress(inet_ntoa(_endpoint.sin_addr), ntohs(_endpoint.sin_port));

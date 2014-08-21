@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
-	UdtEpoll.cpp
-	UdtEpoll.h
 	UdtScope.cpp
 	UdtScope.h
-	UdtSocket.cpp
-	UdtSocket.h
+	UdtServer.cpp
+	UdtServer.h
 	udt_socket.cpp
 	udt_socket.h
 	udt_socket_set.cpp
