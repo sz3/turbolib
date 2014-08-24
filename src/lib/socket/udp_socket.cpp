@@ -1,7 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "udp_socket.h"
 
-#include "IpAddress.h"
+#include "socket_address.h"
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <cstdio>
@@ -18,7 +18,7 @@ udp_socket::udp_socket(int handle)
 	::memset(&_endpoint, 0, sizeof(_endpoint));
 }
 
-udp_socket::udp_socket(const IpAddress& endpoint)
+udp_socket::udp_socket(const socket_address& endpoint)
 	: udp_socket()
 {
 	setEndpoint(endpoint);
@@ -39,27 +39,27 @@ std::string udp_socket::target() const
 	return endpoint().toString();
 }
 
-IpAddress udp_socket::endpoint() const
+socket_address udp_socket::endpoint() const
 {
-	return IpAddress(inet_ntoa(_endpoint.sin_addr), ntohs(_endpoint.sin_port));
+	return socket_address(inet_ntoa(_endpoint.sin_addr), ntohs(_endpoint.sin_port));
 }
 
-bool udp_socket::setEndpoint(const IpAddress& endpoint)
+bool udp_socket::setEndpoint(const socket_address& endpoint)
 {
 	_endpoint.sin_family = AF_INET;
 	_endpoint.sin_port = htons(endpoint.port());
-	return inet_aton(endpoint.ip().c_str(), &_endpoint.sin_addr) != 0;
+	return inet_aton(endpoint.address().c_str(), &_endpoint.sin_addr) != 0;
 }
 
-bool udp_socket::bind(short port)
+bool udp_socket::bind(const socket_address& addr)
 {
-	struct sockaddr_in bind_in;
-	memset((char *) &bind_in, 0, sizeof(bind_in));
+	struct sockaddr_in local;
+	memset((char*)&local, 0, sizeof(local));
 
-	bind_in.sin_family = AF_INET;
-	bind_in.sin_port = htons(port);
-	bind_in.sin_addr.s_addr = htonl(INADDR_ANY);
-	return ::bind(_sock, (struct sockaddr*)&bind_in, sizeof(bind_in)) != -1;
+	local.sin_family = AF_INET;
+	local.sin_port = htons(addr.port());
+	local.sin_addr.s_addr = htonl(INADDR_ANY);
+	return ::bind(_sock, (struct sockaddr*)&local, sizeof(local)) != -1;
 }
 
 bool udp_socket::close()

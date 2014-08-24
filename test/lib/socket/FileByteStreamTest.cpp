@@ -3,6 +3,7 @@
 
 #include "FileByteStream.h"
 #include "LocalStreamSocketServer.h"
+#include "socket_address.h"
 #include "command_line/CommandLine.h"
 
 #include <functional>
@@ -11,12 +12,12 @@
 using namespace std;
 
 namespace {
-	void onConnect(int fd)
+	void onConnect(int handle)
 	{
 		const int buflen = 1024;
 		char buf[buflen];
 
-		FileByteStream stream(fd);
+		FileByteStream stream(handle);
 		int bytesRead = stream.read(buf, buflen);
 		if (bytesRead >= 0)
 		{
@@ -28,7 +29,7 @@ namespace {
 
 TEST_CASE( "FileByteStreamTest/testWithServer", "default" )
 {
-	LocalStreamSocketServer server("/tmp/iamthebestserver", &onConnect, 4);
+	LocalStreamSocketServer server(socket_address("/tmp/iamthebestserver"), &onConnect, 4);
 	assertMsg( server.start(), server.lastError() );
 
 	{

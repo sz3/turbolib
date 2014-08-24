@@ -6,7 +6,7 @@
 
 #include "UdtScope.h"
 #include "UdtServer.h"
-#include "socket/IpAddress.h"
+#include "socket/socket_address.h"
 using namespace std;
 
 namespace {
@@ -20,11 +20,11 @@ TEST_CASE( "udt_socket_setTest/testWriteWait", "default" )
 	udt_socket_set epoll(udt_socket_set::WRITES);
 
 	UdtScope udt;
-	UdtServer server(8487, &onRead);
+	UdtServer server(socket_address("", 8487), &onRead);
 	assertMsg( server.start(), server.lastError() );
 
-	udt_socket one(IpAddress("127.0.0.1", 8487));
-	udt_socket two(IpAddress("127.0.0.1", 8487));
+	udt_socket one(socket_address("127.0.0.1", 8487));
+	udt_socket two(socket_address("127.0.0.1", 8487));
 
 	assertTrue( epoll.add(one.handle()) );
 	assertTrue( epoll.add(two.handle()) );
@@ -38,10 +38,10 @@ TEST_CASE( "udt_socket_setTest/testOverloadWriteWait", "default" )
 	udt_socket_set epoll(udt_socket_set::WRITES);
 
 	UdtScope udt;
-	UdtServer server(8487, &onRead);
+	UdtServer server(socket_address("", 8487), &onRead);
 	assertMsg( server.start(), server.lastError() );
 
-	udt_socket client(IpAddress("127.0.0.1", 8487));
+	udt_socket client(socket_address("127.0.0.1", 8487));
 	while (client.try_send("hello world", 11) == 11)
 		; // write until failure
 

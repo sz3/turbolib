@@ -2,7 +2,7 @@
 #pragma once
 
 #include "socket/ISocketWriter.h"
-#include "socket/IpAddress.h"
+#include "socket/socket_address.h"
 #include "util/CallHistory.h"
 
 class MockSocketWriter : public ISocketWriter
@@ -28,7 +28,7 @@ public:
 		return size;
 	}
 
-	IpAddress endpoint() const
+	socket_address endpoint() const
 	{
 		_history.call("endpoint");
 		return _endpoint;
@@ -37,11 +37,11 @@ public:
 	std::string target() const
 	{
 		_history.call("target");
-		return _endpoint.ip();
+		return _endpoint.address();
 	}
 
 public:
-	IpAddress _endpoint;
+	socket_address _endpoint;
 	bool _trySendError;
 	int _trySendErrorBytes;
 

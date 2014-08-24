@@ -6,17 +6,19 @@ set(SOURCES
 	IByteStream.h
 	ISocketServer.h
 	ISocketWriter.h
-	IpAddress.cpp
-	IpAddress.h
-	LocalStreamSocketServer.cpp
 	LocalStreamSocketServer.h
 	MockSocketServer.h
 	MockSocketWriter.h
 	PooledSocketServer.h
 	SocketWriter.h
 	StatelessSocketServer.h
+	StreamSocketAcceptorServer.h
 	StringByteStream.cpp
 	StringByteStream.h
+	local_stream_socket.cpp
+	local_stream_socket.h
+	socket_address.cpp
+	socket_address.h
 	udp_socket.cpp
 	udp_socket.h
 )

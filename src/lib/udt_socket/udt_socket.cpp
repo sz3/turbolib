@@ -1,7 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "udt_socket.h"
 
-#include "socket/IpAddress.h"
+#include "socket/socket_address.h"
 #include "udt/udt.h"
 #include <arpa/inet.h>
 #include <iostream>
@@ -44,7 +44,7 @@ udt_socket::udt_socket(int sock)
 {
 }
 
-udt_socket::udt_socket(const IpAddress& endpoint)
+udt_socket::udt_socket(const socket_address& endpoint)
 	: udt_socket()
 {
 	if (good())
@@ -63,25 +63,25 @@ bool udt_socket::good() const
 
 std::string udt_socket::target() const
 {
-	return endpoint().ip();
+	return endpoint().address();
 }
 
-IpAddress udt_socket::endpoint() const
+socket_address udt_socket::endpoint() const
 {
 	struct sockaddr_in endpoint;
 	int size = sizeof(endpoint);
 	UDT::getpeername(_sock, (sockaddr*)&endpoint, &size);
-	return IpAddress(inet_ntoa(endpoint.sin_addr), ntohs(endpoint.sin_port));
+	return socket_address(inet_ntoa(endpoint.sin_addr), ntohs(endpoint.sin_port));
 }
 
-bool udt_socket::connect(const IpAddress& endpoint)
+bool udt_socket::connect(const socket_address& endpoint)
 {
-	struct sockaddr_in stemp;
-	stemp.sin_family = AF_INET;
-	stemp.sin_port = htons(endpoint.port());
-	inet_aton(endpoint.ip().c_str(), &stemp.sin_addr);
+	struct sockaddr_in remote;
+	remote.sin_family = AF_INET;
+	remote.sin_port = htons(endpoint.port());
+	inet_aton(endpoint.address().c_str(), &remote.sin_addr);
 
-	int res = UDT::connect(_sock, (const sockaddr*)&stemp, sizeof(stemp));
+	int res = UDT::connect(_sock, (const sockaddr*)&remote, sizeof(remote));
 	if (res == UDT::ERROR)
 		_sock = UDT::INVALID_SOCK;
 	else
@@ -89,15 +89,15 @@ bool udt_socket::connect(const IpAddress& endpoint)
 	return res == 0;
 }
 
-bool udt_socket::bind(short port)
+bool udt_socket::bind(const socket_address& addr)
 {
-	struct sockaddr_in bind_in;
-	memset((char*)&bind_in, 0, sizeof(bind_in));
+	struct sockaddr_in local;
+	memset((char*)&local, 0, sizeof(local));
 
-	bind_in.sin_family = AF_INET;
-	bind_in.sin_port = htons(port);
-	bind_in.sin_addr.s_addr = htonl(INADDR_ANY);
-	return UDT::bind(_sock, (struct sockaddr*)&bind_in, sizeof(bind_in)) != UDT::ERROR;
+	local.sin_family = AF_INET;
+	local.sin_port = htons(addr.port());
+	local.sin_addr.s_addr = htonl(INADDR_ANY); // currently ignores addr.address()...
+	return UDT::bind(_sock, (struct sockaddr*)&local, sizeof(local)) != UDT::ERROR;
 }
 
 bool udt_socket::listen(int seconds)
@@ -107,11 +107,11 @@ bool udt_socket::listen(int seconds)
 
 udt_socket udt_socket::accept()
 {
-	struct sockaddr_in their_addr;
-	int addr_sz = sizeof(their_addr);
-	memset((char*)&their_addr, 0, addr_sz);
+	struct sockaddr_in remote;
+	int remote_sz = sizeof(remote);
+	memset((char*)&remote, 0, remote_sz);
 
-	UDTSOCKET conn = UDT::accept(_sock, (sockaddr*)&their_addr, &addr_sz);
+	UDTSOCKET conn = UDT::accept(_sock, (sockaddr*)&remote, &remote_sz);
 	if (conn != UDT::INVALID_SOCK)
 		setAsyncWrites(conn, true);
 	return udt_socket(conn);

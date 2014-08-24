@@ -2,7 +2,7 @@
 #pragma once
 
 #include "ISocketServer.h"
-#include "IpAddress.h"
+#include "socket_address.h"
 #include "util/CallHistory.h"
 
 class MockSocketServer : public ISocketServer
@@ -20,7 +20,7 @@ public:
 		return true;
 	}
 
-	std::shared_ptr<ISocketWriter> getWriter(const IpAddress& endpoint)
+	std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint)
 	{
 		_history.call("getWriter", endpoint.toString());
 		return _sock;

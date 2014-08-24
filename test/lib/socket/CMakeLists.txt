@@ -5,10 +5,10 @@ project(socket_test)
 set (SOURCES
 	test.cpp
 	FileByteStreamTest.cpp
-	IpAddressTest.cpp
-	LocalStreamSocketServerTest.cpp
 	SocketWriterTest.cpp
 	StatelessSocketServerTest.cpp
+	StreamSocketAcceptorServerTest.cpp
+	socket_addressTest.cpp
 )
 
 include_directories(

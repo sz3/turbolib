@@ -14,13 +14,13 @@ template <typename Socket>
 class StatelessSocketServer : public ISocketServer
 {
 public:
-	StatelessSocketServer(short port, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders=1, unsigned maxReadSize=1450);
+	StatelessSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders=1, unsigned maxReadSize=1450);
 	~StatelessSocketServer();
 
 	bool start();
 	bool stop();
 
-	std::shared_ptr<ISocketWriter> getWriter(const IpAddress& endpoint);
+	std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint);
 
 	bool running() const;
 	std::string lastError() const;
@@ -32,7 +32,7 @@ protected:
 protected:
 	Socket _sock;
 	bool _running;
-	short _port;
+	socket_address _addr;
 
 	std::function<void(ISocketWriter&, const char*, unsigned)> _onRead;
 	unsigned _maxReadSize;
@@ -43,9 +43,9 @@ protected:
 };
 
 template <typename Socket>
-StatelessSocketServer<Socket>::StatelessSocketServer(short port, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders, unsigned maxReadSize)
+StatelessSocketServer<Socket>::StatelessSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders, unsigned maxReadSize)
 	: _running(false)
-	, _port(port)
+	, _addr(addr)
 	, _onRead(onRead)
 	, _numReaders(numReaders)
 	, _maxReadSize(maxReadSize)
@@ -69,10 +69,10 @@ bool StatelessSocketServer<Socket>::start()
 	if (!_sock.good())
 		return fatalError("couldn't get good socket");
 
-	if (!_sock.bind(_port))
+	if (!_sock.bind(_addr))
 	{
 		_sock.close();
-		return fatalError("couldn't bind socket to port " + StringUtil::str(_port));
+		return fatalError("couldn't bind socket to port " + StringUtil::str(_addr.port()));
 	}
 
 	for (unsigned i = 0; i < _numReaders; ++i)
@@ -122,7 +122,7 @@ bool StatelessSocketServer<Socket>::running() const
 }
 
 template <typename Socket>
-std::shared_ptr<ISocketWriter> StatelessSocketServer<Socket>::getWriter(const IpAddress& endpoint)
+std::shared_ptr<ISocketWriter> StatelessSocketServer<Socket>::getWriter(const socket_address& endpoint)
 {
 	SocketWriter<Socket>* sock = new SocketWriter<Socket>(_sock);
 	sock->setEndpoint(endpoint);

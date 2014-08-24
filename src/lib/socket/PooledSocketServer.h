@@ -5,7 +5,6 @@
 
 #include "ISocketServer.h"
 
-#include "IpAddress.h"
 #include "SocketWriter.h"
 #include "event/Event.h"
 #include "serialize/StringUtil.h"
@@ -20,13 +19,13 @@ template <typename Socket, typename SocketSet>
 class PooledSocketServer : public ISocketServer
 {
 public:
-	PooledSocketServer(short port, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders=1, unsigned maxReadSize=1450);
+	PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders=1, unsigned maxReadSize=1450);
 	~PooledSocketServer();
 
 	bool start();
 	bool stop();
 
-	std::shared_ptr<ISocketWriter> getWriter(const IpAddress& endpoint);
+	std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint);
 
 	bool running() const;
 	std::string lastError() const;
@@ -41,7 +40,7 @@ protected:
 	SocketSet _socketSet;
 	tbb::concurrent_unordered_map<std::string,int> _connections;
 	bool _running;
-	short _port;
+	socket_address _addr;
 
 	std::function<void(ISocketWriter&, const char*, unsigned)> _onRead;
 	unsigned _maxReadSize;
@@ -54,9 +53,9 @@ protected:
 };
 
 template <typename Socket, typename SocketSet>
-PooledSocketServer<Socket,SocketSet>::PooledSocketServer(short port, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders, unsigned maxReadSize)
+PooledSocketServer<Socket,SocketSet>::PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders, unsigned maxReadSize)
 	: _running(false)
-	, _port(port)
+	, _addr(addr)
 	, _socketSet(SocketSet::READS)
 	, _onRead(onRead)
 	, _numReaders(numReaders)
@@ -87,7 +86,7 @@ bool PooledSocketServer<Socket,SocketSet>::start()
 		return fatalError("couldn't get epoll to work for reads: " + _socketSet.lastError());
 	}
 
-	if (!_sock.bind(_port))
+	if (!_sock.bind(_addr))
 	{
 		_sock.close();
 		return fatalError("couldn't bind to port: " + _sock.getErrorMessage());
@@ -178,7 +177,7 @@ bool PooledSocketServer<Socket,SocketSet>::running() const
 }
 
 template <typename Socket, typename SocketSet>
-std::shared_ptr<ISocketWriter> PooledSocketServer<Socket,SocketSet>::getWriter(const IpAddress& endpoint)
+std::shared_ptr<ISocketWriter> PooledSocketServer<Socket,SocketSet>::getWriter(const socket_address& endpoint)
 {
 	// if we already got one, return it
 	std::pair< tbb::concurrent_unordered_map<std::string, int>::iterator, bool> pear = _connections.insert( {endpoint.toString(), -1} );

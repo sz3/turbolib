@@ -3,7 +3,7 @@
 
 #include "StatelessSocketServer.h"
 
-#include "IpAddress.h"
+#include "socket_address.h"
 #include "udp_socket.h"
 #include "command_line/CommandLine.h"
 #include "util/CallHistory.h"
@@ -33,10 +33,10 @@ namespace {
 TEST_CASE( "StatelessSocketServerTest/testDefault", "default" )
 {
 	PacketHandler handler;
-	StatelessSocketServer<udp_socket> server(8487, bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
+	StatelessSocketServer<udp_socket> server(socket_address("", 8487), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
 	assertMsg( server.start(), server.lastError() );
 
-	udp_socket client(IpAddress("127.0.0.1", 8487));
+	udp_socket client(socket_address("127.0.0.1", 8487));
 	assertTrue( client.good() );
 
 	assertEquals( 15, client.send("hello, darkness") );
@@ -58,7 +58,7 @@ TEST_CASE( "StatelessSocketServerTest/testDefault", "default" )
 TEST_CASE( "StatelessSocketServerTest/testSendFromOtherProcess", "default" )
 {
 	PacketHandler handler;
-	StatelessSocketServer<udp_socket> server(8487, bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
+	StatelessSocketServer<udp_socket> server(socket_address("", 8487), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
 	assertMsg( server.start(), server.lastError() );
 
 	// -w 0 option makes nc exit immediately.

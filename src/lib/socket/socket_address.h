@@ -3,19 +3,21 @@
 
 #include <string>
 
-class IpAddress
+class socket_address
 {
 public:
-	IpAddress();
-	IpAddress(std::string ip, unsigned short port);
+	socket_address();
+	socket_address(std::string destination);
+	socket_address(std::string address, unsigned short port);
 
-	const std::string& ip() const;
+	const std::string& address() const;
 	unsigned short port() const;
 
 	std::string toString() const;
-	bool fromString(const std::string& address);
+	bool fromString(const std::string& str);
 
 protected:
-	std::string _ip;
+	std::string _address;
 	unsigned short _port;
 };
+

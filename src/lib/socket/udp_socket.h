@@ -3,22 +3,22 @@
 
 #include <string>
 #include <arpa/inet.h>
-class IpAddress;
+class socket_address;
 
 class udp_socket
 {
 public:
 	udp_socket();
 	udp_socket(int handle);
-	udp_socket(const IpAddress& endpoint);
+	udp_socket(const socket_address& endpoint);
 
 	int handle() const;
 	bool good() const;
 	std::string target() const;
-	IpAddress endpoint() const;
-	bool setEndpoint(const IpAddress& endpoint);
+	socket_address endpoint() const;
+	bool setEndpoint(const socket_address& endpoint);
 
-	bool bind(short port);
+	bool bind(const socket_address& addr);
 	bool close();
 	bool shutdown();
 

@@ -2,7 +2,7 @@
 #pragma once
 
 #include <string>
-class IpAddress;
+class socket_address;
 
 class ISocketWriter
 {
@@ -12,6 +12,6 @@ public:
 	virtual int try_send(const char* buffer, unsigned size) = 0;
 	virtual int send(const char* buffer, unsigned size) = 0;
 
-	virtual IpAddress endpoint() const = 0;
+	virtual socket_address endpoint() const = 0;
 	virtual std::string target() const = 0; // TODO: this should go away
 };

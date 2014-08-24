@@ -1,37 +1,8 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "event/Event.h"
-#include <functional>
-#include <list>
-#include <string>
-#include <thread>
+#include "StreamSocketAcceptorServer.h"
+#include "local_stream_socket.h"
 
-class LocalStreamSocketServer
-{
-public:
-	// some sort of packet handling interface
-	LocalStreamSocketServer(std::string name, const std::function<void(int)>& onConnect, unsigned numThreads=1);
-	~LocalStreamSocketServer();
+typedef StreamSocketAcceptorServer<local_stream_socket> LocalStreamSocketServer;
 
-	bool start();
-	void stop();
-
-	void run();
-	bool isRunning() const;
-	std::string lastError() const;
-
-protected:
-	void onConnect(int connection);
-	void fatalError(const std::string& error);
-
-protected:
-	bool _running;
-	int _sock;
-	std::string _name;
-	std::function<void(int)> _onConnect;
-	unsigned _numThreads;
-
-	std::list<std::thread> _threads;
-	std::string _lastError;
-};

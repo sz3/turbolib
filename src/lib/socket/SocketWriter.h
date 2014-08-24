@@ -2,7 +2,7 @@
 #pragma once
 
 #include "ISocketWriter.h"
-#include "socket/IpAddress.h"
+#include "socket/socket_address.h"
 
 template <typename Socket>
 class SocketWriter : public ISocketWriter, public Socket
@@ -26,7 +26,7 @@ public:
 		return Socket::send(buffer, size);
 	}
 
-	IpAddress endpoint() const
+	socket_address endpoint() const
 	{
 		return Socket::endpoint();
 	}

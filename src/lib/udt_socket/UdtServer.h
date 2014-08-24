@@ -9,12 +9,12 @@
 class UdtServer : public ISocketServer
 {
 public:
-	UdtServer(short port, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders=1, unsigned maxReadSize=1450);
+	UdtServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders=1, unsigned maxReadSize=1450);
 
 	bool start();
 	bool stop();
 
-	std::shared_ptr<ISocketWriter> getWriter(const IpAddress& endpoint);
+	std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint);
 
 	std::string lastError() const;
 

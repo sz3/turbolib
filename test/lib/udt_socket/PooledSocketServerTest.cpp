@@ -7,7 +7,7 @@
 #include "socket/PooledSocketServer.h"
 
 #include "socket/ISocketWriter.h"
-#include "socket/IpAddress.h"
+#include "socket/socket_address.h"
 #include "time/WaitFor.h"
 #include "util/CallHistory.h"
 #include <memory>
@@ -31,14 +31,14 @@ namespace {
 			return _history.calls();
 		}
 
-		const IpAddress& lastAddr() const
+		const socket_address& lastAddr() const
 		{
 			return _lastAddr;
 		}
 
 	protected:
 		CallHistory _history;
-		IpAddress _lastAddr;
+		socket_address _lastAddr;
 	};
 }
 
@@ -48,10 +48,10 @@ TEST_CASE( "PooledSocketServerTest/testDefault", "default" )
 	UdtScope udt;
 
 	PacketHandler handler;
-	PooledSocketServer<udt_socket, udt_socket_set> server(8487, bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
 	assertMsg( server.start(), server.lastError() );
 
-	udt_socket client(IpAddress("127.0.0.1", 8487));
+	udt_socket client(socket_address("127.0.0.1", 8487));
 	assertTrue( client.good() );
 
 	assertEquals( 15, client.send("hello, darkness") );
@@ -73,14 +73,14 @@ TEST_CASE( "PooledSocketServerTest/testServerCrosstalk", "default" )
 	UdtScope udt;
 
 	PacketHandler handler;
-	PooledSocketServer<udt_socket, udt_socket_set> server(8487, bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
 	assertMsg( server.start(), server.lastError() );
 
-	PooledSocketServer<udt_socket, udt_socket_set> other(8488, bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
+	PooledSocketServer<udt_socket, udt_socket_set> other(socket_address("", 8488), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
 	assertMsg( other.start(), other.lastError() );
 
 	{
-		shared_ptr<ISocketWriter> writer( other.getWriter(IpAddress("127.0.0.1", 8487)) );
+		shared_ptr<ISocketWriter> writer( other.getWriter(socket_address("127.0.0.1", 8487)) );
 		assertNotNull( writer.get() );
 
 		string request = "hi world";
@@ -123,10 +123,10 @@ TEST_CASE( "PooledSocketServerTest/testSpam", "default" )
 	unsigned bytesRecv = 0;
 	auto fun = [&bytesRecv] (ISocketWriter& writer, const char* buff, unsigned size) { bytesRecv += size; };
 
-	PooledSocketServer<udt_socket, udt_socket_set> server(8487, fun);
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), fun);
 	assertMsg( server.start(), server.lastError() );
 
-	udt_socket client(IpAddress("127.0.0.1", 8487));
+	udt_socket client(socket_address("127.0.0.1", 8487));
 	assertTrue( client.good() );
 
 	string packet = "01234567890123456789012345678901234567890123456789abcdef";
