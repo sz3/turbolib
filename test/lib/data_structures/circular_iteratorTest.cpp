@@ -2,13 +2,10 @@
 #include "unittest.h"
 
 #include "circular_iterator.h"
-
-#include "serialize/StringUtil.h"
-#include <string>
 #include <set>
-#include <iostream>
+#include <string>
+using turbo::circular_iterator;
 using namespace std;
-
 
 TEST_CASE( "circular_iteratorTest/testLoop", "[unit]" )
 {

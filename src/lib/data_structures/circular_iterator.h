@@ -2,6 +2,7 @@
 
 // should be const_circular_iterator?
 
+namespace turbo {
 template <typename Iterator>
 class circular_iterator : public Iterator
 {
@@ -29,3 +30,4 @@ protected:
 	Iterator _containerBegin;
 	Iterator _containerEnd;
 };
+} // namespace turbo
