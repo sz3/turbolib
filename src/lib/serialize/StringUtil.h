@@ -35,6 +35,12 @@ namespace StringUtil
 		return ss.str();
 	}
 
+	template <>
+	inline std::string str<bool>(const bool& val)
+	{
+		return val? "true" : "false";
+	}
+
 	template <typename Integer>
 	std::string hexStr(const Integer& number)
 	{

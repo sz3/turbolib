@@ -86,6 +86,14 @@ TEST_CASE( "StringUtilTest/testSplitEmpty", "[unit]" )
 	assertEquals( 3, tossEmpty.size() );
 }
 
+TEST_CASE( "StringUtilTest/testStr", "[unit]" )
+{
+	assertEquals( "foo", StringUtil::str("foo") );
+	assertEquals( "5", StringUtil::str(5) );
+	assertEquals( "1.2", StringUtil::str(1.2) );
+	assertEquals( "true", StringUtil::str(true) );
+}
+
 TEST_CASE( "StringUtilTest/testHexStr", "[unit]" )
 {
 	assertEquals( "5", StringUtil::hexStr(5) );
