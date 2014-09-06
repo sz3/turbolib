@@ -9,9 +9,9 @@ set (SOURCES
 )
 
 include_directories(
-	${corelib_SOURCE_DIR}/test
-	${corelib_SOURCE_DIR}/test/lib
-	${corelib_SOURCE_DIR}/src/lib/file
+	${turbolib_SOURCE_DIR}/test
+	${turbolib_SOURCE_DIR}/test/lib
+	${turbolib_SOURCE_DIR}/src/lib/file
 )
 
 add_executable (

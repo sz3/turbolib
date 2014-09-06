@@ -12,8 +12,8 @@ set(SOURCES
 	Url.cpp
 	Url.h
 
-	http_parser/http_parser.c
-	http_parser/http_parser.c
+	${turbolib_SOURCE_DIR}/src/third_party_lib/http_parser/http_parser.c
+	${turbolib_SOURCE_DIR}/src/third_party_lib/http_parser/http_parser.h
 )
 
 include_directories(

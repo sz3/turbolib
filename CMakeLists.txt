@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 
-project ( corelib )
+project ( turbolib )
 enable_testing()
 
 set(BUILD_HTTP "TRUE" CACHE BOOL "build http lib")
@@ -9,6 +9,7 @@ set(EXTRA_INCLUDE_DIRS "" CACHE STRING "any extra directories you want on the in
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo")
+	set(CMAKE_C_FLAGS "${CFLAGS} -Wall -std=c99")
 	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2 -fPIC")
 	# -ftime-report
 	# -ffast-math
@@ -56,7 +57,8 @@ if (BUILD_UUID)
 endif()
 
 include_directories(
-	${corelib_SOURCE_DIR}/src/lib
+	${turbolib_SOURCE_DIR}/src/lib
+	${turbolib_SOURCE_DIR}/src/third_party_lib
 	${EXTRA_INCLUDE_DIRS}
 )
 
