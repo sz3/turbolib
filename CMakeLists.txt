@@ -22,6 +22,8 @@ endif()
 set (PROJECTS
    src/lib/command_line
    test/lib/command_line
+   src/lib/crypto
+   test/lib/crypto
    src/lib/data_structures
    test/lib/data_structures
    src/lib/event
@@ -38,6 +40,8 @@ set (PROJECTS
    test/lib/udt_socket
    src/lib/util
    test/lib/util
+
+   src/third_party_lib/crypto_base
 )
 
 if (BUILD_HTTP)
