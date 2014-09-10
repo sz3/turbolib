@@ -25,12 +25,18 @@ public:
 
 	circular_iterator lower_bound(const KeyType& key) const
 	{
-		return circular_iterator(map_type::lower_bound(key), map_type::begin(), map_type::end());
+		typename map_type::const_iterator it = map_type::lower_bound(key);
+		if (it == map_type::end())
+			it = map_type::begin();
+		return circular_iterator(it, map_type::begin(), map_type::end());
 	}
 
 	circular_iterator upper_bound(const KeyType& key) const
 	{
-		return circular_iterator(map_type::upper_bound(key), map_type::begin(), map_type::end());
+		typename map_type::const_iterator it = map_type::upper_bound(key);
+		if (it == map_type::end())
+			it = map_type::begin();
+		return circular_iterator(it, map_type::begin(), map_type::end());
 	}
 };
 } // namespace turbo

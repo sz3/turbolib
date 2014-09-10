@@ -44,3 +44,31 @@ TEST_CASE( "circular_mapTest/testLoop", "[unit]" )
 		assertEquals( "barhibyefoo", result );
 	}
 }
+
+TEST_CASE( "circular_mapTest/testOvershoot", "[unit]" )
+{
+	circular_map<int, string> circle;
+	circle[0] = "hi";
+	circle[2] = "foo";
+	circle[4] = "bar";
+
+	{
+		string result;
+
+		circular_map<int,string>::circular_iterator it = circle.lower_bound(7);
+		for (; it != circle.end(); ++it)
+			result += it->second;
+
+		assertEquals( "hifoobar", result );
+	}
+
+	{
+		string result;
+
+		circular_map<int,string>::circular_iterator it = circle.upper_bound(7);
+		for (; it != circle.end(); ++it)
+			result += it->second;
+
+		assertEquals( "hifoobar", result );
+	}
+}
