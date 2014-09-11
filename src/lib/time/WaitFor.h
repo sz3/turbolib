@@ -1,7 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "Timer.h"
+#include "stopwatch.h"
 #include "command_line/CommandLine.h"
 #include <exception>
 #include <iostream>
@@ -15,7 +15,7 @@ public:
 	WaitFor(unsigned seconds, Funct fun)
 	{
 		_result = false;
-		Timer t;
+		stopwatch t;
 		while (1)
 		{
 			_result = fun();

@@ -4,7 +4,7 @@
 #include "MultiThreadedExecutor.h"
 
 #include "Event.h"
-#include "time/Timer.h"
+#include "time/stopwatch.h"
 #include "serialize/StringUtil.h"
 
 #include <algorithm>
@@ -19,7 +19,7 @@ TEST_CASE( "MultiThreadedExecutorTest/testDefault", "[unit]" )
 	MultiThreadedExecutor threads(5);
 	assertTrue( threads.start() );
 
-	Timer t;
+	stopwatch t;
 	mutex myMutex;
 	std::vector<unsigned> results;
 	std::vector<unsigned> times;

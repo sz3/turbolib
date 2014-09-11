@@ -24,8 +24,7 @@ add_test(event_test event_test)
 
 target_link_libraries(event_test
 	event
-	time
-	
+
 	pthread
 	tbb
 )

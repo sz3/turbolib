@@ -27,7 +27,6 @@ target_link_libraries(udt_socket_test
 	command_line
 	event
 	socket
-	time
 
 	pthread
 	tbb

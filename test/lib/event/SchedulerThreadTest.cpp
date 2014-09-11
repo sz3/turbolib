@@ -4,7 +4,7 @@
 #include "SchedulerThread.h"
 
 #include "Event.h"
-#include "time/Timer.h"
+#include "time/stopwatch.h"
 #include "serialize/StringUtil.h"
 #include <vector>
 using std::bind;
@@ -14,7 +14,7 @@ TEST_CASE( "SchedulerThreadTest/testSchedule", "default" )
 {
 	SchedulerThread scheduler;
 
-	Timer time;
+	stopwatch time;
 	vector<unsigned> results;
 	vector<unsigned> timing;
 	Event midway;
@@ -51,7 +51,7 @@ TEST_CASE( "SchedulerThreadTest/testPeriodic", "default" )
 {
 	SchedulerThread scheduler;
 
-	Timer time;
+	stopwatch time;
 	vector<unsigned> results;
 	vector<unsigned> timing;
 	Event finished;
