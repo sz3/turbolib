@@ -18,8 +18,9 @@ General purpose C++11 support library for turbopump.
 
 ### Library dependencies
 
-* UDT (libudt)
+* libmsgpack (https://github.com/msgpack/msgpack-c)
 * intel's TBB library (libtbb)
+* UDT (libudt)
 * boost::uuid
 
 

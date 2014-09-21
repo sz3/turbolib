@@ -4,7 +4,9 @@ project(serialize_test)
 
 set (SOURCES
 	test.cpp
+	MessagePackTest.cpp
 	StringUtilTest.cpp
+	define_load_mapTest.cpp
 )
 
 include_directories(
@@ -22,5 +24,7 @@ add_test(serialize_test serialize_test)
 
 target_link_libraries(serialize_test
 	serialize
+
+	msgpack
 )
 

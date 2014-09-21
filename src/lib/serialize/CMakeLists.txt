@@ -3,6 +3,7 @@ cmake_minimum_required(VERSION 2.6)
 set(SOURCES
 	base64.cpp
 	base64.h
+	define_load_map.h
 	StringUtil.cpp
 	StringUtil.h
 )
