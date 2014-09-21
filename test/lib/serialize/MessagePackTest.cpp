@@ -1,3 +1,4 @@
+/* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "unittest.h"
 
 #include "StringUtil.h"
@@ -92,7 +93,7 @@ TEST_CASE( "MessagePackTest/testClass", "[unit]" )
 	assertEquals( "1 2 3", StringUtil::join(result.victor()) );
 }
 
-TEST_CASE( "MessagePackTest/testDeserialzeBaseClas", "[unit]" )
+TEST_CASE( "MessagePackTest/testDeserialzeBaseClass", "[unit]" )
 {
 	CoolClass cool("foo", 1.5, {1,2,3});
 
