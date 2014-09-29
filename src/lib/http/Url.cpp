@@ -3,7 +3,6 @@
 
 #include "serialize/StringUtil.h"
 using std::string;
-using std::map;
 
 Url::Url(const std::string& url)
 	: _url(url)
@@ -41,9 +40,9 @@ std::string Url::queryString() const
 	return _url.substr(pos+1);
 }
 
-std::map<std::string,std::string> Url::params() const
+std::unordered_map<std::string,std::string> Url::params() const
 {
-	std::map<string,string> params;
+	std::unordered_map<string,string> params;
 	std::vector<std::string> paramPairs = StringUtil::split( queryString(), '&' );
 	for (auto it = paramPairs.begin(); it != paramPairs.end(); ++it)
 	{
