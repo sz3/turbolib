@@ -1,133 +1,31 @@
 #pragma once
 
+#include "StringUtil.h"
 #include <sstream>
 #include <string>
 #include <unordered_map>
 
 // http://efesx.com/2010/08/31/overloading-macros/
-#define VA_NUM_ARGS(...) VA_NUM_ARGS_IMPL(__VA_ARGS__, 6,5,4,3,2,1)
-#define VA_NUM_ARGS_IMPL(_1,_2,_3,_4,_5,_6,N,...) N
+// http://ptspts.blogspot.com/2013/11/how-to-apply-macro-to-all-arguments-of.html
+#define APPLY0(t, dummy)
+#define APPLY1(t, a) t(a)
+#define APPLY2(t, a, b) t(a) t(b)
+#define APPLY3(t, a, b, c) t(a) t(b) t(c)
+#define APPLY4(t, a, b, c, d) t(a) t(b) t(c) t(d)
+#define APPLY5(t, a, b, c, d, e) t(a) t(b) t(c) t(d) t(e)
+#define APPLY6(t, a, b, c, d, e, f) t(a) t(b) t(c) t(d) t(e) t(f)
 
-#define macro_dispatcher(func, ...) \
-			macro_dispatcher_(func, VA_NUM_ARGS(__VA_ARGS__))
-#define macro_dispatcher_(func, nargs) \
-			macro_dispatcher__(func, nargs)
-#define macro_dispatcher__(func, nargs) \
-			func ## nargs
+#define NUM_ARGS_H1(dummy, x6, x5, x4, x3, x2, x1, x0, ...) x0
+#define NUM_ARGS(...) NUM_ARGS_H1(dummy, ##__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0)
+#define APPLY_ALL_H3(t, n, ...) APPLY##n(t, __VA_ARGS__)
+#define APPLY_ALL_H2(t, n, ...) APPLY_ALL_H3(t, n, __VA_ARGS__)
+#define APPLY_ALL(t, ...) APPLY_ALL_H2(t, NUM_ARGS(__VA_ARGS__), __VA_ARGS__)
 
-#define DEFINE_LOAD_MAP(...) macro_dispatcher(DEFINE_LOAD_MAP, __VA_ARGS__)(__VA_ARGS__)
+#define LOAD_MAP_INTERNAL(...) APPLY_ALL(LOAD_MAP_ELEM, __VA_ARGS__)
+#define LOAD_MAP_ELEM(n) {auto it = map.find(#n); if (it != map.end()) StringUtil::fromStr(n, it->second);}
 
-#define DEFINE_LOAD_MAP1(a) \
+#define DEFINE_LOAD_MAP(...) \
 void load(const std::unordered_map<std::string,std::string>& map) \
 { \
-	{ auto it = map.find(#a); if (it != map.end()) fromString(a, it->second); } \
-}
-
-#define DEFINE_LOAD_MAP2(a,b) \
-void load(const std::unordered_map<std::string,std::string>& map) \
-{ \
-	{ auto it = map.find(#a); if (it != map.end()) fromString(a, it->second); } \
-	{ auto it = map.find(#b); if (it != map.end()) fromString(b, it->second); } \
-}
-
-#define DEFINE_LOAD_MAP3(a,b,c) \
-void load(const std::unordered_map<std::string,std::string>& map) \
-{ \
-	{ auto it = map.find(#a); if (it != map.end()) fromString(a, it->second); } \
-	{ auto it = map.find(#b); if (it != map.end()) fromString(b, it->second); } \
-	{ auto it = map.find(#c); if (it != map.end()) fromString(c, it->second); } \
-}
-
-#define DEFINE_LOAD_MAP4(a,b,c,d) \
-void load(const std::unordered_map<std::string,std::string>& map) \
-{ \
-	{ auto it = map.find(#a); if (it != map.end()) fromString(a, it->second); } \
-	{ auto it = map.find(#b); if (it != map.end()) fromString(b, it->second); } \
-	{ auto it = map.find(#c); if (it != map.end()) fromString(c, it->second); } \
-	{ auto it = map.find(#d); if (it != map.end()) fromString(d, it->second); } \
-}
-
-#define DEFINE_LOAD_MAP5(a,b,c,d,e) \
-void load(const std::unordered_map<std::string,std::string>& map) \
-{ \
-	{ auto it = map.find(#a); if (it != map.end()) fromString(a, it->second); } \
-	{ auto it = map.find(#b); if (it != map.end()) fromString(b, it->second); } \
-	{ auto it = map.find(#c); if (it != map.end()) fromString(c, it->second); } \
-	{ auto it = map.find(#d); if (it != map.end()) fromString(d, it->second); } \
-	{ auto it = map.find(#e); if (it != map.end()) fromString(e, it->second); } \
-}
-
-#define DEFINE_LOAD_MAP6(a,b,c,d,e,f) \
-void load(const std::unordered_map<std::string,std::string>& map) \
-{ \
-	{ auto it = map.find(#a); if (it != map.end()) fromString(a, it->second); } \
-	{ auto it = map.find(#b); if (it != map.end()) fromString(b, it->second); } \
-	{ auto it = map.find(#c); if (it != map.end()) fromString(c, it->second); } \
-	{ auto it = map.find(#d); if (it != map.end()) fromString(d, it->second); } \
-	{ auto it = map.find(#e); if (it != map.end()) fromString(e, it->second); } \
-	{ auto it = map.find(#f); if (it != map.end()) fromString(f, it->second); } \
-}
-
-#define DEFINE_LOAD_MAP7(a,b,c,d,e,f,g) \
-void load(const std::unordered_map<std::string,std::string>& map) \
-{ \
-	{ auto it = map.find(#a); if (it != map.end()) fromString(a, it->second); } \
-	{ auto it = map.find(#b); if (it != map.end()) fromString(b, it->second); } \
-	{ auto it = map.find(#c); if (it != map.end()) fromString(c, it->second); } \
-	{ auto it = map.find(#d); if (it != map.end()) fromString(d, it->second); } \
-	{ auto it = map.find(#e); if (it != map.end()) fromString(e, it->second); } \
-	{ auto it = map.find(#f); if (it != map.end()) fromString(f, it->second); } \
-	{ auto it = map.find(#g); if (it != map.end()) fromString(g, it->second); } \
-}
-
-#define DEFINE_LOAD_MAP8(a,b,c,d,e,f,g,h) \
-void load(const std::unordered_map<std::string,std::string>& map) \
-{ \
-	{ auto it = map.find(#a); if (it != map.end()) fromString(a, it->second); } \
-	{ auto it = map.find(#b); if (it != map.end()) fromString(b, it->second); } \
-	{ auto it = map.find(#c); if (it != map.end()) fromString(c, it->second); } \
-	{ auto it = map.find(#d); if (it != map.end()) fromString(d, it->second); } \
-	{ auto it = map.find(#e); if (it != map.end()) fromString(e, it->second); } \
-	{ auto it = map.find(#f); if (it != map.end()) fromString(f, it->second); } \
-	{ auto it = map.find(#g); if (it != map.end()) fromString(g, it->second); } \
-	{ auto it = map.find(#h); if (it != map.end()) fromString(h, it->second); } \
-}
-
-#define DEFINE_LOAD_MAP9(a,b,c,d,e,f,g,h,i) \
-void load(const std::unordered_map<std::string,std::string>& map) \
-{ \
-	{ auto it = map.find(#a); if (it != map.end()) fromString(a, it->second); } \
-	{ auto it = map.find(#b); if (it != map.end()) fromString(b, it->second); } \
-	{ auto it = map.find(#c); if (it != map.end()) fromString(c, it->second); } \
-	{ auto it = map.find(#d); if (it != map.end()) fromString(d, it->second); } \
-	{ auto it = map.find(#e); if (it != map.end()) fromString(e, it->second); } \
-	{ auto it = map.find(#f); if (it != map.end()) fromString(f, it->second); } \
-	{ auto it = map.find(#g); if (it != map.end()) fromString(g, it->second); } \
-	{ auto it = map.find(#h); if (it != map.end()) fromString(h, it->second); } \
-	{ auto it = map.find(#i); if (it != map.end()) fromString(i, it->second); } \
-}
-
-#define DEFINE_LOAD_MAP10(a,b,c,d,e,f,g,h,i,j) \
-void load(const std::unordered_map<std::string,std::string>& map) \
-{ \
-	{ auto it = map.find(#a); if (it != map.end()) fromString(a, it->second); } \
-	{ auto it = map.find(#b); if (it != map.end()) fromString(b, it->second); } \
-	{ auto it = map.find(#c); if (it != map.end()) fromString(c, it->second); } \
-	{ auto it = map.find(#d); if (it != map.end()) fromString(d, it->second); } \
-	{ auto it = map.find(#e); if (it != map.end()) fromString(e, it->second); } \
-	{ auto it = map.find(#f); if (it != map.end()) fromString(f, it->second); } \
-	{ auto it = map.find(#g); if (it != map.end()) fromString(g, it->second); } \
-	{ auto it = map.find(#h); if (it != map.end()) fromString(h, it->second); } \
-	{ auto it = map.find(#i); if (it != map.end()) fromString(i, it->second); } \
-	{ auto it = map.find(#j); if (it != map.end()) fromString(j, it->second); } \
-}
-
-template <typename T>
-bool fromString(T& var, const std::string& str)
-{
-	if (str.empty())
-		return false;
-	std::stringstream ss(str);
-	ss >> var;
-	return !!ss;
+	LOAD_MAP_INTERNAL(__VA_ARGS__) \
 }

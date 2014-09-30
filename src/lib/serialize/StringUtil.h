@@ -49,4 +49,14 @@ namespace StringUtil
 		return ss.str();
 	}
 
+	template <typename T>
+	inline bool fromStr(T& var, const std::string& str)
+	{
+		if (str.empty())
+			return false;
+		std::stringstream ss(str);
+		ss >> var;
+		return !!ss;
+	}
+
 }
