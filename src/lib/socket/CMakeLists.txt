@@ -9,6 +9,7 @@ set(SOURCES
 	LocalStreamSocketServer.h
 	MockSocketServer.h
 	MockSocketWriter.h
+	NullByteStream.h
 	PooledSocketServer.h
 	SocketWriter.h
 	StatelessSocketServer.h
