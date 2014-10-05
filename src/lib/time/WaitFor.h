@@ -23,7 +23,7 @@ public:
 				break;
 			if (t.millis() >= seconds*1000)
 				break;
-			CommandLine::run("sleep 5");
+			CommandLine::run("sleep 1");
 		}
 	}
 
