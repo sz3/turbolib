@@ -1,7 +1,6 @@
 #pragma once
 
 #include "StringUtil.h"
-#include <sstream>
 #include <string>
 #include <unordered_map>
 
@@ -24,8 +23,15 @@
 #define LOAD_MAP_INTERNAL(...) APPLY_ALL(LOAD_MAP_ELEM, __VA_ARGS__)
 #define LOAD_MAP_ELEM(n) {auto it = map.find(#n); if (it != map.end()) StringUtil::fromStr(n, it->second);}
 
-#define DEFINE_LOAD_MAP(...) \
+#define SAVE_MAP_INTERNAL(...) APPLY_ALL(SAVE_MAP_ELEM, __VA_ARGS__)
+#define SAVE_MAP_ELEM(n) {map[#n] = StringUtil::str(n);}
+
+#define DEFINE_SERIALIZE_MAP(...) \
 void load(const std::unordered_map<std::string,std::string>& map) \
 { \
 	LOAD_MAP_INTERNAL(__VA_ARGS__) \
+} \
+void save(std::unordered_map<std::string,std::string>& map) \
+{ \
+	SAVE_MAP_INTERNAL(__VA_ARGS__) \
 }

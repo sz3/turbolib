@@ -6,7 +6,7 @@ set (SOURCES
 	test.cpp
 	MessagePackTest.cpp
 	StringUtilTest.cpp
-	define_load_mapTest.cpp
+	define_serialize_mapTest.cpp
 )
 
 include_directories(
