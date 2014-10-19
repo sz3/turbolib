@@ -11,6 +11,7 @@ set(SOURCES
 	MockSocketWriter.h
 	NullByteStream.h
 	PooledSocketServer.h
+	SimplePool.h
 	SocketWriter.h
 	StatelessSocketServer.h
 	StreamSocketAcceptorServer.h

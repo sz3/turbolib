@@ -5,6 +5,7 @@
 
 #include "ISocketServer.h"
 
+#include "SimplePool.h"
 #include "SocketWriter.h"
 #include "event/Event.h"
 #include "serialize/StringUtil.h"
@@ -37,8 +38,8 @@ protected:
 
 protected:
 	Socket _sock;
-	SocketSet _socketSet;
-	tbb::concurrent_unordered_map<std::string,int> _connections;
+	SocketSet _readSet;
+	SimplePool<Socket> _pool;
 	bool _running;
 	socket_address _addr;
 
@@ -56,7 +57,7 @@ template <typename Socket, typename SocketSet>
 PooledSocketServer<Socket,SocketSet>::PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders, unsigned maxReadSize)
 	: _running(false)
 	, _addr(addr)
-	, _socketSet(SocketSet::READS)
+	, _readSet(SocketSet::READS)
 	, _onRead(onRead)
 	, _numReaders(numReaders)
 	, _maxReadSize(maxReadSize)
@@ -80,10 +81,10 @@ bool PooledSocketServer<Socket,SocketSet>::start()
 	if (!_sock.good())
 		return fatalError("couldn't get good socket");
 
-	if (!_socketSet.good())
+	if (!_readSet.good())
 	{
 		_sock.close();
-		return fatalError("couldn't get epoll to work for reads: " + _socketSet.lastError());
+		return fatalError("couldn't get epoll to work for reads: " + _readSet.lastError());
 	}
 
 	if (!_sock.bind(_addr))
@@ -112,10 +113,9 @@ bool PooledSocketServer<Socket,SocketSet>::stop()
 		return false;
 
 	_running = false;
-	_socketSet.release();
+	_readSet.release();
 	_sock.close();
-	for (auto conn = _connections.begin(); conn != _connections.end(); ++conn)
-		Socket(conn->second).close();
+	_pool.close_all();
 
 	if (_acceptor.joinable())
 		_acceptor.join();
@@ -138,7 +138,8 @@ void PooledSocketServer<Socket,SocketSet>::accept()
 		if (!conn.good())
 			continue;
 
-		if (!_socketSet.add(conn.handle()))
+		_pool.add(conn);
+		if (!_readSet.add(conn.handle()))
 			std::cout << "couldn't add socket to socket_set." << std::endl;
 	}
 }
@@ -151,21 +152,20 @@ void PooledSocketServer<Socket,SocketSet>::run()
 
 	while (_running)
 	{
-		std::set<int> reads = _socketSet.wait();
+		std::set<int> reads = _readSet.wait();
 		for (std::set<int>::const_iterator it = reads.begin(); it != reads.end(); ++it)
 		{
 			Socket sock(*it);
 			int bytesRead = sock.recv(&buffer[0], buffer.size());
 			if (bytesRead <= 0)
 			{
-				_socketSet.remove(*it);
-				sock.close();
+				_readSet.remove(*it);
+				_pool.close(sock);
 				continue;
 			}
 
-			SocketWriter<Socket> writer(sock);
-			_onRead(writer, &buffer[0], bytesRead);
-			_connections[sock.endpoint().toString()] = *it;
+			std::shared_ptr<ISocketWriter> writer = _pool.find_or_add(sock);
+			_onRead(*writer, &buffer[0], bytesRead);
 		}
 	}
 }
@@ -179,22 +179,31 @@ bool PooledSocketServer<Socket,SocketSet>::running() const
 template <typename Socket, typename SocketSet>
 std::shared_ptr<ISocketWriter> PooledSocketServer<Socket,SocketSet>::getWriter(const socket_address& endpoint)
 {
-	// if we already got one, return it
-	std::pair< tbb::concurrent_unordered_map<std::string, int>::iterator, bool> pear = _connections.insert( {endpoint.toString(), -1} );
-	if (pear.first->second >= 0)
-		return std::shared_ptr<ISocketWriter>(new SocketWriter<Socket>(pear.first->second));
+	// we have an essential race: during the time we're trying to connect, we might get a connection to that peer.
+	// in that case, use the server-derived connection.
 
+	std::shared_ptr<ISocketWriter> writer = _pool.find(endpoint);
+	if (!!writer)
+		return writer;
+
+	// else, create new socket
 	Socket sock(endpoint);
 	if (!sock.good())
 	{
 		std::cout << "socket getWriter failed miserably: " << sock.getErrorMessage() << std::endl;
 		return NULL;
 	}
-	pear.first->second = sock.handle();
 
-	if (!_socketSet.add(sock.handle()))
+	// try to add it
+	if (!_pool.add(sock, writer))
+		sock.close(); // welp, race condition
+	else if (!_readSet.add(sock.handle()))
+	{
 		std::cout << "socketSet add error for client sock: " << sock.getErrorMessage() << std::endl;
-	return std::shared_ptr<ISocketWriter>(new SocketWriter<Socket>(sock));
+		sock.close();
+		return NULL;
+	}
+	return writer;
 }
 
 template <typename Socket, typename SocketSet>
