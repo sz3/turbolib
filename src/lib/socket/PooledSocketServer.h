@@ -16,11 +16,11 @@
 #include <iostream>
 #include <thread>
 
-template <typename Socket, typename SocketSet>
+template <typename Socket, typename SocketSet, typename SocketPool=SimplePool<Socket>>
 class PooledSocketServer : public ISocketServer
 {
 public:
-	PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders=1, unsigned maxReadSize=1450);
+	PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, SocketPool* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1450);
 	~PooledSocketServer();
 
 	bool start();
@@ -37,9 +37,12 @@ protected:
 	bool fatalError(const std::string& error);
 
 protected:
+	std::unique_ptr<SocketPool> _defaultPool;
+
+protected:
+	SocketPool& _pool;
 	Socket _sock;
 	SocketSet _readSet;
-	SimplePool<Socket> _pool;
 	bool _running;
 	socket_address _addr;
 
@@ -53,26 +56,28 @@ protected:
 	std::string _lastError;
 };
 
-template <typename Socket, typename SocketSet>
-PooledSocketServer<Socket,SocketSet>::PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders, unsigned maxReadSize)
+template <typename Socket, typename SocketSet, typename SocketPool>
+PooledSocketServer<Socket,SocketSet,SocketPool>::PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, SocketPool* pool, unsigned numReaders, unsigned maxReadSize)
 	: _running(false)
 	, _addr(addr)
 	, _readSet(SocketSet::READS)
 	, _onRead(onRead)
 	, _numReaders(numReaders)
 	, _maxReadSize(maxReadSize)
+	, _defaultPool(pool == NULL? new SocketPool() : NULL)
+	, _pool(pool == NULL? *_defaultPool : *pool)
 {
 
 }
 
-template <typename Socket, typename SocketSet>
-PooledSocketServer<Socket,SocketSet>::~PooledSocketServer()
+template <typename Socket, typename SocketSet, typename SocketPool>
+PooledSocketServer<Socket,SocketSet,SocketPool>::~PooledSocketServer()
 {
 	stop();
 }
 
-template <typename Socket, typename SocketSet>
-bool PooledSocketServer<Socket,SocketSet>::start()
+template <typename Socket, typename SocketSet, typename SocketPool>
+bool PooledSocketServer<Socket,SocketSet,SocketPool>::start()
 {
 	if (_running)
 		return true;
@@ -106,8 +111,8 @@ bool PooledSocketServer<Socket,SocketSet>::start()
 	return _running;
 }
 
-template <typename Socket, typename SocketSet>
-bool PooledSocketServer<Socket,SocketSet>::stop()
+template <typename Socket, typename SocketSet, typename SocketPool>
+bool PooledSocketServer<Socket,SocketSet,SocketPool>::stop()
 {
 	if (!_running)
 		return false;
@@ -128,8 +133,8 @@ bool PooledSocketServer<Socket,SocketSet>::stop()
 	return true;
 }
 
-template <typename Socket, typename SocketSet>
-void PooledSocketServer<Socket,SocketSet>::accept()
+template <typename Socket, typename SocketSet, typename SocketPool>
+void PooledSocketServer<Socket,SocketSet,SocketPool>::accept()
 {
 	_started.shutdown();
 	while (_running)
@@ -144,8 +149,8 @@ void PooledSocketServer<Socket,SocketSet>::accept()
 	}
 }
 
-template <typename Socket, typename SocketSet>
-void PooledSocketServer<Socket,SocketSet>::run()
+template <typename Socket, typename SocketSet, typename SocketPool>
+void PooledSocketServer<Socket,SocketSet,SocketPool>::run()
 {
 	std::string buffer;
 	buffer.resize(_maxReadSize);
@@ -170,14 +175,14 @@ void PooledSocketServer<Socket,SocketSet>::run()
 	}
 }
 
-template <typename Socket, typename SocketSet>
-bool PooledSocketServer<Socket,SocketSet>::running() const
+template <typename Socket, typename SocketSet, typename SocketPool>
+bool PooledSocketServer<Socket,SocketSet,SocketPool>::running() const
 {
 	return _running;
 }
 
-template <typename Socket, typename SocketSet>
-std::shared_ptr<ISocketWriter> PooledSocketServer<Socket,SocketSet>::getWriter(const socket_address& endpoint)
+template <typename Socket, typename SocketSet, typename SocketPool>
+std::shared_ptr<ISocketWriter> PooledSocketServer<Socket,SocketSet,SocketPool>::getWriter(const socket_address& endpoint)
 {
 	// we have an essential race: during the time we're trying to connect, we might get a connection to that peer.
 	// in that case, use the server-derived connection.
@@ -206,14 +211,14 @@ std::shared_ptr<ISocketWriter> PooledSocketServer<Socket,SocketSet>::getWriter(c
 	return writer;
 }
 
-template <typename Socket, typename SocketSet>
-std::string PooledSocketServer<Socket,SocketSet>::lastError() const
+template <typename Socket, typename SocketSet, typename SocketPool>
+std::string PooledSocketServer<Socket,SocketSet,SocketPool>::lastError() const
 {
 	return _lastError;
 }
 
-template <typename Socket, typename SocketSet>
-bool PooledSocketServer<Socket,SocketSet>::fatalError(const std::string& error)
+template <typename Socket, typename SocketSet, typename SocketPool>
+bool PooledSocketServer<Socket,SocketSet,SocketPool>::fatalError(const std::string& error)
 {
 	_lastError = error;
 	return _running = false;

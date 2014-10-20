@@ -5,6 +5,7 @@ project(socket_test)
 set (SOURCES
 	test.cpp
 	FileByteStreamTest.cpp
+	SimplePoolTest.cpp
 	SocketWriterTest.cpp
 	StatelessSocketServerTest.cpp
 	StreamSocketAcceptorServerTest.cpp
@@ -31,5 +32,6 @@ target_link_libraries(socket_test
 	event
 
 	pthread
+	tbb
 )
 

@@ -14,8 +14,10 @@ protected:
 public:
 	bool add(const Socket& sock);
 	bool add(const Socket& sock, std::shared_ptr<ISocketWriter>& writer);
+
 	std::shared_ptr<ISocketWriter> find(const socket_address& addr) const;
 	std::shared_ptr<ISocketWriter> find_or_add(const Socket& sock);
+
 	void close(Socket& sock);
 	void close_all();
 

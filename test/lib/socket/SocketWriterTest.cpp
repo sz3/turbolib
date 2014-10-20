@@ -3,13 +3,8 @@
 
 #include "SocketWriter.h"
 #include "udp_socket.h"
-using namespace std;
 
-namespace {
-
-}
-
-TEST_CASE( "SocketWriterTest/testDefault", "default" )
+TEST_CASE( "SocketWriterTest/testInstantiate", "[unit]" )
 {
 	SocketWriter<udp_socket> wrapper;
 }
