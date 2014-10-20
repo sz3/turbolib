@@ -1,12 +1,13 @@
 #pragma once
 
+#include "ISocketPool.h"
 #include "SocketWriter.h"
 #include "socket_address.h"
 #include "tbb/concurrent_unordered_map.h"
 #include <memory>
 
 template <typename Socket>
-class SimplePool
+class SimplePool : public ISocketPool<Socket>
 {
 protected:
 	using map_type = tbb::concurrent_unordered_map<std::string,int>; // concurrent_hash_map?

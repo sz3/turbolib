@@ -4,6 +4,7 @@ set(SOURCES
 	FileByteStream.cpp
 	FileByteStream.h
 	IByteStream.h
+	ISocketPool.h
 	ISocketServer.h
 	ISocketWriter.h
 	LocalStreamSocketServer.h
