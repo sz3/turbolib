@@ -12,6 +12,9 @@ public:
 	virtual int try_send(const char* buffer, unsigned size) = 0;
 	virtual int send(const char* buffer, unsigned size) = 0;
 
+	// TODO: make this go away
+	virtual bool close() = 0;
+
 	virtual socket_address endpoint() const = 0;
 	virtual std::string target() const = 0; // TODO: this should go away
 };

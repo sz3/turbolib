@@ -28,6 +28,12 @@ public:
 		return size;
 	}
 
+	bool close()
+	{
+		_history.call("close");
+		return true;
+	}
+
 	socket_address endpoint() const
 	{
 		_history.call("endpoint");
