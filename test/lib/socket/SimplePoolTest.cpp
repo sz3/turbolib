@@ -30,5 +30,4 @@ TEST_CASE( "SimplePoolTest/testAdd", "[test]" )
 	assertFalse( pool.add(udp_socket(socket_address("10.1.2.3:2")), writer) );
 	assertEquals( 1, pool._connections.size() );
 	assertTrue( !!writer );
-	assertEquals( "10.1.2.3", writer->target() );
 }
