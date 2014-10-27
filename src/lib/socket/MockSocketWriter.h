@@ -5,6 +5,16 @@
 #include "socket/socket_address.h"
 #include "util/CallHistory.h"
 
+namespace {
+	std::string boolStr(bool val)
+	{
+		if (val)
+			return "true";
+		else
+			return "false";
+	}
+}
+
 class MockSocketWriter : public ISocketWriter
 {
 public:
@@ -31,13 +41,12 @@ public:
 
 	unsigned capacity() const
 	{
-		_history.call("capacity");
 		return _capacity;
 	}
 
 	bool flush(bool wait)
 	{
-		_history.call("flush", wait);
+		_history.call("flush", boolStr(wait));
 		return true;
 	}
 
