@@ -26,6 +26,16 @@ public:
 		return Socket::send(buffer, size);
 	}
 
+	unsigned capacity() const
+	{
+		return 1500;
+	}
+
+	bool flush(bool wait)
+	{
+		return true;
+	}
+
 	bool close()
 	{
 		return Socket::close();

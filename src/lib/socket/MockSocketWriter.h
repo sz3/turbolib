@@ -11,6 +11,7 @@ public:
 	MockSocketWriter()
 		: _trySendError(false)
 		, _trySendErrorBytes(-1)
+		, _capacity(1000)
 	{
 	}
 
@@ -26,6 +27,18 @@ public:
 	{
 		_history.call("send", std::string(buffer, size));
 		return size;
+	}
+
+	unsigned capacity() const
+	{
+		_history.call("capacity");
+		return _capacity;
+	}
+
+	bool flush(bool wait)
+	{
+		_history.call("flush", wait);
+		return true;
 	}
 
 	bool close()
@@ -50,6 +63,7 @@ public:
 	socket_address _endpoint;
 	bool _trySendError;
 	int _trySendErrorBytes;
+	unsigned _capacity;
 
 	mutable CallHistory _history;
 };

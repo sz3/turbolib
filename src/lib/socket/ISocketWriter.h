@@ -12,7 +12,10 @@ public:
 	virtual int try_send(const char* buffer, unsigned size) = 0;
 	virtual int send(const char* buffer, unsigned size) = 0;
 
-	// TODO: make this go away
+	virtual unsigned capacity() const = 0;
+	virtual bool flush(bool wait) = 0;
+
+	// TODO: make this go away?
 	virtual bool close() = 0;
 
 	virtual socket_address endpoint() const = 0;
