@@ -38,7 +38,7 @@ protected:
 	bool fatalError(const std::string& error);
 
 protected:
-	std::unique_ptr<ISocketPool<Socket>> _defaultPool;
+	std::unique_ptr<ISocketPool<Socket>> _poolPtr;
 
 protected:
 	ISocketPool<Socket>& _pool;
@@ -65,8 +65,8 @@ PooledSocketServer<Socket,SocketSet>::PooledSocketServer(const socket_address& a
 	, _onRead(onRead)
 	, _numReaders(numReaders)
 	, _maxReadSize(maxReadSize)
-	, _defaultPool(pool == NULL? new SimplePool<Socket>() : NULL)
-	, _pool(pool == NULL? *_defaultPool : *pool)
+	, _poolPtr(pool == NULL? new SimplePool<Socket>() : pool)
+	, _pool(*_poolPtr)
 {
 
 }

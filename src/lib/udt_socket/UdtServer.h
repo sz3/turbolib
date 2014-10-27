@@ -2,14 +2,16 @@
 #pragma once
 
 #include "UdtScope.h"
+#include "socket/ISocketPool.h"
 #include "socket/ISocketServer.h"
+#include "udt_socket/udt_socket.h"
 #include <functional>
 #include <memory>
 
 class UdtServer : public ISocketServer
 {
 public:
-	UdtServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders=1, unsigned maxReadSize=1450);
+	UdtServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, ISocketPool<udt_socket>* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1450);
 
 	bool start();
 	bool stop();

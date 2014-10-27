@@ -42,8 +42,7 @@ namespace {
 	};
 }
 
-
-TEST_CASE( "PooledSocketServerTest/testDefault", "default" )
+TEST_CASE( "PooledSocketServerTest/testDefault", "[unit]" )
 {
 	UdtScope udt;
 
@@ -68,7 +67,7 @@ TEST_CASE( "PooledSocketServerTest/testDefault", "default" )
 	assertEquals( "onRead(hello, darkness)|onRead(my old friend)", handler.calls() );
 }
 
-TEST_CASE( "PooledSocketServerTest/testServerCrosstalk", "default" )
+TEST_CASE( "PooledSocketServerTest/testServerCrosstalk", "[unit]" )
 {
 	UdtScope udt;
 
@@ -116,7 +115,7 @@ TEST_CASE( "PooledSocketServerTest/testServerCrosstalk", "default" )
 	}
 }
 
-TEST_CASE( "PooledSocketServerTest/testSpam", "default" )
+TEST_CASE( "PooledSocketServerTest/testSpam", "[unit]" )
 {
 	UdtScope udt;
 

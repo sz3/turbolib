@@ -1,8 +1,10 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-// e.g. for udp, but really for any server that doesn't need a thread for accept()
+// e.g. for udp
 #include "ISocketServer.h"
+
+#include "SimplePool.h"
 #include "SocketWriter.h"
 #include "serialize/StringUtil.h"
 
@@ -14,7 +16,7 @@ template <typename Socket>
 class StatelessSocketServer : public ISocketServer
 {
 public:
-	StatelessSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders=1, unsigned maxReadSize=1450);
+	StatelessSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, ISocketPool<Socket>* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1450);
 	~StatelessSocketServer();
 
 	bool start();
@@ -30,6 +32,10 @@ protected:
 	bool fatalError(const std::string& error);
 
 protected:
+	std::unique_ptr<ISocketPool<Socket>> _poolPtr;
+
+protected:
+	ISocketPool<Socket>& _pool;
 	Socket _sock;
 	bool _running;
 	socket_address _addr;
@@ -43,12 +49,14 @@ protected:
 };
 
 template <typename Socket>
-StatelessSocketServer<Socket>::StatelessSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, unsigned numReaders, unsigned maxReadSize)
+StatelessSocketServer<Socket>::StatelessSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, ISocketPool<Socket>* pool, unsigned numReaders, unsigned maxReadSize)
 	: _running(false)
 	, _addr(addr)
 	, _onRead(onRead)
 	, _numReaders(numReaders)
 	, _maxReadSize(maxReadSize)
+	, _poolPtr(pool == NULL? new SimplePool<Socket>() : pool)
+	, _pool(*_poolPtr)
 {
 
 }
@@ -124,9 +132,18 @@ bool StatelessSocketServer<Socket>::running() const
 template <typename Socket>
 std::shared_ptr<ISocketWriter> StatelessSocketServer<Socket>::getWriter(const socket_address& endpoint)
 {
-	SocketWriter<Socket>* sock = new SocketWriter<Socket>(_sock);
-	sock->setEndpoint(endpoint);
-	return std::shared_ptr<ISocketWriter>(sock);
+	// we have an essential race: we might have multiple callers to getWriter
+	std::shared_ptr<ISocketWriter> writer = _pool.find(endpoint);
+	if (!!writer)
+		return writer;
+
+	// else, create new socket
+	Socket sock(_sock);
+	sock.setEndpoint(endpoint);
+
+	// try to add it
+	_pool.add(sock, writer);
+	return writer;
 }
 
 template <typename Socket>
