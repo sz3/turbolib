@@ -16,7 +16,7 @@ public:
 	using circular_iterator = turbo::circular_iterator<typename std::map<KeyType, ValueType>::const_iterator>;
 
 public:
-	using map_type::map; // constructors
+	using typename map_type::map; // constructors
 
 	circular_iterator find(const KeyType& key) const
 	{

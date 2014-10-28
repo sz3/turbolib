@@ -1,10 +1,6 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "unittest.h"
 
-#include "Url.h"
-#include "serialize/StringUtil.h"
-using std::string;
-
 namespace {
 	template <class T1, class T2>
 	std::ostream& operator<<(std::ostream& outstream, const std::pair<T1,T2>& pear)
@@ -13,6 +9,10 @@ namespace {
 		return outstream;
 	}
 }
+
+#include "Url.h"
+#include "serialize/StringUtil.h"
+using std::string;
 
 TEST_CASE( "UrlTest/testTokenize", "[unit]" )
 {

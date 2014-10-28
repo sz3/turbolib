@@ -2,7 +2,6 @@
 #include "ConfigFile.h"
 
 #include "File.h"
-#include "StateSaver.h"
 #include "serialize/StringUtil.h"
 #include <functional>
 #include <iostream>
@@ -12,17 +11,18 @@
 using std::string;
 using namespace std::placeholders;
 
-ConfigFile::ConfigFile(std::string filename)
-	: _filename(std::move(filename))
-{
-}
-
 namespace {
 	std::ostream& operator<<(std::ostream& outstream, const std::pair<string,string>& val)
 	{
 		outstream << val.first << "=" << val.second;
 		return outstream;
 	}
+}
+#include "StateSaver.h"
+
+ConfigFile::ConfigFile(std::string filename)
+	: _filename(std::move(filename))
+{
 }
 
 void ConfigFile::loadLine(const string& line)

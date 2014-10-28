@@ -1,14 +1,6 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "unittest.h"
 
-#include "StringUtil.h"
-#include <deque>
-#include <map>
-#include <set>
-#include <vector>
-using std::map;
-using std::string;
-
 namespace {
 	template <class T1, class T2>
 	std::ostream& operator<<(std::ostream& outstream, const std::pair<T1,T2>& pear)
@@ -17,6 +9,14 @@ namespace {
 		return outstream;
 	}
 }
+
+#include "StringUtil.h"
+#include <deque>
+#include <map>
+#include <set>
+#include <vector>
+using std::map;
+using std::string;
 
 TEST_CASE( "StringUtilTest/testJoinPrimitive", "description" )
 {

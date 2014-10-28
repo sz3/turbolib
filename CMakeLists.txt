@@ -15,8 +15,7 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	# -ffast-math
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX)
-    # gdwarf-3 to help older gdbs
-    set(CMAKE_CXX_FLAGS "-std=c++0x -flto -gdwarf-3")
+    set(CMAKE_CXX_FLAGS "-std=c++11")
 endif()
 
 set (PROJECTS
