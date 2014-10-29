@@ -10,12 +10,12 @@ set(EXTRA_INCLUDE_DIRS "" CACHE STRING "any extra directories you want on the in
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 	set(CMAKE_C_FLAGS "${CFLAGS} -Wall -std=c99")
-	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2 -fPIC")
+	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2 -fPIC -std=c++11")
 	# -ftime-report
 	# -ffast-math
 endif()
 if(CMAKE_COMPILER_IS_GNUCXX)
-    set(CMAKE_CXX_FLAGS "-std=c++11")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -flto")
 endif()
 
 set (PROJECTS
