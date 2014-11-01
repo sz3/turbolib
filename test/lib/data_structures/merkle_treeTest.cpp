@@ -3,6 +3,7 @@
 
 #include "merkle_tree.h"
 #include "serialize/StringUtil.h"
+#include "serialize/str_join.h"
 #include "util/Random.h"
 #include <deque>
 #include <iostream>
@@ -409,7 +410,7 @@ TEST_CASE( "merkle_treeTest/testEnumerate", "[unit]" )
 	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return true; };
 	tree.enumerate(fun, 1, 3);
 
-	assertEquals( "one two three", StringUtil::join(words) );
+	assertEquals( "one two three", turbo::str::join(words) );
 }
 
 TEST_CASE( "merkle_treeTest/testEnumerate.Empty", "[unit]" )
@@ -420,7 +421,7 @@ TEST_CASE( "merkle_treeTest/testEnumerate.Empty", "[unit]" )
 	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return true; };
 	tree.enumerate(fun, 1, 3);
 
-	assertEquals( "", StringUtil::join(words) );
+	assertEquals( "", turbo::str::join(words) );
 }
 
 TEST_CASE( "merkle_treeTest/testEnumerate.Lots", "[unit]" )
@@ -442,19 +443,19 @@ TEST_CASE( "merkle_treeTest/testEnumerate.Lots", "[unit]" )
 	assertEquals( "20 276 532 788 21 277 533 789 "
 				  "22 278 534 790 23 279 535 791 "
 				  "24 280 536 792 25 281 537 793 "
-				  "26", StringUtil::join(words) );
+				  "26", turbo::str::join(words) );
 
 	words.clear();
 	tree.enumerate(fun, 1, 2);
-	assertEquals( "1 257 513 769 2", StringUtil::join(words) );
+	assertEquals( "1 257 513 769 2", turbo::str::join(words) );
 
 	words.clear();
 	tree.enumerate(fun, 52, 52);
-	assertEquals( "52", StringUtil::join(words) );
+	assertEquals( "52", turbo::str::join(words) );
 
 	words.clear();
 	tree.enumerate(fun, 100000, 100000);
-	assertEquals( "", StringUtil::join(words) );
+	assertEquals( "", turbo::str::join(words) );
 }
 
 TEST_CASE( "merkle_treeTest/testEnumerate.Stop", "[unit]" )
@@ -473,5 +474,5 @@ TEST_CASE( "merkle_treeTest/testEnumerate.Stop", "[unit]" )
 	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return words.size() < 5; };
 
 	tree.enumerate(fun, 20, 25);
-	assertEquals( "20 276 532 788 21", StringUtil::join(words) );
+	assertEquals( "20 276 532 788 21", turbo::str::join(words) );
 }

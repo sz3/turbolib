@@ -1,7 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "unittest.h"
 
-#include "StringUtil.h"
+#include "str_join.h"
 
 #include "msgpack.hpp"
 #include <string>
@@ -71,7 +71,7 @@ TEST_CASE( "MessagePackTest/testDefault", "[unit]" )
 	std::vector<std::string> result;
 	msg.get().convert(&result);
 
-	assertEquals( "Hello, World!", StringUtil::join(result) );
+	assertEquals( "Hello, World!", turbo::str::join(result) );
 }
 
 TEST_CASE( "MessagePackTest/testClass", "[unit]" )
@@ -90,7 +90,7 @@ TEST_CASE( "MessagePackTest/testClass", "[unit]" )
 
 	assertEquals( "foo", result.foo() );
 	assertEquals( 1.5, result.bar() );
-	assertEquals( "1 2 3", StringUtil::join(result.victor()) );
+	assertEquals( "1 2 3", turbo::str::join(result.victor()) );
 }
 
 TEST_CASE( "MessagePackTest/testDeserialzeBaseClass", "[unit]" )
@@ -111,6 +111,6 @@ TEST_CASE( "MessagePackTest/testDeserialzeBaseClass", "[unit]" )
 
 	assertEquals( "foo", result.foo() );
 	assertEquals( 1.5, result.bar() );
-	assertEquals( "1 2 3", StringUtil::join(result.victor()) );
+	assertEquals( "1 2 3", turbo::str::join(result.victor()) );
 }
 

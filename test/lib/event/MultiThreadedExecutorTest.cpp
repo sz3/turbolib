@@ -5,7 +5,7 @@
 
 #include "Event.h"
 #include "time/stopwatch.h"
-#include "serialize/StringUtil.h"
+#include "serialize/str_join.h"
 
 #include <algorithm>
 #include <iostream>
@@ -34,8 +34,8 @@ TEST_CASE( "MultiThreadedExecutorTest/testDefault", "[unit]" )
 		std::cout << threads.queued() << std::endl;
 
 	std::sort(results.begin(), results.end());
-	assertEquals( "0 1 2 3 4 5 6 7 8 9", StringUtil::join(results) );
+	assertEquals( "0 1 2 3 4 5 6 7 8 9", turbo::str::join(results) );
 
-	std::cout << "times: " << StringUtil::join(times) << std::endl;
+	std::cout << "times: " << turbo::str::join(times) << std::endl;
 }
 

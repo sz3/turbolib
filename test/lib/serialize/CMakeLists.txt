@@ -6,6 +6,7 @@ set (SOURCES
 	test.cpp
 	MessagePackTest.cpp
 	StringUtilTest.cpp
+	str_joinTest.cpp
 	define_serialize_mapTest.cpp
 )
 

@@ -6,6 +6,7 @@ set(SOURCES
 	define_serialize_map.h
 	StringUtil.cpp
 	StringUtil.h
+	str_join.h
 )
 
 include_directories(

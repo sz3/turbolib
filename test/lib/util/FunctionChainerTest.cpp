@@ -2,7 +2,7 @@
 #include "unittest.h"
 
 #include "FunctionChainer.h"
-#include "serialize/StringUtil.h"
+#include "serialize/str_join.h"
 #include <deque>
 #include <functional>
 #include <string>
@@ -46,9 +46,9 @@ TEST_CASE( "FunctionChainerTest/testDefault", "[unit]" )
 	chainFun(2, "two");
 	chainFun(3, "three");
 
-	assertEquals( "one two three", StringUtil::join(strresults) );
-	assertEquals( "1 2 3", StringUtil::join(numresults) );
-	assertEquals( "1 2 3", StringUtil::join(meister._numbers) );
-	assertEquals( "one two three", StringUtil::join(meister._strings) );
+	assertEquals( "one two three", turbo::str::join(strresults) );
+	assertEquals( "1 2 3", turbo::str::join(numresults) );
+	assertEquals( "1 2 3", turbo::str::join(meister._numbers) );
+	assertEquals( "one two three", turbo::str::join(meister._strings) );
 }
 

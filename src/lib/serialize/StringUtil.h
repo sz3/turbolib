@@ -7,24 +7,6 @@
 
 namespace StringUtil
 {
-	template <class Iter>
-	std::string join(const Iter& start, const Iter& end, char delim=' ')
-	{
-		std::stringstream ss;
-		Iter it = start;
-		if (it != end)
-			ss << *it++;
-		for (; it != end; ++it)
-			ss << delim << *it;
-		return ss.str();
-	}
-
-	template <class Type>
-	std::string join(const Type& container, char delim=' ')
-	{
-		return join(container.begin(), container.end(), delim);
-	}
-
 	std::vector<std::string> split(const std::string& input, char delim=' ', bool ignoreEmpty=false);
 
 	template <typename Type>
