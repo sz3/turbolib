@@ -249,11 +249,11 @@ public:
 		_tree.enumerate(translator, pair(start), pair(finish));
 	}
 
-	void print(int keywidth=0) const
+	void print(const std::function<std::string(const std::tuple<HashType, ValueType...>&)>& valPrint, int keywidth=0) const
 	{
 		auto printer = [=] (const pair& pear) {
 			unsigned char* keybytes = (unsigned char*)&pear.first;
-			std::cout << std::setfill(' ') << std::setw(keywidth) << pear.second << ": ";
+			std::cout << std::setfill(' ') << std::setw(keywidth) << valPrint(pear.second) << ": ";
 			for (int i = 0; i < sizeof(KeyType); ++i)
 			{
 				if (i != 0)
