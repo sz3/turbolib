@@ -2,7 +2,6 @@
 #include "unittest.h"
 
 #include "Url.h"
-#include "serialize/str_join.h"
 using std::string;
 
 namespace {
@@ -13,6 +12,7 @@ namespace {
 		return outstream;
 	}
 }
+#include "serialize/str_join.h"
 
 TEST_CASE( "UrlTest/testTokenize", "[unit]" )
 {
