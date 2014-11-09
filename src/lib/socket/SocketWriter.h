@@ -36,11 +36,6 @@ public:
 		return true;
 	}
 
-	bool close()
-	{
-		return Socket::close();
-	}
-
 	socket_address endpoint() const
 	{
 		return Socket::endpoint();
