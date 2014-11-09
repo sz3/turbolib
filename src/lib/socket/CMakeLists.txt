@@ -20,6 +20,7 @@ set(SOURCES
 	StringByteStream.h
 	local_stream_socket.cpp
 	local_stream_socket.h
+	mock_socket.h
 	socket_address.cpp
 	socket_address.h
 	udp_socket.cpp
