@@ -8,16 +8,18 @@
 using std::string;
 using turbo::bounded_version_vector;
 
-std::ostream& operator<<(std::ostream& outstream, const bounded_version_vector<string>::clock& clock)
-{
-	outstream << clock.key << ":" << clock.count;
-	return outstream;
-}
+namespace turbo {
+	std::ostream& operator<<(std::ostream& outstream, const bounded_version_vector<string>::clock& clock)
+	{
+		outstream << clock.key << ":" << clock.count;
+		return outstream;
+	}
 
-std::ostream& operator<<(std::ostream& outstream, const bounded_version_vector<string,4>::clock& clock)
-{
-	outstream << clock.key << ":" << clock.count;
-	return outstream;
+	std::ostream& operator<<(std::ostream& outstream, const bounded_version_vector<string,4>::clock& clock)
+	{
+		outstream << clock.key << ":" << clock.count;
+		return outstream;
+	}
 }
 
 TEST_CASE( "bounded_version_vectorTest/testIncrement", "[unit]" )
