@@ -3,6 +3,7 @@
 
 #include "crypto_base/tiger.h"
 
+namespace turbo {
 class tiger_hash
 {
 public:
@@ -18,4 +19,4 @@ public:
 		return out;
 	}
 };
-
+} // namespace turbo

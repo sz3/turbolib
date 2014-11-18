@@ -6,8 +6,9 @@
 #include <exception>
 #include <iostream>
 
-#define waitFor(s,msg,fun) assertMsg(WaitFor(s,fun).result(), msg)
+#define wait_for(s,msg,fun) assertMsg(turbo::WaitFor(s,fun).result(), msg)
 
+namespace turbo {
 class WaitFor
 {
 public:
@@ -35,3 +36,4 @@ public:
 protected:
 	bool _result;
 };
+} // namespace turbo

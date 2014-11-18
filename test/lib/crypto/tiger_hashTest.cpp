@@ -4,6 +4,7 @@
 #include "tiger_hash.h"
 #include "serialize/base64.h"
 using std::string;
+using turbo::tiger_hash;
 
 TEST_CASE( "tiger_hashTest/testDefault", "[unit]" )
 {

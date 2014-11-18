@@ -9,6 +9,7 @@
 #include <vector>
 using std::bind;
 using std::vector;
+using turbo::stopwatch;
 
 TEST_CASE( "SchedulerThreadTest/testSchedule", "default" )
 {

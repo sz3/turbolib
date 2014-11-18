@@ -13,6 +13,7 @@
 #include <vector>
 using std::lock_guard;
 using std::mutex;
+using turbo::stopwatch;
 
 TEST_CASE( "MultiThreadedExecutorTest/testDefault", "[unit]" )
 {

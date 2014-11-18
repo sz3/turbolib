@@ -3,6 +3,7 @@
 
 #include <chrono>
 
+namespace turbo {
 class stopwatch
 {
 public:
@@ -45,3 +46,4 @@ protected:
 protected:
 	std::chrono::high_resolution_clock::time_point _time;
 };
+} // namespace turbo

@@ -6,6 +6,7 @@
 #include <string>
 #include "serialize/str_join.h"
 using std::string;
+using turbo::bounded_version_vector;
 
 std::ostream& operator<<(std::ostream& outstream, const bounded_version_vector<string>::clock& clock)
 {

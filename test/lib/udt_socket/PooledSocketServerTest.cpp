@@ -8,11 +8,12 @@
 
 #include "socket/ISocketWriter.h"
 #include "socket/socket_address.h"
-#include "time/WaitFor.h"
+#include "time/wait_for.h"
 #include "util/CallHistory.h"
 #include <memory>
 using namespace std;
 using namespace std::placeholders;
+using turbo::wait_for;
 
 namespace {
 	class PacketHandler
