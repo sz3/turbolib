@@ -7,6 +7,7 @@ set(SOURCES
 	File.h
 	FileRemover.h
 	StateSaver.h
+	UseTempDirectory.h
 )
 
 include_directories(

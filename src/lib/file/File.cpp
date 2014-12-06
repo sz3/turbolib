@@ -5,6 +5,7 @@
 #include <fstream>
 #include <fcntl.h>
 #include <unistd.h>
+#include <sys/stat.h>
 using std::string;
 
 namespace {
@@ -68,4 +69,23 @@ bool File::load(const string& filename, string& contents)
 bool File::remove(const string& filename)
 {
 	return ::remove(filename.c_str()) == 0;
+}
+
+bool File::rename(const std::string& src, const std::string& dest)
+{
+	return ::rename(src.c_str(), dest.c_str()) == 0;
+}
+
+bool File::exists(const std::string& filename)
+{
+	struct stat stat_buf;
+	return ::stat(filename.c_str(), &stat_buf) != 0;
+}
+
+unsigned long long File::size(const std::string& filename)
+{
+	struct stat stat_buf;
+	if (::stat(filename.c_str(), &stat_buf) != 0)
+		return -1;
+	return stat_buf.st_size;
 }
