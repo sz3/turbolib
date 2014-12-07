@@ -113,6 +113,12 @@ TEST_CASE( "bounded_version_vectorTest/testCompare", "[unit]" )
 	assertEquals( VectorClock::GREATER_THAN, alternate.compare(one) );
 	assertEquals( VectorClock::CONFLICT, alternate.compare(two) );
 	assertEquals( VectorClock::EQUAL, alternate.compare(alternate) );
+
+	assertTrue( empty < one );
+	assertTrue( one < alternate );
+	assertFalse( alternate < one );
+	assertFalse( alternate < two );
+	assertFalse( two < alternate );
 }
 
 TEST_CASE( "bounded_version_vectorTest/testCompare.More", "[unit]" )

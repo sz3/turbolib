@@ -56,6 +56,11 @@ public:
 			_clocks.pop_back();
 	}
 
+	bool operator<(const bounded_version_vector& other) const
+	{
+		return compare(other) == LESS_THAN;
+	}
+
 	COMPARE compare(const bounded_version_vector& other) const
 	{
 		if (_clocks.size() > other._clocks.size())
