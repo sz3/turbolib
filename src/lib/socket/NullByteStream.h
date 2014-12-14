@@ -18,7 +18,7 @@ public:
 
 	int write(const char* buffer, unsigned length)
 	{
-		return 0;
+		return length;
 	}
 };
 
