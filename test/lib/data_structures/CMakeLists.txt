@@ -4,7 +4,6 @@ project(data_structures_test)
 
 set (SOURCES
 	test.cpp
-	bounded_version_vectorTest.cpp
 	circular_iteratorTest.cpp
 	circular_mapTest.cpp
 	critbit_mapTest.cpp
