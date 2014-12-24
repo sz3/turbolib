@@ -347,11 +347,15 @@ public:
 
 	bool contains(ExternalType val) const
 	{
-		ValType* p = lower_bound(val);
-		if (p == NULL)
-			return false;
+		return find(val) != NULL;
+	}
 
-		return critbit_elem_ops<ValType>::equals(val, critbit_elem_ops<ValType>::downcast(p));
+	ValType* find(ExternalType val) const
+	{
+		ValType* p = lower_bound(val);
+		if (p == NULL or !critbit_elem_ops<ValType>::equals(val, critbit_elem_ops<ValType>::downcast(p)) )
+			return NULL;
+		return p;
 	}
 
 	// 0 == oom

@@ -47,6 +47,11 @@ public:
 		return _tree.remove(key);
 	}
 
+	Pair* find(const Key& key) const
+	{
+		return _tree.find(key);
+	}
+
 	Pair* lower_bound(const Key& key) const
 	{
 		return _tree.lower_bound(key);
