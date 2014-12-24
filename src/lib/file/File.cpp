@@ -79,7 +79,7 @@ bool File::rename(const std::string& src, const std::string& dest)
 bool File::exists(const std::string& filename)
 {
 	struct stat stat_buf;
-	return ::stat(filename.c_str(), &stat_buf) != 0;
+	return ::stat(filename.c_str(), &stat_buf) == 0;
 }
 
 unsigned long long File::size(const std::string& filename)
