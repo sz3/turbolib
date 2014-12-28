@@ -6,11 +6,11 @@
 template <class Key, class Value>
 struct critbit_map_pair : std::pair<Key, Value>
 {
-	// constructor delegation. Thank you, C++11
-	using std::pair<Key,Value>::pair;
-
 	using std::pair<Key,Value>::first;
 	using std::pair<Key,Value>::second;
+
+	// constructors
+	using std::pair<Key,Value>::pair;
 
 	critbit_map_pair(const Key& key)
 		: std::pair<Key,Value>(key, Value())
@@ -37,6 +37,44 @@ template < typename Key, typename Value, typename Node=critbit_node, typename Pa
 class critbit_map
 {
 public:
+	class elem
+	{
+	public:
+		elem(Pair* val)
+			: _val(val)
+		{
+		}
+
+		operator bool() const
+		{
+			return _val != NULL;
+		}
+
+		const Key& first() const
+		{
+			return _val->first;
+		}
+
+		Key& first()
+		{
+			return _val->first;
+		}
+
+		const Value& second() const
+		{
+			return _val->second;
+		}
+
+		Value& second()
+		{
+			return _val->second;
+		}
+
+	protected:
+		Pair* _val;
+	};
+
+public:
 	int insert(const Pair&& pair)
 	{
 		return _tree.insert(pair);
@@ -47,12 +85,12 @@ public:
 		return _tree.remove(key);
 	}
 
-	Pair* find(const Key& key) const
+	elem find(const Key& key) const
 	{
 		return _tree.find(key);
 	}
 
-	Pair* lower_bound(const Key& key) const
+	elem lower_bound(const Key& key) const
 	{
 		return _tree.lower_bound(key);
 	}

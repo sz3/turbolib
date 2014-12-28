@@ -19,18 +19,18 @@ TEST_CASE( "merkle_treeTest/testAddRemoveTreeWalk", "[unit]" )
 	assertEquals( 2, tree.insert(1337, 1337) );
 	assertTrue( tree.contains(1337) );
 	{
-		merkle_tree<unsigned, unsigned long long>::pair* internalNode = tree.lower_bound(1337);
-		assertNotNull( internalNode );
-		assertEquals( 1337, std::get<0>(internalNode->second) );
+		merkle_tree<unsigned, unsigned long long>::elem pear = tree.lower_bound(1337);
+		assertTrue( pear );
+		assertEquals( 1337, std::get<0>(pear.second()) );
 	}
 
 	assertEquals(2, tree.insert(2048, 2048) );
 	assertTrue( tree.contains(2048) );
-	assertEquals( 2048, std::get<0>(tree.lower_bound(2048)->second) );
+	assertEquals( 2048, std::get<0>(tree.lower_bound(2048).second()) );
 
 	assertEquals(2, tree.insert(42, 42) );
 	assertTrue( tree.contains(42) );
-	assertEquals( 42, std::get<0>(tree.lower_bound(42)->second) );
+	assertEquals( 42, std::get<0>(tree.lower_bound(42).second()) );
 
 	assertEquals(1, tree.insert(1337, 15) );
 	assertTrue( tree.contains(1337) );
@@ -51,16 +51,16 @@ TEST_CASE( "merkle_treeTest/testHeavyLoad", "[unit]" )
 		//std::cout << "insert of element " << i << std::endl;
 		assertEquals( 2, tree.insert(i, i*i) );
 
-		merkle_tree<unsigned, unsigned long long>::pair* internalNode = tree.lower_bound(i);
-		assertNotNull( internalNode );
-		assertEquals( i, internalNode->first );
-		assertEquals( (i*i), std::get<0>(internalNode->second) );
+		merkle_tree<unsigned, unsigned long long>::elem pear = tree.lower_bound(i);
+		assertTrue( pear );
+		assertEquals( i, pear.first() );
+		assertEquals( (i*i), std::get<0>(pear.second()) );
 	}
 
-	merkle_tree<unsigned, unsigned long long>::pair* node = tree.lower_bound(10);
-	assertNotNull( node );
-	assertEquals( 10, node->first );
-	assertEquals( 100, std::get<0>(node->second) );
+	merkle_tree<unsigned, unsigned long long>::elem node = tree.lower_bound(10);
+	assertTrue( node );
+	assertEquals( 10, node.first() );
+	assertEquals( 100, std::get<0>(node.second()) );
 }
 
 TEST_CASE( "merkle_treeTest/testHashLookup", "[unit]" )
@@ -389,13 +389,13 @@ TEST_CASE( "merkle_treeTest/testWithPayload", "[unit]" )
 	merkle_point<unsigned, unsigned long long> top = tree.top();
 	assertEquals( (10 xor 20), top.hash );
 
-	merkle_tree<unsigned, unsigned long long, string>::pair* elem1 = tree.lower_bound(1);
-	assertEquals(    10, std::get<0>(elem1->second) );
-	assertEquals( "one", std::get<1>(elem1->second) );
+	merkle_tree<unsigned, unsigned long long, string>::elem elem1 = tree.lower_bound(1);
+	assertEquals(    10, std::get<0>(elem1.second()) );
+	assertEquals( "one", std::get<1>(elem1.second()) );
 
-	merkle_tree<unsigned, unsigned long long, string>::pair* elem2 = tree.lower_bound(2);
-	assertEquals(   20,  std::get<0>(elem2->second) );
-	assertEquals( "two", std::get<1>(elem2->second) );
+	merkle_tree<unsigned, unsigned long long, string>::elem elem2 = tree.lower_bound(2);
+	assertEquals(   20,  std::get<0>(elem2.second()) );
+	assertEquals( "two", std::get<1>(elem2.second()) );
 }
 
 TEST_CASE( "merkle_treeTest/testEnumerate", "[unit]" )
