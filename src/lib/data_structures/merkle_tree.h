@@ -9,14 +9,11 @@
 #include "critbit_map.h"
 #include "merkle_location.h"
 #include "util/unpack_tuple.h"
-#include <bitset>
 #include <deque>
 #include <functional>
-#include <iomanip>
-#include <iostream>
 
 template <typename HashType>
-struct merkle_node : public critbit_node
+struct merkle_branch : public critbit_branch
 {
 	HashType hash;
 };
@@ -24,10 +21,10 @@ struct merkle_node : public critbit_node
 // 'Tuple' will be struct merkle_pair or a subclass.
 // see merkle_tree definition below.
 template <typename KeyType, typename HashType, typename Tuple>
-class critbit_ext< critbit_map_pair<KeyType,Tuple>, merkle_node<HashType> >
+class critbit_ext< critbit_map_pair<KeyType,Tuple>, merkle_branch<HashType> >
 {
 public:
-	void push_change(merkle_node<HashType>* node)
+	void push_change(merkle_branch<HashType>* node)
 	{
 		_changes.push_front(node);
 	}
@@ -41,7 +38,7 @@ public:
 	{
 		for (auto it = _changes.begin(); it != _changes.end(); ++it)
 		{
-			merkle_node<HashType>* node = *it;
+			merkle_branch<HashType>* node = *it;
 			node->hash = getHash(node->child[0]) ^ getHash(node->child[1]);
 			//std::cout << " onchange(" << (unsigned)node->byte << ")! my children's hashes are " << getHash(node->child[0]) << "," << getHash(node->child[1]) << ". Mine is " << node->hash << std::endl;
 		}
@@ -51,7 +48,7 @@ public:
 protected:
 	static HashType getHash(void* elem)
 	{
-		using node_ptr = critbit_node_ptr< critbit_map_pair<KeyType,Tuple>, merkle_node<HashType> >;
+		using node_ptr = critbit_node_ptr< critbit_map_pair<KeyType,Tuple>, merkle_branch<HashType> >;
 		node_ptr node(elem);
 		if (node.isLeaf())
 			return std::get<0>(node.leaf()->second);
@@ -60,16 +57,16 @@ protected:
 	}
 
 protected:
-	std::deque<merkle_node<HashType>*> _changes;
+	std::deque< merkle_branch<HashType>* > _changes;
 };
 
 template <typename KeyType, typename HashType, typename... ValueType>
-class merkle_tree : public critbit_map< KeyType, std::tuple<HashType, ValueType...>, merkle_node<HashType> >
+class merkle_tree : public critbit_map< KeyType, std::tuple<HashType, ValueType...>, merkle_branch<HashType> >
 {
 protected:
 	using internal_pair = critbit_map_pair<KeyType,std::tuple<HashType, ValueType...>>;
-	using tree_type = critbit_tree< internal_pair, const internal_pair&, merkle_node<HashType> >;
-	using map_type = critbit_map< KeyType, std::tuple<HashType, ValueType...>, merkle_node<HashType> >;
+	using tree_type = critbit_tree< internal_pair, const internal_pair&, merkle_branch<HashType> >;
+	using map_type = critbit_map< KeyType, std::tuple<HashType, ValueType...>, merkle_branch<HashType> >;
 	using map_type::_tree;
 
 public:
@@ -92,7 +89,7 @@ protected:
 	{
 		if (node_ptr.isNode())
 		{
-			merkle_node<HashType>* node = node_ptr.node();
+			merkle_branch<HashType>* node = node_ptr.node();
 			hash = node->hash;
 			return true;
 		}
@@ -107,7 +104,7 @@ protected:
 		merkle_point<KeyType, HashType> point;
 		if (node_ptr.isNode())
 		{
-			merkle_node<HashType>* node = node_ptr.node();
+			merkle_branch<HashType>* node = node_ptr.node();
 			point.hash = node->hash;
 			point.location = merkle_location<KeyType>( key, keybits(node->byte, node->otherbits xor 0xFF)-1 );
 		}
@@ -197,7 +194,7 @@ public:
 		}
 
 		pair leftLeaf( _tree.begin(nodep) );
-		merkle_node<HashType>* branchNode = nodep.node();
+		merkle_branch<HashType>* branchNode = nodep.node();
 		unsigned branchKeybits = keybits(branchNode->byte, branchNode->otherbits xor 0xFF)-1;
 
 		// case 4: branch, but the location parameter seemed to expect a branch sooner
@@ -249,24 +246,6 @@ public:
 			return unpack_tuple<sizeof...(ValueType)+1>::unpack(fun, pear.first, pear.second);
 		};
 		_tree.enumerate(translator, internal_pair(start), internal_pair(finish));
-	}
-
-	void print(const std::function<std::string(const std::tuple<HashType, ValueType...>&)>& valPrint, int keywidth=0) const
-	{
-		auto printer = [=] (const internal_pair& pear) {
-			unsigned char* keybytes = (unsigned char*)&pear.first;
-			std::cout << std::setfill(' ') << std::setw(keywidth) << valPrint(pear.second) << ": ";
-			for (int i = 0; i < sizeof(KeyType); ++i)
-			{
-				if (i != 0)
-					std::cout << " | ";
-				std::cout << std::bitset<4>(keybytes[i] >> 4).to_string() << " ";
-				std::cout << std::bitset<4>(keybytes[i] & 0xF).to_string();
-			}
-			std::cout << std::endl;
-			return true;
-		};
-		_tree.enumerate(printer, internal_pair(0), internal_pair(~0ULL));
 	}
 
 	// ping|foo

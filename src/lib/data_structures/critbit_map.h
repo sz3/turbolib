@@ -33,7 +33,7 @@ struct critbit_map_pair : std::pair<Key, Value>
 };
 
 // critbit_int_map?
-template < typename Key, typename Value, typename Node=critbit_node, typename Pair=critbit_map_pair<Key,Value> >
+template < typename Key, typename Value, typename Node=critbit_branch, typename Pair=critbit_map_pair<Key,Value> >
 class critbit_map
 {
 public:

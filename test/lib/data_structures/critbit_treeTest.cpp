@@ -73,7 +73,7 @@ TEST_CASE( "critbit_treeTest/testRemove", "[unit]" )
 }
 
 namespace {
-	void print_cstr_tree(critbit_node_ptr<char, critbit_node> root, string label)
+	void print_cstr_tree(critbit_node_ptr<char, critbit_branch> root, string label)
 	{
 		if (root.isNull())
 			return;
@@ -82,7 +82,7 @@ namespace {
 			std::cout << label << " leaf: " << root.leaf() << std::endl;
 		else
 		{
-			critbit_node* node = root.node();
+			critbit_branch* node = root.node();
 			std::cout << label << " node at " << node->byte << "," << (unsigned)(node->otherbits ^ 0xFF) << std::endl;
 			print_cstr_tree(node->child[0], label + " left");
 			print_cstr_tree(node->child[1], label + " right");
@@ -116,7 +116,7 @@ TEST_CASE( "critbit_treeTest/testPrefixLookup", "[unit]" )
 	 *   .....
 	 */
 
-	using node_ptr = critbit_node_ptr<char, critbit_node>;
+	using node_ptr = critbit_node_ptr<char, critbit_branch>;
 	{
 		// use bit mask to specify which parts of the last byte we don't care about
 		// 000s == exact match
@@ -198,7 +198,7 @@ TEST_CASE( "critbit_treeTest/testPrefixLookup.Nonsense", "[unit]" )
 	 *   .....
 	 */
 
-	using node_ptr = critbit_node_ptr<char, critbit_node>;
+	using node_ptr = critbit_node_ptr<char, critbit_branch>;
 
 	// nearest_subtree -- return the nearest node, even if it doesn't match
 	{
@@ -244,7 +244,7 @@ TEST_CASE( "critbit_treeTest/testBegin", "[unit]" )
 	const char* leaf = tree.begin();
 	assertStringsEqual( "five", leaf );
 
-	using node_ptr = critbit_node_ptr<char, critbit_node>;
+	using node_ptr = critbit_node_ptr<char, critbit_branch>;
 	node_ptr node = tree.subtree("o");
 	assertTrue( node.isNode() );
 	assertStringsEqual( "one", tree.begin(node) );
@@ -465,7 +465,7 @@ TEST_CASE( "critbit_treeTest/testEnumerateNode", "[unit]" )
 	assertEquals(2, tree.insert("one") );
 
 	// the alternative version of enumerate, for those who know what they're doing
-	using node_ptr = critbit_node_ptr<char, critbit_node>;
+	using node_ptr = critbit_node_ptr<char, critbit_branch>;
 	node_ptr top = tree.subtree("forty");
 
 	{

@@ -16,7 +16,7 @@ adapted from DJB's critbit tree for NULL-terminated strings
 
 // base critbit_node class.
 // also possible to inherit from this, add stuff, and pass in as template argument.
-struct critbit_node
+struct critbit_branch
 {
 	void* child[2];
 	uint32_t byte;
@@ -75,7 +75,7 @@ template <typename ValType, typename Node> class critbit_ext;
 
 // internal storage = ValType* = char* | FooType*
 // external comparisons = ExternalType = const char* | const FooType& (with operator to cast)
-template <typename ValType, typename ExternalType=const ValType&, typename Node=critbit_node>
+template <typename ValType, typename ExternalType=const ValType&, typename Node=critbit_branch>
 class critbit_tree
 {
 public:
