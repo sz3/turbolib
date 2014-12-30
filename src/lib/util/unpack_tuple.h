@@ -12,6 +12,12 @@ public:
 	{
 		return unpack_tuple<i-1>::unpack(fun, tuple, std::get<i-1>(tuple), funargs...);
 	}
+
+	template<typename ReturnType, typename KeyType, typename ...TupleArgs, typename ...FunctArgs>
+	inline static ReturnType unpack(const std::function<ReturnType(const KeyType&, const TupleArgs&...)>& fun, const KeyType& key, const std::tuple<TupleArgs...>& tuple, const FunctArgs&... funargs)
+	{
+		return unpack_tuple<i-1>::unpack(fun, key, tuple, std::get<i-1>(tuple), funargs...);
+	}
 };
 
 template<>
@@ -22,5 +28,11 @@ public:
 	inline static ReturnType unpack(const std::function<ReturnType(const TupleArgs&...)>& fun, const std::tuple<TupleArgs...>& tuple, const FunctArgs&... funargs)
 	{
 		return fun(funargs...);
+	}
+
+	template<typename ReturnType, typename KeyType, typename ...TupleArgs, typename ...FunctArgs>
+	inline static ReturnType unpack(const std::function<ReturnType(const KeyType&, const TupleArgs&...)>& fun, const KeyType& key, const std::tuple<TupleArgs...>& tuple, const FunctArgs&... funargs)
+	{
+		return fun(key, funargs...);
 	}
 };

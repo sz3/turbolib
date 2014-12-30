@@ -19,7 +19,7 @@ TEST_CASE( "merkle_treeTest/testAddRemoveTreeWalk", "[unit]" )
 	assertEquals( 2, tree.insert(1337, 1337) );
 	assertTrue( tree.contains(1337) );
 	{
-		merkle_tree<unsigned, unsigned long long>::elem pear = tree.lower_bound(1337);
+		merkle_tree<unsigned, unsigned long long>::pair pear = tree.lower_bound(1337);
 		assertTrue( pear );
 		assertEquals( 1337, std::get<0>(pear.second()) );
 	}
@@ -51,13 +51,13 @@ TEST_CASE( "merkle_treeTest/testHeavyLoad", "[unit]" )
 		//std::cout << "insert of element " << i << std::endl;
 		assertEquals( 2, tree.insert(i, i*i) );
 
-		merkle_tree<unsigned, unsigned long long>::elem pear = tree.lower_bound(i);
+		merkle_tree<unsigned, unsigned long long>::pair pear = tree.lower_bound(i);
 		assertTrue( pear );
 		assertEquals( i, pear.first() );
 		assertEquals( (i*i), std::get<0>(pear.second()) );
 	}
 
-	merkle_tree<unsigned, unsigned long long>::elem node = tree.lower_bound(10);
+	merkle_tree<unsigned, unsigned long long>::pair node = tree.lower_bound(10);
 	assertTrue( node );
 	assertEquals( 10, node.first() );
 	assertEquals( 100, std::get<0>(node.second()) );
@@ -389,11 +389,11 @@ TEST_CASE( "merkle_treeTest/testWithPayload", "[unit]" )
 	merkle_point<unsigned, unsigned long long> top = tree.top();
 	assertEquals( (10 xor 20), top.hash );
 
-	merkle_tree<unsigned, unsigned long long, string>::elem elem1 = tree.lower_bound(1);
+	merkle_tree<unsigned, unsigned long long, string>::pair elem1 = tree.lower_bound(1);
 	assertEquals(    10, std::get<0>(elem1.second()) );
 	assertEquals( "one", std::get<1>(elem1.second()) );
 
-	merkle_tree<unsigned, unsigned long long, string>::elem elem2 = tree.lower_bound(2);
+	merkle_tree<unsigned, unsigned long long, string>::pair elem2 = tree.lower_bound(2);
 	assertEquals(   20,  std::get<0>(elem2.second()) );
 	assertEquals( "two", std::get<1>(elem2.second()) );
 }
@@ -407,7 +407,7 @@ TEST_CASE( "merkle_treeTest/testEnumerate", "[unit]" )
 	tree.insert(3, 30, "three");
 
 	std::vector<string> words;
-	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return true; };
+	auto fun = [&](unsigned, unsigned long long, const string& payload){ words.push_back(payload); return true; };
 	tree.enumerate(fun, 1, 3);
 
 	assertEquals( "one two three", turbo::str::join(words) );
@@ -418,7 +418,7 @@ TEST_CASE( "merkle_treeTest/testEnumerate.Empty", "[unit]" )
 	merkle_tree<unsigned, unsigned long long, string> tree;
 
 	std::vector<string> words;
-	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return true; };
+	auto fun = [&](unsigned, unsigned long long, const string& payload){ words.push_back(payload); return true; };
 	tree.enumerate(fun, 1, 3);
 
 	assertEquals( "", turbo::str::join(words) );
@@ -437,7 +437,7 @@ TEST_CASE( "merkle_treeTest/testEnumerate.Lots", "[unit]" )
 		tree.insert(i, i*10, StringUtil::str(i));
 
 	std::vector<string> words;
-	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return true; };
+	auto fun = [&](unsigned, unsigned long long, const string& payload){ words.push_back(payload); return true; };
 
 	tree.enumerate(fun, 20, 26);
 	assertEquals( "20 276 532 788 21 277 533 789 "
@@ -471,7 +471,7 @@ TEST_CASE( "merkle_treeTest/testEnumerate.Stop", "[unit]" )
 		tree.insert(i, i*10, StringUtil::str(i));
 
 	std::vector<string> words;
-	auto fun = [&](unsigned long long, const string& payload){ words.push_back(payload); return words.size() < 5; };
+	auto fun = [&](unsigned, unsigned long long, const string& payload){ words.push_back(payload); return words.size() < 5; };
 
 	tree.enumerate(fun, 20, 25);
 	assertEquals( "20 276 532 788 21", turbo::str::join(words) );

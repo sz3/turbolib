@@ -37,10 +37,10 @@ template < typename Key, typename Value, typename Node=critbit_node, typename Pa
 class critbit_map
 {
 public:
-	class elem
+	class pair
 	{
 	public:
-		elem(Pair* val)
+		pair(Pair* val)
 			: _val(val)
 		{
 		}
@@ -75,9 +75,9 @@ public:
 	};
 
 public:
-	int insert(const Pair&& pair)
+	int insert(const Pair&& val)
 	{
-		return _tree.insert(pair);
+		return _tree.insert(val);
 	}
 
 	int remove(const Key& key)
@@ -85,12 +85,12 @@ public:
 		return _tree.remove(key);
 	}
 
-	elem find(const Key& key) const
+	pair find(const Key& key) const
 	{
 		return _tree.find(key);
 	}
 
-	elem lower_bound(const Key& key) const
+	pair lower_bound(const Key& key) const
 	{
 		return _tree.lower_bound(key);
 	}

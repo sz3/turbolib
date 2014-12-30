@@ -11,6 +11,7 @@
 #include "util/unpack_tuple.h"
 #include <bitset>
 #include <deque>
+#include <functional>
 #include <iomanip>
 #include <iostream>
 
@@ -65,13 +66,14 @@ protected:
 template <typename KeyType, typename HashType, typename... ValueType>
 class merkle_tree : public critbit_map< KeyType, std::tuple<HashType, ValueType...>, merkle_node<HashType> >
 {
-public:
-	using pair = critbit_map_pair<KeyType,std::tuple<HashType, ValueType...>>;
-
 protected:
-	using tree_type = critbit_tree< pair, const pair&, merkle_node<HashType> >;
+	using internal_pair = critbit_map_pair<KeyType,std::tuple<HashType, ValueType...>>;
+	using tree_type = critbit_tree< internal_pair, const internal_pair&, merkle_node<HashType> >;
 	using map_type = critbit_map< KeyType, std::tuple<HashType, ValueType...>, merkle_node<HashType> >;
 	using map_type::_tree;
+
+public:
+	using pair = typename map_type::pair;
 
 protected:
 	typename tree_type::node_ptr nearest_subtree(const merkle_location<KeyType>& location) const
@@ -83,7 +85,7 @@ protected:
 			++keylen;
 			bitmask = (1 << (8-bitmask)) - 1;
 		}
-		return _tree.nearest_subtree(pair(location.key), bitmask, keylen);
+		return _tree.nearest_subtree(internal_pair(location.key), bitmask, keylen);
 	}
 
 	bool getHash(const typename tree_type::node_ptr& node_ptr, HashType& hash) const
@@ -95,8 +97,8 @@ protected:
 			return true;
 		}
 
-		pair* pear = node_ptr.leaf();
-		hash = std::get<0>(pear->second);
+		pair pear( node_ptr.leaf() );
+		hash = std::get<0>(pear.second());
 		return false;
 	}
 
@@ -111,9 +113,9 @@ protected:
 		}
 		else
 		{
-			pair* twopull = node_ptr.leaf();
-			point.hash = std::get<0>(twopull->second);
-			point.location = merkle_location<KeyType>( twopull->first );
+			pair twopull( node_ptr.leaf() );
+			point.hash = std::get<0>(twopull.second());
+			point.location = merkle_location<KeyType>( twopull.first() );
 		}
 		return point;
 	}
@@ -194,7 +196,7 @@ public:
 			return diffs;
 		}
 
-		pair* leftLeaf = _tree.begin(nodep);
+		pair leftLeaf( _tree.begin(nodep) );
 		merkle_node<HashType>* branchNode = nodep.node();
 		unsigned branchKeybits = keybits(branchNode->byte, branchNode->otherbits xor 0xFF)-1;
 
@@ -202,7 +204,7 @@ public:
 		if (branchKeybits > location.keybits)
 		{
 			merkle_point<KeyType,HashType> missing;
-			missing.location.key = leftLeaf->first;
+			missing.location.key = leftLeaf.first();
 			missing.location.keybits = location.keybits+1;
 
 			unsigned expectedBranchByte = location.keybits / 8;
@@ -216,13 +218,13 @@ public:
 		// push children into diffs
 		{
 			typename tree_type::node_ptr left = branchNode->child[0];
-			merkle_point<KeyType, HashType> diff = getPoint(leftLeaf->first, left);
+			merkle_point<KeyType, HashType> diff = getPoint(leftLeaf.first(), left);
 			diffs.push_back(diff);
 		}
 		{
 			typename tree_type::node_ptr right = branchNode->child[1];
-			pair* rightLeaf = _tree.begin(right);
-			merkle_point<KeyType, HashType> diff = getPoint(rightLeaf->first, right);
+			pair rightLeaf( _tree.begin(right) );
+			merkle_point<KeyType, HashType> diff = getPoint(rightLeaf.first(), right);
 			diffs.push_back(diff);
 		}
 		// and passed in loc with disagreement hash as 3rd element
@@ -241,17 +243,17 @@ public:
 		return map_type::insert({key, std::make_tuple(hash, value...)});
 	}
 
-	void enumerate(const std::function<bool(const HashType&, const ValueType&...)>& fun, const KeyType& start, const KeyType& finish) const
+	void enumerate(const std::function<bool(const KeyType&, const HashType&, const ValueType&...)>& fun, const KeyType& start, const KeyType& finish) const
 	{
-		auto translator = [&fun] (const pair& pear) {
-			return unpack_tuple<sizeof...(ValueType)+1>::unpack(fun, pear.second);
+		auto translator = [&fun] (const internal_pair& pear) {
+			return unpack_tuple<sizeof...(ValueType)+1>::unpack(fun, pear.first, pear.second);
 		};
-		_tree.enumerate(translator, pair(start), pair(finish));
+		_tree.enumerate(translator, internal_pair(start), internal_pair(finish));
 	}
 
 	void print(const std::function<std::string(const std::tuple<HashType, ValueType...>&)>& valPrint, int keywidth=0) const
 	{
-		auto printer = [=] (const pair& pear) {
+		auto printer = [=] (const internal_pair& pear) {
 			unsigned char* keybytes = (unsigned char*)&pear.first;
 			std::cout << std::setfill(' ') << std::setw(keywidth) << valPrint(pear.second) << ": ";
 			for (int i = 0; i < sizeof(KeyType); ++i)
@@ -264,7 +266,7 @@ public:
 			std::cout << std::endl;
 			return true;
 		};
-		_tree.enumerate(printer, pair(0), pair(~0ULL));
+		_tree.enumerate(printer, internal_pair(0), internal_pair(~0ULL));
 	}
 
 	// ping|foo

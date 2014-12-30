@@ -40,13 +40,13 @@ TEST_CASE( "critbit_mapTest/testClassKeyInt_Load", "[unit]" )
 	{
 		assertEquals( 2, map.insert({i, "banana"}) );
 
-		critbit_map<unsigned long long, string>::elem pear = map.lower_bound(i);
+		critbit_map<unsigned long long, string>::pair pear = map.lower_bound(i);
 		assertTrue( pear );
 		assertEquals( i, pear.first() );
 		assertEquals( "banana", pear.second() );
 	}
 
-	critbit_map<unsigned long long, string>::elem pear = map.lower_bound(10);
+	critbit_map<unsigned long long, string>::pair pear = map.lower_bound(10);
 	assertTrue( pear );
 	assertEquals( 10, pear.first() );
 	assertEquals( "banana", pear.second() );
