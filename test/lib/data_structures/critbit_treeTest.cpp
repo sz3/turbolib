@@ -82,10 +82,10 @@ namespace {
 			std::cout << label << " leaf: " << root.leaf() << std::endl;
 		else
 		{
-			critbit_branch* branch = root.branch();
-			std::cout << label << " node at " << branch->byte << "," << (unsigned)(branch->otherbits ^ 0xFF) << std::endl;
-			print_cstr_tree(branch->child[0], label + " left");
-			print_cstr_tree(branch->child[1], label + " right");
+			critbit_branch& branch = root.branch();
+			std::cout << label << " node at " << branch.byte << "," << (unsigned)(branch.otherbits ^ 0xFF) << std::endl;
+			print_cstr_tree(branch.child[0], label + " left");
+			print_cstr_tree(branch.child[1], label + " right");
 		}
 	}
 }
@@ -127,45 +127,45 @@ TEST_CASE( "critbit_treeTest/testPrefixLookup", "[unit]" )
 	{
 		node_ptr elem = tree.subtree("o", 0xF); // don't match the final 4 bits
 		assertTrue( elem.isBranch() );
-		node_ptr right = elem.branch()->child[1];
+		node_ptr right = elem.branch().child[1];
 		assertStringsEqual( "one", right.leaf() );
 
-		node_ptr left = elem.branch()->child[0];
+		node_ptr left = elem.branch().child[0];
 		assertTrue(left.isBranch());
-		node_ptr leftleft = left.branch()->child[0];
+		node_ptr leftleft = left.branch().child[0];
 		assertStringsEqual( "forty-seven", leftleft.leaf() );
 	}
 	{
 		node_ptr elem = tree.subtree("o", 0x1F); // don't match the final 5 bits
 		assertTrue( elem.isBranch() );
-		node_ptr right = elem.branch()->child[1];
+		node_ptr right = elem.branch().child[1];
 		assertStringsEqual( "two", right.leaf() );
 
-		node_ptr left = elem.branch()->child[0];
+		node_ptr left = elem.branch().child[0];
 		assertTrue(left.isBranch());
-		node_ptr leftright = left.branch()->child[1];
+		node_ptr leftright = left.branch().child[1];
 		assertStringsEqual( "one", leftright.leaf() );
 	}
 	{
 		// tree root
 		node_ptr elem = tree.subtree("", 0xFF);
 		assertTrue( elem.isBranch() );
-		node_ptr right = elem.branch()->child[1];
+		node_ptr right = elem.branch().child[1];
 		assertStringsEqual( "two", right.leaf() );
 	}
 	{
 		// tree root again
 		node_ptr elem = tree.subtree("whocares", 0xFF, 1);
 		assertTrue( elem.isBranch() );
-		node_ptr right = elem.branch()->child[1];
+		node_ptr right = elem.branch().child[1];
 		assertStringsEqual( "two", right.leaf() );
 	}
 	{
 		node_ptr elem = tree.subtree("forty");
 		assertTrue( elem.isBranch() );
-		node_ptr left = elem.branch()->child[0];
+		node_ptr left = elem.branch().child[0];
 		assertStringsEqual( "forty-seven", left.leaf() );
-		node_ptr right = elem.branch()->child[1];
+		node_ptr right = elem.branch().child[1];
 		assertStringsEqual( "forty-two", right.leaf() );
 	}
 }

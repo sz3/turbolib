@@ -52,9 +52,9 @@ public:
 		return (1 & (intptr_t)_ptr);
 	}
 
-	Branch* branch() const
+	Branch& branch() const
 	{
-		return (Branch*)((intptr_t)_ptr-1);
+		return *(Branch*)((intptr_t)_ptr-1);
 	}
 
 	ValType* leaf() const
@@ -106,13 +106,13 @@ public:
 		node_ptr top = _root;
 		while (top.isBranch())
 		{
-			Branch* q = top.branch();
-			if (q->byte+1 >= keylen)
+			Branch& q = top.branch();
+			if (q.byte+1 >= keylen)
 			{
-				if (q->byte >= keylen || ((q->otherbits ^ 0xFF) & bitmask) > 0)
+				if (q.byte >= keylen || ((q.otherbits ^ 0xFF) & bitmask) > 0)
 					break;
 			}
-			top = q->child[calculateDirection(q, keybytes, keylen)];
+			top = q.child[calculateDirection(q, keybytes, keylen)];
 		}
 		return top;
 	}
@@ -188,19 +188,19 @@ public:
 				node_ptr parent(top);
 				while (node.isBranch())
 				{
-					Branch* q = node.branch();
-					if (q->byte > newbyte)
+					Branch& q = node.branch();
+					if (q.byte > newbyte)
 						break;
-					if (q->byte == newbyte && q->otherbits > newotherbits)
+					if (q.byte == newbyte && q.otherbits > newotherbits)
 						break;
 					parent = node;
 					int dir = calculateDirection(q, firstkey, firstlen);
-					node = q->child[dir];
+					node = q.child[dir];
 				}
 				// ...and set start to the parent's right branch's leftmost child. (a mouthful...)
 				if (!parent.isBranch())
 					return;
-				start = begin(parent.branch()->child[1]);
+				start = begin(parent.branch().child[1]);
 			}
 		}
 
@@ -222,18 +222,18 @@ public:
 				node_ptr parent(top);
 				while (node.isBranch())
 				{
-					Branch* q = node.branch();
-					if (q->byte > newbyte)
+					Branch& q = node.branch();
+					if (q.byte > newbyte)
 						break;
-					if (q->byte == newbyte && q->otherbits > newotherbits)
+					if (q.byte == newbyte && q.otherbits > newotherbits)
 						break;
 					parent = node;
 					int dir = calculateDirection(q, lastkey, lastlen);
-					node = q->child[dir];
+					node = q.child[dir];
 				}
 				// ...and set stop to the parent's left branch's rightmost child. (again, a mouthful...)
 				if (parent.isBranch())
-					stop = end(parent.branch()->child[0]);
+					stop = end(parent.branch().child[0]);
 			}
 		}
 
@@ -278,9 +278,9 @@ public:
 		}
 		else
 		{
-			Branch* node = top.branch();
-			if (state = enumerate(fun, node->child[0], start, stop, excludeStop, state))
-				return enumerate(fun, node->child[1], start, stop, excludeStop, state);
+			Branch& node = top.branch();
+			if (state = enumerate(fun, node.child[0], start, stop, excludeStop, state))
+				return enumerate(fun, node.child[1], start, stop, excludeStop, state);
 			else
 				return STOP;
 		}
@@ -292,9 +292,9 @@ public:
 			return fun(critbit_elem_ops<ValType>::downcast(top.leaf()));
 		else
 		{
-			Branch* node = top.branch();
-			if (enumerate(fun, node->child[0]))
-				return enumerate(fun, node->child[1]);
+			Branch& node = top.branch();
+			if (enumerate(fun, node.child[0]))
+				return enumerate(fun, node.child[1]);
 			else
 				return false;
 		}
@@ -311,8 +311,8 @@ public:
 	{
 		while (root.isBranch())
 		{
-			Branch* node = root.branch();
-			root = node->child[0];
+			Branch& node = root.branch();
+			root = node.child[0];
 		}
 		return root.leaf();
 	}
@@ -328,8 +328,8 @@ public:
 	{
 		while (root.isBranch())
 		{
-			Branch* node = root.branch();
-			root = node->child[1];
+			Branch& node = root.branch();
+			root = node.child[1];
 		}
 		return root.leaf();
 	}
@@ -408,7 +408,7 @@ public:
 				break;
 			if (q->byte == newbyte && q->otherbits > newotherbits)
 				break;
-			wherep = q->child + calculateDirection(q, keybytes, keylen);
+			wherep = q->child + calculateDirection(*q, keybytes, keylen);
 			_ext.push_change(q);
 		}
 		newnode->child[newdirection] = *wherep;
@@ -441,7 +441,7 @@ public:
 		{
 			whereq = wherep;
 			q = (Branch*)((intptr_t)p-1);
-			direction = calculateDirection(q, keybytes, keylen);
+			direction = calculateDirection(*q, keybytes, keylen);
 			wherep = q->child + direction;
 			p = (ValType*)*wherep;
 
@@ -487,10 +487,11 @@ private:
 	{
 		if (p.isBranch())
 		{
-			Branch* q = p.branch();
-			clear(q->child[0]);
-			clear(q->child[1]);
-			free(q);
+			Branch& q = p.branch();
+			clear(q.child[0]);
+			clear(q.child[1]);
+			Branch* tofree = &q;
+			free(tofree);
 		}
 		else
 			free(p.leaf());
@@ -500,18 +501,18 @@ private:
 	{
 		while (p.isBranch())
 		{
-			Branch* q = p.branch();
-			p = q->child[calculateDirection(q, keybytes, keylen)];
+			Branch& q = p.branch();
+			p = q.child[calculateDirection(q, keybytes, keylen)];
 		}
 		return p.leaf();
 	}
 
-	int calculateDirection(Branch* q, const uint8_t* keybytes, size_t keylen) const
+	int calculateDirection(const Branch& q, const uint8_t* keybytes, size_t keylen) const
 	{
 		uint8_t c = 0;
-		if (q->byte < keylen)
-			c = keybytes[q->byte];
-		return direction(q->otherbits, c);
+		if (q.byte < keylen)
+			c = keybytes[q.byte];
+		return direction(q.otherbits, c);
 	}
 
 	int direction(uint8_t bits, uint8_t c) const

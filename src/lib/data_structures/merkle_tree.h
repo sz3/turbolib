@@ -53,7 +53,7 @@ protected:
 		if (node.isLeaf())
 			return std::get<0>(node.leaf()->second);
 		else
-			return node.branch()->hash;
+			return node.branch().hash;
 	}
 
 protected:
@@ -89,8 +89,8 @@ protected:
 	{
 		if (node_ptr.isBranch())
 		{
-			merkle_branch<HashType>* node = node_ptr.branch();
-			hash = node->hash;
+			merkle_branch<HashType>& node = node_ptr.branch();
+			hash = node.hash;
 			return true;
 		}
 
@@ -104,9 +104,9 @@ protected:
 		merkle_point<KeyType, HashType> point;
 		if (node_ptr.isBranch())
 		{
-			merkle_branch<HashType>* node = node_ptr.branch();
-			point.hash = node->hash;
-			point.location = merkle_location<KeyType>( key, keybits(node->byte, node->otherbits xor 0xFF)-1 );
+			merkle_branch<HashType>& node = node_ptr.branch();
+			point.hash = node.hash;
+			point.location = merkle_location<KeyType>( key, keybits(node.byte, node.otherbits xor 0xFF)-1 );
 		}
 		else
 		{
@@ -194,8 +194,8 @@ public:
 		}
 
 		pair leftLeaf( _tree.begin(nodep) );
-		merkle_branch<HashType>* branchNode = nodep.branch();
-		unsigned branchKeybits = keybits(branchNode->byte, branchNode->otherbits xor 0xFF)-1;
+		merkle_branch<HashType>& branch = nodep.branch();
+		unsigned branchKeybits = keybits(branch.byte, branch.otherbits xor 0xFF)-1;
 
 		// case 4: branch, but the location parameter seemed to expect a branch sooner
 		if (branchKeybits > location.keybits)
@@ -214,12 +214,12 @@ public:
 		// case 5,6
 		// push children into diffs
 		{
-			typename tree_type::node_ptr left = branchNode->child[0];
+			typename tree_type::node_ptr left = branch.child[0];
 			merkle_point<KeyType, HashType> diff = getPoint(leftLeaf.first(), left);
 			diffs.push_back(diff);
 		}
 		{
-			typename tree_type::node_ptr right = branchNode->child[1];
+			typename tree_type::node_ptr right = branch.child[1];
 			pair rightLeaf( _tree.begin(right) );
 			merkle_point<KeyType, HashType> diff = getPoint(rightLeaf.first(), right);
 			diffs.push_back(diff);
