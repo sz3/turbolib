@@ -53,7 +53,7 @@ protected:
 		if (node.isLeaf())
 			return std::get<0>(node.leaf()->second);
 		else
-			return node.node()->hash;
+			return node.branch()->hash;
 	}
 
 protected:
@@ -87,9 +87,9 @@ protected:
 
 	bool getHash(const typename tree_type::node_ptr& node_ptr, HashType& hash) const
 	{
-		if (node_ptr.isNode())
+		if (node_ptr.isBranch())
 		{
-			merkle_branch<HashType>* node = node_ptr.node();
+			merkle_branch<HashType>* node = node_ptr.branch();
 			hash = node->hash;
 			return true;
 		}
@@ -102,9 +102,9 @@ protected:
 	merkle_point<KeyType, HashType> getPoint(const KeyType& key, const typename tree_type::node_ptr& node_ptr) const
 	{
 		merkle_point<KeyType, HashType> point;
-		if (node_ptr.isNode())
+		if (node_ptr.isBranch())
 		{
-			merkle_branch<HashType>* node = node_ptr.node();
+			merkle_branch<HashType>* node = node_ptr.branch();
 			point.hash = node->hash;
 			point.location = merkle_location<KeyType>( key, keybits(node->byte, node->otherbits xor 0xFF)-1 );
 		}
@@ -194,7 +194,7 @@ public:
 		}
 
 		pair leftLeaf( _tree.begin(nodep) );
-		merkle_branch<HashType>* branchNode = nodep.node();
+		merkle_branch<HashType>* branchNode = nodep.branch();
 		unsigned branchKeybits = keybits(branchNode->byte, branchNode->otherbits xor 0xFF)-1;
 
 		// case 4: branch, but the location parameter seemed to expect a branch sooner

@@ -24,7 +24,7 @@ struct critbit_branch
 };
 
 // utility class to browse the tree
-template <typename ValType, typename Node>
+template <typename ValType, typename Branch>
 class critbit_node_ptr
 {
 public:
@@ -44,17 +44,17 @@ public:
 
 	bool isLeaf() const
 	{
-		return !isNode();
+		return !isBranch();
 	}
 
-	bool isNode() const
+	bool isBranch() const
 	{
 		return (1 & (intptr_t)_ptr);
 	}
 
-	Node* node() const
+	Branch* branch() const
 	{
-		return (Node*)((intptr_t)_ptr-1);
+		return (Branch*)((intptr_t)_ptr-1);
 	}
 
 	ValType* leaf() const
@@ -71,15 +71,15 @@ template <typename ValType> class critbit_elem_ops;
 
 // prototype for extensions to critbit operations.
 // to remove, just nuke the template declaration at the bottom and any lines that include this prefix!
-template <typename ValType, typename Node> class critbit_ext;
+template <typename ValType, typename Branch> class critbit_ext;
 
 // internal storage = ValType* = char* | FooType*
 // external comparisons = ExternalType = const char* | const FooType& (with operator to cast)
-template <typename ValType, typename ExternalType=const ValType&, typename Node=critbit_branch>
+template <typename ValType, typename ExternalType=const ValType&, typename Branch=critbit_branch>
 class critbit_tree
 {
 public:
-	using node_ptr = critbit_node_ptr<ValType,Node>;
+	using node_ptr = critbit_node_ptr<ValType,Branch>;
 
 public:
 	critbit_tree()
@@ -104,9 +104,9 @@ public:
 		// walk tree until we reach the end of the prefix
 		// the bitmask is used to discard low-end disagreements in the last byte
 		node_ptr top = _root;
-		while (top.isNode())
+		while (top.isBranch())
 		{
-			Node* q = top.node();
+			Branch* q = top.branch();
 			if (q->byte+1 >= keylen)
 			{
 				if (q->byte >= keylen || ((q->otherbits ^ 0xFF) & bitmask) > 0)
@@ -186,9 +186,9 @@ public:
 			{
 				node_ptr node(top);
 				node_ptr parent(top);
-				while (node.isNode())
+				while (node.isBranch())
 				{
-					Node* q = node.node();
+					Branch* q = node.branch();
 					if (q->byte > newbyte)
 						break;
 					if (q->byte == newbyte && q->otherbits > newotherbits)
@@ -198,9 +198,9 @@ public:
 					node = q->child[dir];
 				}
 				// ...and set start to the parent's right branch's leftmost child. (a mouthful...)
-				if (!parent.isNode())
+				if (!parent.isBranch())
 					return;
-				start = begin(parent.node()->child[1]);
+				start = begin(parent.branch()->child[1]);
 			}
 		}
 
@@ -220,9 +220,9 @@ public:
 			{
 				node_ptr node(top);
 				node_ptr parent(top);
-				while (node.isNode())
+				while (node.isBranch())
 				{
-					Node* q = node.node();
+					Branch* q = node.branch();
 					if (q->byte > newbyte)
 						break;
 					if (q->byte == newbyte && q->otherbits > newotherbits)
@@ -232,8 +232,8 @@ public:
 					node = q->child[dir];
 				}
 				// ...and set stop to the parent's left branch's rightmost child. (again, a mouthful...)
-				if (parent.isNode())
-					stop = end(parent.node()->child[0]);
+				if (parent.isBranch())
+					stop = end(parent.branch()->child[0]);
 			}
 		}
 
@@ -278,7 +278,7 @@ public:
 		}
 		else
 		{
-			Node* node = top.node();
+			Branch* node = top.branch();
 			if (state = enumerate(fun, node->child[0], start, stop, excludeStop, state))
 				return enumerate(fun, node->child[1], start, stop, excludeStop, state);
 			else
@@ -292,7 +292,7 @@ public:
 			return fun(critbit_elem_ops<ValType>::downcast(top.leaf()));
 		else
 		{
-			Node* node = top.node();
+			Branch* node = top.branch();
 			if (enumerate(fun, node->child[0]))
 				return enumerate(fun, node->child[1]);
 			else
@@ -309,9 +309,9 @@ public:
 
 	ValType* begin(node_ptr root) const
 	{
-		while (root.isNode())
+		while (root.isBranch())
 		{
-			Node* node = root.node();
+			Branch* node = root.branch();
 			root = node->child[0];
 		}
 		return root.leaf();
@@ -326,9 +326,9 @@ public:
 
 	ValType* end(node_ptr root) const
 	{
-		while (root.isNode())
+		while (root.isBranch())
 		{
-			Node* node = root.node();
+			Branch* node = root.branch();
 			root = node->child[1];
 		}
 		return root.leaf();
@@ -382,8 +382,8 @@ public:
 		// TODO: _ext.onchange() for in-place updates
 
 		// allocate node
-		Node* newnode;
-		if (posix_memalign((void**)&newnode, sizeof(void*), sizeof(Node)))
+		Branch* newnode;
+		if (posix_memalign((void**)&newnode, sizeof(void*), sizeof(Branch)))
 			return 0;
 		ValType* x;
 		if (posix_memalign((void**)&x, sizeof(void*), ulen))
@@ -403,7 +403,7 @@ public:
 			if (!(1 & (intptr_t)*wherep))
 				break;
 			uint8_t* p = (uint8_t*)*wherep;
-			Node* q = (Node*)(p-1);
+			Branch* q = (Branch*)(p-1);
 			if (q->byte > newbyte)
 				break;
 			if (q->byte == newbyte && q->otherbits > newotherbits)
@@ -432,7 +432,7 @@ public:
 
 		ValType* p = (ValType*)_root;
 		void** wherep = &_root;
-		Node* q = 0;
+		Branch* q = 0;
 		void** whereq = 0;
 		int direction = 0;
 
@@ -440,7 +440,7 @@ public:
 		while (1 & (intptr_t)p)
 		{
 			whereq = wherep;
-			q = (Node*)((intptr_t)p-1);
+			q = (Branch*)((intptr_t)p-1);
 			direction = calculateDirection(q, keybytes, keylen);
 			wherep = q->child + direction;
 			p = (ValType*)*wherep;
@@ -485,9 +485,9 @@ public:
 private:
 	void clear(node_ptr p)
 	{
-		if (p.isNode())
+		if (p.isBranch())
 		{
-			Node* q = p.node();
+			Branch* q = p.branch();
 			clear(q->child[0]);
 			clear(q->child[1]);
 			free(q);
@@ -498,15 +498,15 @@ private:
 
 	ValType* walkTreeForBestMember(node_ptr p, const uint8_t* keybytes, size_t keylen) const
 	{
-		while (p.isNode())
+		while (p.isBranch())
 		{
-			Node* q = p.node();
+			Branch* q = p.branch();
 			p = q->child[calculateDirection(q, keybytes, keylen)];
 		}
 		return p.leaf();
 	}
 
-	int calculateDirection(Node* q, const uint8_t* keybytes, size_t keylen) const
+	int calculateDirection(Branch* q, const uint8_t* keybytes, size_t keylen) const
 	{
 		uint8_t c = 0;
 		if (q->byte < keylen)
@@ -566,7 +566,7 @@ private:
 
 protected:
 	void* _root;
-	critbit_ext<ValType, Node> _ext;
+	critbit_ext<ValType, Branch> _ext;
 };
 
 template <typename ValType>
@@ -633,11 +633,11 @@ public:
 };
 
 // empty functions to get optimised out. Specializations will implement special behavior.
-template <typename ValType, typename Node>
+template <typename ValType, typename Branch>
 class critbit_ext
 {
 public:
-	void push_change(Node* node)
+	void push_change(Branch* node)
 	{
 	}
 

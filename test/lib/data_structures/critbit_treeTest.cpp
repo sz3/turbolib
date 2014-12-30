@@ -82,10 +82,10 @@ namespace {
 			std::cout << label << " leaf: " << root.leaf() << std::endl;
 		else
 		{
-			critbit_branch* node = root.node();
-			std::cout << label << " node at " << node->byte << "," << (unsigned)(node->otherbits ^ 0xFF) << std::endl;
-			print_cstr_tree(node->child[0], label + " left");
-			print_cstr_tree(node->child[1], label + " right");
+			critbit_branch* branch = root.branch();
+			std::cout << label << " node at " << branch->byte << "," << (unsigned)(branch->otherbits ^ 0xFF) << std::endl;
+			print_cstr_tree(branch->child[0], label + " left");
+			print_cstr_tree(branch->child[1], label + " right");
 		}
 	}
 }
@@ -121,51 +121,51 @@ TEST_CASE( "critbit_treeTest/testPrefixLookup", "[unit]" )
 		// use bit mask to specify which parts of the last byte we don't care about
 		// 000s == exact match
 		node_ptr elem = tree.subtree("o");
-		assertFalse( elem.isNode() );
+		assertFalse( elem.isBranch() );
 		assertStringsEqual( "one", elem.leaf() );
 	}
 	{
 		node_ptr elem = tree.subtree("o", 0xF); // don't match the final 4 bits
-		assertTrue( elem.isNode() );
-		node_ptr right = elem.node()->child[1];
+		assertTrue( elem.isBranch() );
+		node_ptr right = elem.branch()->child[1];
 		assertStringsEqual( "one", right.leaf() );
 
-		node_ptr left = elem.node()->child[0];
-		assertTrue(left.isNode());
-		node_ptr leftleft = left.node()->child[0];
+		node_ptr left = elem.branch()->child[0];
+		assertTrue(left.isBranch());
+		node_ptr leftleft = left.branch()->child[0];
 		assertStringsEqual( "forty-seven", leftleft.leaf() );
 	}
 	{
 		node_ptr elem = tree.subtree("o", 0x1F); // don't match the final 5 bits
-		assertTrue( elem.isNode() );
-		node_ptr right = elem.node()->child[1];
+		assertTrue( elem.isBranch() );
+		node_ptr right = elem.branch()->child[1];
 		assertStringsEqual( "two", right.leaf() );
 
-		node_ptr left = elem.node()->child[0];
-		assertTrue(left.isNode());
-		node_ptr leftright = left.node()->child[1];
+		node_ptr left = elem.branch()->child[0];
+		assertTrue(left.isBranch());
+		node_ptr leftright = left.branch()->child[1];
 		assertStringsEqual( "one", leftright.leaf() );
 	}
 	{
 		// tree root
 		node_ptr elem = tree.subtree("", 0xFF);
-		assertTrue( elem.isNode() );
-		node_ptr right = elem.node()->child[1];
+		assertTrue( elem.isBranch() );
+		node_ptr right = elem.branch()->child[1];
 		assertStringsEqual( "two", right.leaf() );
 	}
 	{
 		// tree root again
 		node_ptr elem = tree.subtree("whocares", 0xFF, 1);
-		assertTrue( elem.isNode() );
-		node_ptr right = elem.node()->child[1];
+		assertTrue( elem.isBranch() );
+		node_ptr right = elem.branch()->child[1];
 		assertStringsEqual( "two", right.leaf() );
 	}
 	{
 		node_ptr elem = tree.subtree("forty");
-		assertTrue( elem.isNode() );
-		node_ptr left = elem.node()->child[0];
+		assertTrue( elem.isBranch() );
+		node_ptr left = elem.branch()->child[0];
 		assertStringsEqual( "forty-seven", left.leaf() );
-		node_ptr right = elem.node()->child[1];
+		node_ptr right = elem.branch()->child[1];
 		assertStringsEqual( "forty-two", right.leaf() );
 	}
 }
@@ -204,7 +204,7 @@ TEST_CASE( "critbit_treeTest/testPrefixLookup.Nonsense", "[unit]" )
 	{
 		// nonsense lookup finds node.. that doesn't match.
 		node_ptr elem = tree.nearest_subtree("A");
-		assertTrue( elem.isNode() );
+		assertTrue( elem.isBranch() );
 	}
 	{
 		// nonsense lookup finds nearest leaf
@@ -246,7 +246,7 @@ TEST_CASE( "critbit_treeTest/testBegin", "[unit]" )
 
 	using node_ptr = critbit_node_ptr<char, critbit_branch>;
 	node_ptr node = tree.subtree("o");
-	assertTrue( node.isNode() );
+	assertTrue( node.isBranch() );
 	assertStringsEqual( "one", tree.begin(node) );
 }
 
