@@ -278,9 +278,9 @@ public:
 		}
 		else
 		{
-			Branch& node = top.branch();
-			if (state = enumerate(fun, node.child[0], start, stop, excludeStop, state))
-				return enumerate(fun, node.child[1], start, stop, excludeStop, state);
+			Branch& branch = top.branch();
+			if (state = enumerate(fun, branch.child[0], start, stop, excludeStop, state))
+				return enumerate(fun, branch.child[1], start, stop, excludeStop, state);
 			else
 				return STOP;
 		}
@@ -292,9 +292,9 @@ public:
 			return fun(critbit_elem_ops<ValType>::downcast(top.leaf()));
 		else
 		{
-			Branch& node = top.branch();
-			if (enumerate(fun, node.child[0]))
-				return enumerate(fun, node.child[1]);
+			Branch& branch = top.branch();
+			if (enumerate(fun, branch.child[0]))
+				return enumerate(fun, branch.child[1]);
 			else
 				return false;
 		}
@@ -310,10 +310,7 @@ public:
 	ValType* begin(node_ptr root) const
 	{
 		while (root.isBranch())
-		{
-			Branch& node = root.branch();
-			root = node.child[0];
-		}
+			root = root.branch().child[0];
 		return root.leaf();
 	}
 
@@ -327,10 +324,7 @@ public:
 	ValType* end(node_ptr root) const
 	{
 		while (root.isBranch())
-		{
-			Branch& node = root.branch();
-			root = node.child[1];
-		}
+			root = root.branch().child[1];
 		return root.leaf();
 	}
 
@@ -501,18 +495,18 @@ private:
 	{
 		while (p.isBranch())
 		{
-			Branch& q = p.branch();
-			p = q.child[calculateDirection(q, keybytes, keylen)];
+			Branch& branch = p.branch();
+			p = branch.child[calculateDirection(branch, keybytes, keylen)];
 		}
 		return p.leaf();
 	}
 
-	int calculateDirection(const Branch& q, const uint8_t* keybytes, size_t keylen) const
+	int calculateDirection(const Branch& branch, const uint8_t* keybytes, size_t keylen) const
 	{
 		uint8_t c = 0;
-		if (q.byte < keylen)
-			c = keybytes[q.byte];
-		return direction(q.otherbits, c);
+		if (branch.byte < keylen)
+			c = keybytes[branch.byte];
+		return direction(branch.otherbits, c);
 	}
 
 	int direction(uint8_t bits, uint8_t c) const
@@ -638,7 +632,7 @@ template <typename ValType, typename Branch>
 class critbit_ext
 {
 public:
-	void push_change(Branch* node)
+	void push_change(Branch* branch)
 	{
 	}
 

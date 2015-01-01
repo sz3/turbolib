@@ -24,9 +24,9 @@ template <typename KeyType, typename HashType, typename Tuple>
 class critbit_ext< critbit_map_pair<KeyType,Tuple>, merkle_branch<HashType> >
 {
 public:
-	void push_change(merkle_branch<HashType>* node)
+	void push_change(merkle_branch<HashType>* branch)
 	{
-		_changes.push_front(node);
+		_changes.push_front(branch);
 	}
 
 	void clear_changes()
@@ -38,9 +38,9 @@ public:
 	{
 		for (auto it = _changes.begin(); it != _changes.end(); ++it)
 		{
-			merkle_branch<HashType>* node = *it;
-			node->hash = getHash(node->child[0]) ^ getHash(node->child[1]);
-			//std::cout << " onchange(" << (unsigned)node->byte << ")! my children's hashes are " << getHash(node->child[0]) << "," << getHash(node->child[1]) << ". Mine is " << node->hash << std::endl;
+			merkle_branch<HashType>* branch = *it;
+			branch->hash = getHash(branch->child[0]) ^ getHash(branch->child[1]);
+			//std::cout << " onchange(" << (unsigned)branch->byte << ")! my children's hashes are " << getHash(branch->child[0]) << "," << getHash(branch->child[1]) << ". Mine is " << branch->hash << std::endl;
 		}
 		clear_changes();
 	}
