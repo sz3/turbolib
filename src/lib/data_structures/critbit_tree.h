@@ -391,22 +391,22 @@ public:
 		newnode->child[1-newdirection] = x;
 
 		// insert node into tree
-		void** wherep = &_root;
+		void** where_at = &_root;
 		for (;;)
 		{
-			if (!(1 & (intptr_t)*wherep))
+			node_ptr node(*where_at);
+			if ( !node.isBranch() )
 				break;
-			uint8_t* p = (uint8_t*)*wherep;
-			Branch* q = (Branch*)(p-1);
-			if (q->byte > newbyte)
+			Branch& branch = node.branch();
+			if (branch.byte > newbyte)
 				break;
-			if (q->byte == newbyte && q->otherbits > newotherbits)
+			if (branch.byte == newbyte && branch.otherbits > newotherbits)
 				break;
-			wherep = q->child + calculateDirection(*q, keybytes, keylen);
-			_ext.push_change(q);
+			where_at = branch.child + calculateDirection(branch, keybytes, keylen);
+			_ext.push_change(&branch);
 		}
-		newnode->child[newdirection] = *wherep;
-		*wherep = (void*)(1 + (char*)newnode);
+		newnode->child[newdirection] = *where_at;
+		*where_at = (void*)(1 + (char*)newnode);
 
 		_ext.push_change(newnode);
 		_ext.onchange();
@@ -424,40 +424,40 @@ public:
 		const uint8_t* keybytes = (const uint8_t*)val;
 		const size_t keylen = critbit_elem_ops<ValType>::key_size(val);
 
-		ValType* p = (ValType*)_root;
-		void** wherep = &_root;
-		Branch* q = 0;
-		void** whereq = 0;
+		node_ptr best(_root);
+		void** where_best = &_root;
+		Branch* parent = 0;
+		void** where_parent = 0;
 		int direction = 0;
 
 		// walk tree for best match
-		while (1 & (intptr_t)p)
+		while (best.isBranch())
 		{
-			whereq = wherep;
-			q = (Branch*)((intptr_t)p-1);
-			direction = calculateDirection(*q, keybytes, keylen);
-			wherep = q->child + direction;
-			p = (ValType*)*wherep;
+			where_parent = where_best;
+			parent = &best.branch();
+			direction = calculateDirection(*parent, keybytes, keylen);
+			where_best = parent->child + direction;
+			best = *where_best;
 
-			if (1 & (intptr_t)p)
-				_ext.push_change(q);
+			if (best.isBranch())
+				_ext.push_change(parent);
 		}
 
 		// check best match
-		if (!critbit_elem_ops<ValType>::equals(val, critbit_elem_ops<ValType>::downcast(p)))
+		if (!critbit_elem_ops<ValType>::equals(val, critbit_elem_ops<ValType>::downcast(best.leaf())))
 		{
 			_ext.clear_changes();
 			return 0;
 		}
-		free(p);
+		free(best.leaf());
 
 		// remove the node
-		if (whereq == NULL)
+		if (where_parent == NULL)
 			_root = 0;
 		else
 		{
-			*whereq = q->child[1-direction];
-			free(q);
+			*where_parent = parent->child[1-direction];
+			free(parent);
 			_ext.onchange();
 		}
 		return 1;

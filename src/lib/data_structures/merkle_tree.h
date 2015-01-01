@@ -38,9 +38,9 @@ public:
 	{
 		for (auto it = _changes.begin(); it != _changes.end(); ++it)
 		{
-			merkle_branch<HashType>* branch = *it;
-			branch->hash = getHash(branch->child[0]) ^ getHash(branch->child[1]);
-			//std::cout << " onchange(" << (unsigned)branch->byte << ")! my children's hashes are " << getHash(branch->child[0]) << "," << getHash(branch->child[1]) << ". Mine is " << branch->hash << std::endl;
+			merkle_branch<HashType>& branch = **it;
+			branch.hash = getHash(branch.child[0]) ^ getHash(branch.child[1]);
+			//std::cout << " onchange(" << (unsigned)branch.byte << ")! my children's hashes are " << getHash(branch.child[0]) << "," << getHash(branch.child[1]) << ". Mine is " << branch.hash << std::endl;
 		}
 		clear_changes();
 	}
