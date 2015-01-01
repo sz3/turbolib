@@ -1,11 +1,6 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-// re-envisioning merkle tree as such:
-// 1) balanced, perhaps not perfectly, but well. red-black tree? What about STL?
-// 2) ideally, still obeying some sort of "short-circuit" comparison across the wire? many hashes at once?
-// 3) each node in the tree contains a hash of the child nodes!
-
 #include "critbit_map.h"
 #include "merkle_location.h"
 #include "util/unpack_tuple.h"

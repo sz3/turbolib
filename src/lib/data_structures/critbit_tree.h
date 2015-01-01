@@ -222,14 +222,14 @@ public:
 				node_ptr parent(top);
 				while (node.isBranch())
 				{
-					Branch& q = node.branch();
-					if (q.byte > newbyte)
+					Branch& branch = node.branch();
+					if (branch.byte > newbyte)
 						break;
-					if (q.byte == newbyte && q.otherbits > newotherbits)
+					if (branch.byte == newbyte && branch.otherbits > newotherbits)
 						break;
 					parent = node;
-					int dir = calculateDirection(q, lastkey, lastlen);
-					node = q.child[dir];
+					int dir = calculateDirection(branch, lastkey, lastlen);
+					node = branch.child[dir];
 				}
 				// ...and set stop to the parent's left branch's rightmost child. (again, a mouthful...)
 				if (parent.isBranch())
@@ -377,10 +377,10 @@ public:
 
 		// allocate node
 		Branch* newnode;
-		if (posix_memalign((void**)&newnode, sizeof(void*), sizeof(Branch)))
+		if (posix_memalign((void**)&newnode, sizeof(void*), sizeof(Branch)) != 0)
 			return 0;
 		ValType* x;
-		if (posix_memalign((void**)&x, sizeof(void*), ulen))
+		if (posix_memalign((void**)&x, sizeof(void*), ulen) != 0)
 		{
 			free(newnode);
 			return 0;
@@ -517,8 +517,7 @@ private:
 	int insertIntoEmptyTree(ExternalType val, size_t bytes)
 	{
 		ValType* x;
-		int a = posix_memalign((void**)&x, sizeof(void*), bytes);
-		if (a)
+		if (posix_memalign((void**)&x, sizeof(void*), bytes) != 0)
 			return 0;
 		critbit_elem_ops<ValType>::construct(x, val, bytes);
 		_root = x;
