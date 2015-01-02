@@ -6,9 +6,6 @@ set (SOURCES
 	test.cpp
 	circular_iteratorTest.cpp
 	circular_mapTest.cpp
-	critbit_mapTest.cpp
-	critbit_treeTest.cpp
-	merkle_treeTest.cpp
 )
 
 include_directories(
