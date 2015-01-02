@@ -1,7 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "HttpByteStream.h"
 
-#include "serialize/StringUtil.h"
+#include "serialize/str.h"
 using std::string;
 
 HttpByteStream::HttpByteStream(IByteStream& stream)
@@ -26,7 +26,7 @@ int HttpByteStream::write(const char* buffer, unsigned length)
 	if (!_wroteHeader)
 		writeHeader();
 
-	string buff = StringUtil::hexStr(length) + "\r\n";
+	string buff = turbo::str::hexStr(length) + "\r\n";
 	_stream.write(buff.data(), buff.size());
 
 	int bytesWritten = 0;

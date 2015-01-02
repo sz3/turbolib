@@ -5,7 +5,7 @@ project(serialize_test)
 set (SOURCES
 	test.cpp
 	MessagePackTest.cpp
-	StringUtilTest.cpp
+	strTest.cpp
 	str_joinTest.cpp
 	define_serialize_mapTest.cpp
 )
@@ -13,7 +13,6 @@ set (SOURCES
 include_directories(
 	${turbolib_SOURCE_DIR}/test
 	${turbolib_SOURCE_DIR}/test/lib
-	${turbolib_SOURCE_DIR}/src/lib/serialize
 )
 
 add_executable (

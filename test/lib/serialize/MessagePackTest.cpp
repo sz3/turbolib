@@ -1,7 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "unittest.h"
 
-#include "str_join.h"
+#include "serialize/str_join.h"
 
 #include "msgpack.hpp"
 #include <string>

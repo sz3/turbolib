@@ -13,6 +13,7 @@
 #include <memory>
 using namespace std;
 using namespace std::placeholders;
+using turbo::str::str;
 
 namespace {
 	class PacketHandler
@@ -133,7 +134,7 @@ TEST_CASE( "PooledSocketServerTest/testSpam", "[unit]" )
 		assertEquals( 56, client.send(packet.data(), packet.size()) );
 
 	unsigned expected = 56*100000;
-	wait_for(2, StringUtil::str(expected) + " != " + StringUtil::str(bytesRecv), [&]()
+	wait_for(2, str(expected) + " != " + str(bytesRecv), [&]()
 	{
 		return expected == bytesRecv;
 	});

@@ -9,7 +9,7 @@
 #include "SimplePool.h"
 #include "SocketWriter.h"
 #include "event/Event.h"
-#include "serialize/StringUtil.h"
+#include "serialize/str.h"
 
 #include "tbb/concurrent_unordered_map.h"
 #include <deque>

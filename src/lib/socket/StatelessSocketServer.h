@@ -6,7 +6,7 @@
 
 #include "SimplePool.h"
 #include "SocketWriter.h"
-#include "serialize/StringUtil.h"
+#include "serialize/str.h"
 
 #include <deque>
 #include <functional>
@@ -80,7 +80,7 @@ bool StatelessSocketServer<Socket>::start()
 	if (!_sock.bind(_addr))
 	{
 		_sock.close();
-		return fatalError("couldn't bind socket to port " + StringUtil::str(_addr.port()));
+		return fatalError("couldn't bind socket to port " + turbo::str::str(_addr.port()));
 	}
 
 	for (unsigned i = 0; i < _numReaders; ++i)

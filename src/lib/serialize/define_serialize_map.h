@@ -1,6 +1,6 @@
 #pragma once
 
-#include "StringUtil.h"
+#include "str.h"
 #include <string>
 #include <unordered_map>
 
@@ -21,10 +21,10 @@
 #define APPLY_ALL(t, ...) APPLY_ALL_H2(t, NUM_ARGS(__VA_ARGS__), __VA_ARGS__)
 
 #define LOAD_MAP_INTERNAL(...) APPLY_ALL(LOAD_MAP_ELEM, __VA_ARGS__)
-#define LOAD_MAP_ELEM(n) {auto it = map.find(#n); if (it != map.end()) StringUtil::fromStr(n, it->second);}
+#define LOAD_MAP_ELEM(n) {auto it = map.find(#n); if (it != map.end()) turbo::str::fromStr(n, it->second);}
 
 #define SAVE_MAP_INTERNAL(...) APPLY_ALL(SAVE_MAP_ELEM, __VA_ARGS__)
-#define SAVE_MAP_ELEM(n) {map[#n] = StringUtil::str(n);}
+#define SAVE_MAP_ELEM(n) {map[#n] = turbo::str::str(n);}
 
 #define DEFINE_SERIALIZE_MAP(...) \
 void load(const std::unordered_map<std::string,std::string>& map) \

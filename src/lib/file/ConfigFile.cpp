@@ -2,7 +2,7 @@
 #include "ConfigFile.h"
 
 #include "File.h"
-#include "serialize/StringUtil.h"
+#include "serialize/str.h"
 #include <functional>
 #include <iostream>
 #include <sstream>
@@ -27,7 +27,7 @@ ConfigFile::ConfigFile(std::string filename)
 
 void ConfigFile::loadLine(const string& line)
 {
-	std::vector<string> tokens = StringUtil::split(line, '=');
+	std::vector<string> tokens = turbo::str::split(line, '=');
 	if (tokens.size() < 2)
 		return;
 	set(tokens[0], tokens[1]);

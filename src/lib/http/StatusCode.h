@@ -1,7 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #pragma once
 
-#include "serialize/StringUtil.h"
+#include "serialize/str.h"
 #include <string>
 
 class StatusCode
@@ -55,7 +55,7 @@ inline int StatusCode::integer() const
 
 inline std::string StatusCode::str() const
 {
-	return StringUtil::str(_code);
+	return turbo::str::str(_code);
 }
 
 inline std::string StatusCode::verbose() const

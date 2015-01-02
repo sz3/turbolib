@@ -1,8 +1,9 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "Url.h"
 
-#include "serialize/StringUtil.h"
+#include "serialize/str.h"
 using std::string;
+using turbo::str::split;
 
 Url::Url(const std::string& url)
 	: _url(url)
@@ -29,7 +30,7 @@ std::string Url::baseUrl() const
 
 std::vector<std::string> Url::components() const
 {
-	return StringUtil::split(baseUrl(), '/', true);
+	return split(baseUrl(), '/', true);
 }
 
 std::string Url::queryString() const
@@ -43,7 +44,7 @@ std::string Url::queryString() const
 std::unordered_map<std::string,std::string> Url::params() const
 {
 	std::unordered_map<string,string> params;
-	std::vector<std::string> paramPairs = StringUtil::split( queryString(), '&' );
+	std::vector<std::string> paramPairs = split( queryString(), '&' );
 	for (auto it = paramPairs.begin(); it != paramPairs.end(); ++it)
 	{
 		const string& token = *it;

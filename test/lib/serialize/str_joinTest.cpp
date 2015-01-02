@@ -16,7 +16,7 @@ namespace {
 		return outstream;
 	}
 }
-#include "str_join.h"
+#include "serialize/str_join.h"
 
 TEST_CASE( "str_joinTest/testJoinPrimitive", "description" )
 {
