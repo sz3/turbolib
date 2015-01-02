@@ -37,6 +37,7 @@ set (PROJECTS
    src/lib/util
    test/lib/util
 
+   src/lib/merkle_tree
    src/lib/vector_clock
    src/third_party_lib/crypto_base
 )
