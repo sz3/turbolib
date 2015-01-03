@@ -20,8 +20,6 @@ set (PROJECTS
    test/lib/command_line
    src/lib/crypto
    test/lib/crypto
-   src/lib/data_structures
-   test/lib/data_structures
    src/lib/event
    test/lib/event
    src/lib/file
@@ -37,6 +35,7 @@ set (PROJECTS
    src/lib/util
    test/lib/util
 
+   src/lib/consistent_hashing
    src/lib/merkle_tree
    src/lib/vector_clock
    src/third_party_lib/crypto_base
