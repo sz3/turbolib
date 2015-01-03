@@ -7,7 +7,7 @@ namespace turbo {
 namespace str
 {
 	template <class Iter>
-	std::string join(const Iter& start, const Iter& end, char delim=' ')
+	inline std::string join(const Iter& start, const Iter& end, char delim=' ')
 	{
 		std::stringstream ss;
 		Iter it = start;
@@ -19,7 +19,7 @@ namespace str
 	}
 
 	template <class Type>
-	std::string join(const Type& container, char delim=' ')
+	inline std::string join(const Type& container, char delim=' ')
 	{
 		return join(container.begin(), container.end(), delim);
 	}
