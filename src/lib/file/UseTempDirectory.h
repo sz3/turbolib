@@ -11,15 +11,15 @@ public:
 		: _original(::get_current_dir_name())
 	{
 		std::string dirname = "/tmp/turbo_XXXXXX\0";
-		::mkdtemp(&dirname[0]);
+		auto _ = ::mkdtemp(&dirname[0]);
 
 		_temp = dirname;
-		::chdir(_temp.c_str());
+		auto __ = ::chdir(_temp.c_str());
 	}
 
 	~UseTempDirectory()
 	{
-		::chdir(_original.c_str());
+		auto _ = ::chdir(_original.c_str());
 		boost::filesystem::remove_all(_temp);
 	}
 
