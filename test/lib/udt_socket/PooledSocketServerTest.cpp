@@ -68,6 +68,19 @@ TEST_CASE( "PooledSocketServerTest/testDefault", "[unit]" )
 	assertEquals( "onRead(hello, darkness)|onRead(my old friend)", handler.calls() );
 }
 
+
+TEST_CASE( "PooledSocketServerTest/testNoContact", "[unit]" )
+{
+	UdtScope udt;
+
+	PacketHandler handler;
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
+	assertMsg( server.start(), server.lastError() );
+
+	server.stop();
+	server.stop();
+}
+
 TEST_CASE( "PooledSocketServerTest/testServerCrosstalk", "[unit]" )
 {
 	UdtScope udt;

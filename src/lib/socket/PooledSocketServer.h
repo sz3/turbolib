@@ -96,7 +96,7 @@ bool PooledSocketServer<Socket,SocketSet>::start()
 	if (!_sock.bind(_addr))
 	{
 		_sock.close();
-		return fatalError("couldn't bind to port: " + _sock.getErrorMessage());
+		return fatalError("couldn't bind to port (" + _addr.toString() + "): " + _sock.getErrorMessage());
 	}
 
 	if (!_sock.listen(20))
