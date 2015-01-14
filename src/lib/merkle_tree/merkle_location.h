@@ -20,6 +20,11 @@ struct merkle_location
 		: key(key)
 		, keybits(keybits)
 	{}
+
+	bool operator==(const merkle_location<KeyType>& other) const
+	{
+		return key == other.key && keybits == other.keybits;
+	}
 };
 
 template <typename KeyType, typename HashType>
