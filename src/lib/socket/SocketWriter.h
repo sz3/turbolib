@@ -45,4 +45,9 @@ public:
 	{
 		return Socket::target();
 	}
+
+	int handle() const
+	{
+		return Socket::handle();
+	}
 };

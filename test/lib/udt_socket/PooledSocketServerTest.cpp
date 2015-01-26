@@ -6,10 +6,12 @@
 #include "UdtScope.h"
 #include "socket/PooledSocketServer.h"
 
+#include "event/Event.h"
 #include "socket/ISocketWriter.h"
 #include "socket/socket_address.h"
 #include "time/wait_for.h"
 #include "util/CallHistory.h"
+#include <condition_variable>
 #include <memory>
 using namespace std;
 using namespace std::placeholders;
@@ -19,12 +21,14 @@ namespace {
 	class PacketHandler
 	{
 	public:
-		void onRead(ISocketWriter& writer, const char* buff, unsigned size)
+		std::function<void(ISocketWriter&, const char*, unsigned)> readFun()
 		{
-			_history.call("onRead", string(buff, size));
-			SocketWriter<udt_socket>& sock = (SocketWriter<udt_socket>&)writer;
-			_lastAddr = sock.endpoint();
-			writer.send(buff, size);
+			return bind(&PacketHandler::onRead, this, _1, _2, _3);
+		}
+
+		std::function<bool(ISocketWriter&)> writeFun()
+		{
+			return bind(&PacketHandler::onWriteReady, this, _1);
 		}
 
 		std::string calls() const
@@ -38,17 +42,32 @@ namespace {
 		}
 
 	protected:
+		void onRead(ISocketWriter& writer, const char* buff, unsigned size)
+		{
+			_history.call("onRead", string(buff, size));
+			_lastAddr = writer.endpoint();
+			writer.send(buff, size);
+		}
+
+		bool onWriteReady(ISocketWriter& writer)
+		{
+			_history.call("onWriteReady");
+			_lastAddr = writer.endpoint();
+			return true;
+		}
+
+	protected:
 		CallHistory _history;
 		socket_address _lastAddr;
 	};
 }
 
-TEST_CASE( "PooledSocketServerTest/testDefault", "[unit]" )
+TEST_CASE( "PooledSocketServerTest/testAcceptAndReply", "[unit]" )
 {
 	UdtScope udt;
 
 	PacketHandler handler;
-	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), handler.readFun(), handler.writeFun());
 	assertMsg( server.start(), server.lastError() );
 
 	udt_socket client(socket_address("127.0.0.1", 8487));
@@ -74,7 +93,7 @@ TEST_CASE( "PooledSocketServerTest/testNoContact", "[unit]" )
 	UdtScope udt;
 
 	PacketHandler handler;
-	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), handler.readFun(), handler.writeFun());
 	assertMsg( server.start(), server.lastError() );
 
 	server.stop();
@@ -86,10 +105,10 @@ TEST_CASE( "PooledSocketServerTest/testServerCrosstalk", "[unit]" )
 	UdtScope udt;
 
 	PacketHandler handler;
-	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), handler.readFun(), handler.writeFun());
 	assertMsg( server.start(), server.lastError() );
 
-	PooledSocketServer<udt_socket, udt_socket_set> other(socket_address("", 8488), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
+	PooledSocketServer<udt_socket, udt_socket_set> other(socket_address("", 8488), handler.readFun(), handler.writeFun());
 	assertMsg( other.start(), other.lastError() );
 
 	{
@@ -129,14 +148,15 @@ TEST_CASE( "PooledSocketServerTest/testServerCrosstalk", "[unit]" )
 	}
 }
 
-TEST_CASE( "PooledSocketServerTest/testSpam", "[unit]" )
+TEST_CASE( "PooledSocketServerTest/testLargeBlockingSend", "[unit]" )
 {
 	UdtScope udt;
 
 	unsigned bytesRecv = 0;
-	auto fun = [&bytesRecv] (ISocketWriter& writer, const char* buff, unsigned size) { bytesRecv += size; };
+	auto readFun = [&bytesRecv] (ISocketWriter& writer, const char* buff, unsigned size) { bytesRecv += size; };
+	auto writeFun = [] (ISocketWriter&) { return true; };
 
-	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), fun);
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), readFun, writeFun);
 	assertMsg( server.start(), server.lastError() );
 
 	udt_socket client(socket_address("127.0.0.1", 8487));
@@ -145,6 +165,43 @@ TEST_CASE( "PooledSocketServerTest/testSpam", "[unit]" )
 	string packet = "01234567890123456789012345678901234567890123456789abcdef";
 	for (int i = 0; i < 100000; ++i)
 		assertEquals( 56, client.send(packet.data(), packet.size()) );
+
+	unsigned expected = 56*100000;
+	wait_for(2, str(expected) + " != " + str(bytesRecv), [&]()
+	{
+		return expected == bytesRecv;
+	});
+}
+
+TEST_CASE( "PooledSocketServerTest/testNonBlockingSend", "[unit]" )
+{
+	UdtScope udt;
+
+	Event readyForWrite;
+	unsigned bytesRecv = 0;
+	auto readFun = [&bytesRecv] (ISocketWriter& writer, const char* buff, unsigned size) { bytesRecv += size; };
+	auto writeFun = [&readyForWrite] (ISocketWriter&) { readyForWrite.signal(); return true; };
+
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), readFun, writeFun);
+	assertMsg( server.start(), server.lastError() );
+
+	shared_ptr<ISocketWriter> client = server.getWriter(socket_address("127.0.0.1", 8487));
+	assertTrue( !!client );
+
+	string packet = "01234567890123456789012345678901234567890123456789abcdef";
+	int i = 0;
+	while (i < 100000)
+	{
+		int res = client->send(packet.data(), packet.size());
+		if (res != 56)
+		{
+			std::cout << " write(" << i << ") failed, res " << res << std::endl;
+			server.waitForWriter(*client);
+			readyForWrite.wait(5000);
+		}
+		else
+			++i;
+	}
 
 	unsigned expected = 56*100000;
 	wait_for(2, str(expected) + " != " + str(bytesRecv), [&]()

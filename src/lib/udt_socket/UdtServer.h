@@ -11,7 +11,7 @@
 class UdtServer : public ISocketServer
 {
 public:
-	UdtServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, ISocketPool<udt_socket>* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1450);
+	UdtServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, std::function<bool(ISocketWriter&)> onWriteReady, ISocketPool<udt_socket>* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1450);
 
 	bool start();
 	bool stop();

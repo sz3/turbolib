@@ -21,13 +21,16 @@ template <typename Socket, typename SocketSet>
 class PooledSocketServer : public ISocketServer
 {
 public:
-	PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, ISocketPool<Socket>* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1450);
+	PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead,
+					   std::function<bool(ISocketWriter&)> onWriteReady, ISocketPool<Socket>* pool=NULL,
+					   unsigned numReaders=1, unsigned maxReadSize=1450);
 	~PooledSocketServer();
 
 	bool start();
 	bool stop();
 
 	std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint);
+	void waitForWriter(const ISocketWriter& writer);
 
 	bool running() const;
 	std::string lastError() const;
@@ -35,6 +38,7 @@ public:
 protected:
 	void accept();
 	void run();
+	void writeReady();
 	bool fatalError(const std::string& error);
 
 protected:
@@ -44,25 +48,32 @@ protected:
 	ISocketPool<Socket>& _pool;
 	Socket _sock;
 	SocketSet _readSet;
+	SocketSet _writeSet;
 	bool _running;
 	socket_address _addr;
 
 	std::function<void(ISocketWriter&, const char*, unsigned)> _onRead;
+	std::function<bool(ISocketWriter&)> _onWriteReady;
 	unsigned _maxReadSize;
 
 	Event _started;
 	unsigned _numReaders;
 	std::deque<std::thread> _runners;
 	std::thread _acceptor;
+	std::thread _writeHelper;
 	std::string _lastError;
 };
 
 template <typename Socket, typename SocketSet>
-PooledSocketServer<Socket,SocketSet>::PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, ISocketPool<Socket>* pool, unsigned numReaders, unsigned maxReadSize)
+PooledSocketServer<Socket,SocketSet>::PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead,
+														 std::function<bool(ISocketWriter&)> onWriteReady, ISocketPool<Socket>* pool,
+														 unsigned numReaders, unsigned maxReadSize)
 	: _running(false)
 	, _addr(addr)
 	, _readSet(SocketSet::READS)
+	, _writeSet(SocketSet::WRITES)
 	, _onRead(onRead)
+	, _onWriteReady(onWriteReady)
 	, _numReaders(numReaders)
 	, _maxReadSize(maxReadSize)
 	, _poolPtr(pool == NULL? new SimplePool<Socket>() : pool)
@@ -105,6 +116,7 @@ bool PooledSocketServer<Socket,SocketSet>::start()
 		return fatalError("couldn't get socket to listen: " + _sock.getErrorMessage());
 	}
 
+	_writeHelper = std::thread( std::bind(&PooledSocketServer<Socket,SocketSet>::writeReady, this) );
 	_acceptor = std::thread( std::bind(&PooledSocketServer<Socket,SocketSet>::accept, this) );
 	for (unsigned i = 0; i < _numReaders; ++i)
 		_runners.push_back( std::thread(std::bind(&PooledSocketServer<Socket,SocketSet>::run, this)) );
@@ -120,9 +132,12 @@ bool PooledSocketServer<Socket,SocketSet>::stop()
 
 	_running = false;
 	_readSet.release();
+	_writeSet.release();
 	_sock.close();
 	_pool.close_all();
 
+	if (_writeHelper.joinable())
+		_writeHelper.join();
 	if (_acceptor.joinable())
 		_acceptor.join();
 	for (auto it = _runners.begin(); it != _runners.end(); ++it)
@@ -175,6 +190,35 @@ void PooledSocketServer<Socket,SocketSet>::run()
 			_onRead(*writer, &buffer[0], bytesRead);
 		}
 	}
+}
+
+template <typename Socket, typename SocketSet>
+void PooledSocketServer<Socket,SocketSet>::writeReady()
+{
+	// would kinda like to do a single epoll rather than 2, but there doesn't seem an obvious way to do that.
+
+	// in any case, once we get a writer fd, we need to turn it into a peer->callback
+	// perhaps a map of fd->callback?
+	// even w/ single epoll, the map op needs to happen on a different thread from the onRead stuff.
+	// so we're looking at an extra thread here regardless.
+
+	while (_running)
+	{
+		std::set<int> writes = _writeSet.wait();
+		for (std::set<int>::const_iterator it = writes.begin(); it != writes.end(); ++it)
+		{
+			Socket sock(*it);
+			std::shared_ptr<ISocketWriter> writer = _pool.find(sock.endpoint());
+			if ( !writer || _onWriteReady(*writer) )
+				_writeSet.remove(*it);
+		}
+	}
+}
+
+template <typename Socket, typename SocketSet>
+void PooledSocketServer<Socket,SocketSet>::waitForWriter(const ISocketWriter& writer)
+{
+	_writeSet.add(writer.handle());
 }
 
 template <typename Socket, typename SocketSet>

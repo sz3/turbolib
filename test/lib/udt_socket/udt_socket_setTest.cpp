@@ -13,6 +13,11 @@ namespace {
 	void onRead(ISocketWriter&, const char*, unsigned)
 	{
 	}
+
+	bool onWriteReady(ISocketWriter&)
+	{
+		return true;
+	}
 }
 
 TEST_CASE( "udt_socket_setTest/testWriteWait", "default" )
@@ -20,7 +25,7 @@ TEST_CASE( "udt_socket_setTest/testWriteWait", "default" )
 	udt_socket_set epoll(udt_socket_set::WRITES);
 
 	UdtScope udt;
-	UdtServer server(socket_address("", 8487), &onRead);
+	UdtServer server(socket_address("", 8487), &onRead, &onWriteReady);
 	assertMsg( server.start(), server.lastError() );
 
 	udt_socket one(socket_address("127.0.0.1", 8487));
@@ -38,7 +43,7 @@ TEST_CASE( "udt_socket_setTest/testOverloadWriteWait", "default" )
 	udt_socket_set epoll(udt_socket_set::WRITES);
 
 	UdtScope udt;
-	UdtServer server(socket_address("", 8487), &onRead);
+	UdtServer server(socket_address("", 8487), &onRead, &onWriteReady);
 	assertMsg( server.start(), server.lastError() );
 
 	udt_socket client(socket_address("127.0.0.1", 8487));
