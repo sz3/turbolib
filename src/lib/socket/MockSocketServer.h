@@ -2,6 +2,7 @@
 #pragma once
 
 #include "ISocketServer.h"
+#include "ISocketWriter.h"
 #include "socket_address.h"
 #include "util/CallHistory.h"
 
@@ -24,6 +25,11 @@ public:
 	{
 		_history.call("getWriter", endpoint.toString());
 		return _sock;
+	}
+
+	void waitForWriter(const ISocketWriter& writer)
+	{
+		_history.call("waitForWriter", writer.endpoint().toString());
 	}
 
 	std::string lastError() const

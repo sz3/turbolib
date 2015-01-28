@@ -25,6 +25,11 @@ public:
 		return _endpoint;
 	}
 
+	int handle() const
+	{
+		return 4;
+	}
+
 	int try_send(const char* buffer, unsigned size)
 	{
 		_history->call("try_send", std::string(buffer, size));

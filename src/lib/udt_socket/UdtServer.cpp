@@ -24,6 +24,11 @@ std::shared_ptr<ISocketWriter> UdtServer::getWriter(const socket_address& endpoi
 	return _pimpl->getWriter(endpoint);
 }
 
+void UdtServer::waitForWriter(const ISocketWriter& writer)
+{
+	_pimpl->waitForWriter(writer);
+}
+
 std::string UdtServer::lastError() const
 {
 	return _pimpl->lastError();

@@ -15,6 +15,7 @@ public:
 	virtual bool stop() = 0;
 
 	virtual std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint) = 0;
+	virtual void waitForWriter(const ISocketWriter& writer) = 0;
 
 	virtual std::string lastError() const = 0;
 };

@@ -68,6 +68,11 @@ public:
 		return _endpoint.address();
 	}
 
+	int handle() const
+	{
+		return 3;
+	}
+
 public:
 	socket_address _endpoint;
 	bool _trySendError;

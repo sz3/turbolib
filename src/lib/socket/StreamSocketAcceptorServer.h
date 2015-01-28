@@ -18,6 +18,7 @@ public:
 	bool stop();
 
 	std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint);
+	void waitForWriter(const ISocketWriter&) {}
 
 	bool running() const;
 	std::string lastError() const;
