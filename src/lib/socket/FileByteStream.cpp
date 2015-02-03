@@ -2,7 +2,8 @@
 #include "FileByteStream.h"
 
 #include <cstdio> // for perror
-#include <sys/socket.h>
+#include <unistd.h> // for ::close()
+#include <sys/socket.h> // ::recv() and ::send()
 
 FileByteStream::FileByteStream(int fd)
 	: _fd(fd)
@@ -29,4 +30,9 @@ int FileByteStream::write(const char* buffer, unsigned length)
 	if (nbytes < 0)
 		perror("send");
 	return nbytes;
+}
+
+int FileByteStream::close()
+{
+	return ::close(_fd);
 }

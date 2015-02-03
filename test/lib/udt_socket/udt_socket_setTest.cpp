@@ -14,7 +14,7 @@ namespace {
 	{
 	}
 
-	bool onWriteReady(ISocketWriter&)
+	bool onWriteReady(int)
 	{
 		return true;
 	}

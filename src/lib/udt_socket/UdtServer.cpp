@@ -4,7 +4,7 @@
 #include "udt_socket_set.h"
 #include "socket/PooledSocketServer.h"
 
-UdtServer::UdtServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, std::function<bool(ISocketWriter&)> onWriteReady, ISocketPool<udt_socket>* pool, unsigned numReaders, unsigned maxReadSize)
+UdtServer::UdtServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, std::function<bool(int)> onWriteReady, ISocketPool<udt_socket>* pool, unsigned numReaders, unsigned maxReadSize)
 	: _pimpl(new PooledSocketServer<udt_socket, udt_socket_set>(addr, onRead, onWriteReady, pool, numReaders, maxReadSize))
 {
 }
@@ -24,9 +24,9 @@ std::shared_ptr<ISocketWriter> UdtServer::getWriter(const socket_address& endpoi
 	return _pimpl->getWriter(endpoint);
 }
 
-void UdtServer::waitForWriter(const ISocketWriter& writer)
+void UdtServer::waitForWriter(int id)
 {
-	_pimpl->waitForWriter(writer);
+	_pimpl->waitForWriter(id);
 }
 
 std::string UdtServer::lastError() const

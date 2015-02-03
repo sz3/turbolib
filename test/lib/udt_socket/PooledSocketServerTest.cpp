@@ -26,7 +26,7 @@ namespace {
 			return bind(&PacketHandler::onRead, this, _1, _2, _3);
 		}
 
-		std::function<bool(ISocketWriter&)> writeFun()
+		std::function<bool(int)> writeFun()
 		{
 			return bind(&PacketHandler::onWriteReady, this, _1);
 		}
@@ -49,10 +49,9 @@ namespace {
 			writer.send(buff, size);
 		}
 
-		bool onWriteReady(ISocketWriter& writer)
+		bool onWriteReady(int id)
 		{
-			_history.call("onWriteReady");
-			_lastAddr = writer.endpoint();
+			_history.call("onWriteReady", id);
 			return true;
 		}
 
@@ -154,7 +153,7 @@ TEST_CASE( "PooledSocketServerTest/testLargeBlockingSend", "[unit]" )
 
 	unsigned bytesRecv = 0;
 	auto readFun = [&bytesRecv] (ISocketWriter& writer, const char* buff, unsigned size) { bytesRecv += size; };
-	auto writeFun = [] (ISocketWriter&) { return true; };
+	auto writeFun = [] (int) { return true; };
 
 	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), readFun, writeFun);
 	assertMsg( server.start(), server.lastError() );
@@ -180,7 +179,7 @@ TEST_CASE( "PooledSocketServerTest/testNonBlockingSend", "[unit]" )
 	Event readyForWrite;
 	unsigned bytesRecv = 0;
 	auto readFun = [&bytesRecv] (ISocketWriter& writer, const char* buff, unsigned size) { bytesRecv += size; };
-	auto writeFun = [&readyForWrite] (ISocketWriter&) { readyForWrite.signal(); return true; };
+	auto writeFun = [&readyForWrite] (int) { readyForWrite.signal(); return true; };
 
 	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), readFun, writeFun);
 	assertMsg( server.start(), server.lastError() );
@@ -196,7 +195,7 @@ TEST_CASE( "PooledSocketServerTest/testNonBlockingSend", "[unit]" )
 		if (res != 56)
 		{
 			std::cout << " write(" << i << ") failed, res " << res << std::endl;
-			server.waitForWriter(*client);
+			server.waitForWriter(client->handle());
 			readyForWrite.wait(5000);
 		}
 		else

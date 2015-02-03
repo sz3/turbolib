@@ -13,6 +13,8 @@ public:
 	int read(char* buffer, unsigned length);
 	int write(const char* buffer, unsigned length);
 
+	int close();
+
 protected:
 	int _fd;
 };

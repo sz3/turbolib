@@ -22,7 +22,7 @@ class PooledSocketServer : public ISocketServer
 {
 public:
 	PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead,
-					   std::function<bool(ISocketWriter&)> onWriteReady, ISocketPool<Socket>* pool=NULL,
+					   std::function<bool(int)> onWriteReady, ISocketPool<Socket>* pool=NULL,
 					   unsigned numReaders=1, unsigned maxReadSize=1450);
 	~PooledSocketServer();
 
@@ -30,7 +30,7 @@ public:
 	bool stop();
 
 	std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint);
-	void waitForWriter(const ISocketWriter& writer);
+	void waitForWriter(int handle);
 
 	bool running() const;
 	std::string lastError() const;
@@ -53,7 +53,7 @@ protected:
 	socket_address _addr;
 
 	std::function<void(ISocketWriter&, const char*, unsigned)> _onRead;
-	std::function<bool(ISocketWriter&)> _onWriteReady;
+	std::function<bool(int)> _onWriteReady;
 	unsigned _maxReadSize;
 
 	Event _started;
@@ -66,7 +66,7 @@ protected:
 
 template <typename Socket, typename SocketSet>
 PooledSocketServer<Socket,SocketSet>::PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead,
-														 std::function<bool(ISocketWriter&)> onWriteReady, ISocketPool<Socket>* pool,
+														 std::function<bool(int)> onWriteReady, ISocketPool<Socket>* pool,
 														 unsigned numReaders, unsigned maxReadSize)
 	: _running(false)
 	, _addr(addr)
@@ -207,18 +207,16 @@ void PooledSocketServer<Socket,SocketSet>::writeReady()
 		std::set<int> writes = _writeSet.wait();
 		for (std::set<int>::const_iterator it = writes.begin(); it != writes.end(); ++it)
 		{
-			Socket sock(*it);
-			std::shared_ptr<ISocketWriter> writer = _pool.find(sock.endpoint());
-			if ( !writer || _onWriteReady(*writer) )
+			if ( _onWriteReady(*it) )
 				_writeSet.remove(*it);
 		}
 	}
 }
 
 template <typename Socket, typename SocketSet>
-void PooledSocketServer<Socket,SocketSet>::waitForWriter(const ISocketWriter& writer)
+void PooledSocketServer<Socket,SocketSet>::waitForWriter(int handle)
 {
-	_writeSet.add(writer.handle());
+	_writeSet.add(handle);
 }
 
 template <typename Socket, typename SocketSet>

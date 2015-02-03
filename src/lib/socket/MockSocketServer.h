@@ -27,9 +27,9 @@ public:
 		return _sock;
 	}
 
-	void waitForWriter(const ISocketWriter& writer)
+	void waitForWriter(int id)
 	{
-		_history.call("waitForWriter", writer.endpoint().toString());
+		_history.call("waitForWriter", id);
 	}
 
 	std::string lastError() const
