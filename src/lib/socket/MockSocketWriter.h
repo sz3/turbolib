@@ -70,6 +70,7 @@ public:
 
 	int handle() const
 	{
+		_history.call("handle");
 		return 3;
 	}
 
