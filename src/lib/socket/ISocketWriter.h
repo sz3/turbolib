@@ -18,4 +18,6 @@ public:
 	virtual socket_address endpoint() const = 0;
 	virtual std::string target() const = 0; // TODO: this should go away
 	virtual int handle() const = 0;
+
+	virtual void set_muxid(unsigned char id) {}
 };

@@ -74,6 +74,11 @@ public:
 		return 3;
 	}
 
+	void set_muxid(unsigned char id)
+	{
+		_history.call("set_muxid", (int)id);
+	}
+
 public:
 	socket_address _endpoint;
 	bool _trySendError;
