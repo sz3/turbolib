@@ -5,7 +5,7 @@ project(util_test)
 set (SOURCES
 	test.cpp
 	CallHistoryTest.cpp
-	FunctionChainerTest.cpp
+	function_chainTest.cpp
 	RandomTest.cpp
 )
 

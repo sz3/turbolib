@@ -2,8 +2,8 @@ cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
 	cstrfun.h
+	function_chain.h
 	CallHistory.h
-	FunctionChainer.h
 	Random.h
 )
 

@@ -1,7 +1,7 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "unittest.h"
 
-#include "FunctionChainer.h"
+#include "function_chain.h"
 #include "serialize/str_join.h"
 #include <deque>
 #include <functional>
@@ -31,7 +31,8 @@ TEST_CASE( "FunctionChainerTest/testDefault", "[unit]" )
 	deque<string> strresults;
 	auto fun = [&] (unsigned num, string val) { strresults.push_back(val); };
 
-	FunctionChainer<unsigned, string> chain(fun);
+	turbo::function_chain<unsigned, string> chain;
+	chain.add( fun );
 
 	deque<unsigned> numresults;
 	auto another = [&] (unsigned num, string val) { numresults.push_back(num); };
@@ -40,7 +41,7 @@ TEST_CASE( "FunctionChainerTest/testDefault", "[unit]" )
 	FunMeister meister;
 	chain.add( std::bind( &FunMeister::push, &meister, _1, _2 ) );
 
-	auto chainFun = chain.generate();
+	auto chainFun = chain.finalize();
 
 	chainFun(1, "one");
 	chainFun(2, "two");
