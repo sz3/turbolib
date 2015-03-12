@@ -16,7 +16,7 @@ template <typename Socket>
 class StatelessSocketServer : public ISocketServer
 {
 public:
-	StatelessSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, ISocketPool<Socket>* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1450);
+	StatelessSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, ISocketPool<Socket>* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1472);
 	~StatelessSocketServer();
 
 	bool start();

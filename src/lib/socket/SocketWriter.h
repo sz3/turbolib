@@ -28,7 +28,7 @@ public:
 
 	unsigned capacity() const
 	{
-		return 1500;
+		return 1472; // 1500 - 28 (ipv4 udp header)
 	}
 
 	bool flush(bool wait)

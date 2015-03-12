@@ -23,7 +23,7 @@ class PooledSocketServer : public ISocketServer
 public:
 	PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead,
 					   std::function<bool(int)> onWriteReady, ISocketPool<Socket>* pool=NULL,
-					   unsigned numReaders=1, unsigned maxReadSize=1450);
+					   unsigned numReaders=1, unsigned maxReadSize=1472);
 	~PooledSocketServer();
 
 	bool start();
