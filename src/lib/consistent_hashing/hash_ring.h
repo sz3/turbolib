@@ -2,7 +2,6 @@
 #pragma once
 
 #include "circular_map.h"
-#include <functional>
 
 namespace turbo {
 template <typename KeyType, typename ValueType, typename Hash=std::hash<KeyType>>

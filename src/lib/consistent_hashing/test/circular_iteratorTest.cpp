@@ -9,11 +9,7 @@ using namespace std;
 
 TEST_CASE( "circular_iteratorTest/testLoop", "[unit]" )
 {
-	set<int> foo;
-	foo.insert(1);
-	foo.insert(2);
-	foo.insert(3);
-
+	set<int> foo = {1, 2, 3};
 	string result;
 
 	{
@@ -71,14 +67,9 @@ TEST_CASE( "circular_iteratorTest/testLoop", "[unit]" )
 
 TEST_CASE( "circular_iteratorTest/testLoop2", "[unit]" )
 {
-	set<string> foo;
-	foo.insert("aaa");
-	foo.insert("bbb");
-	foo.insert("ccc");
-	foo.insert("ddd");
-	foo.insert("eee");
-
+	set<string> foo = {"aaa", "bbb", "ccc", "ddd", "eee"};
 	string result;
+
 	circular_iterator<set<string>::const_iterator> it( foo.lower_bound("ddd"), foo.begin(), foo.end() );
 	for (; it != foo.end(); ++it)
 		result += *it;
