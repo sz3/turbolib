@@ -9,6 +9,7 @@ set (SOURCES
 	SocketWriterTest.cpp
 	StatelessSocketServerTest.cpp
 	StreamSocketAcceptorServerTest.cpp
+	TcpAcceptorServerTest.cpp
 	socket_addressTest.cpp
 )
 

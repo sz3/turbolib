@@ -23,6 +23,8 @@ set(SOURCES
 	mock_socket.h
 	socket_address.cpp
 	socket_address.h
+	tcp_socket.cpp
+	tcp_socket.h
 	udp_socket.cpp
 	udp_socket.h
 )

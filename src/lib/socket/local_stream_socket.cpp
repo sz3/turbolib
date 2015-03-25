@@ -49,7 +49,7 @@ bool local_stream_socket::listen(int seconds)
 local_stream_socket local_stream_socket::accept()
 {
 	struct sockaddr_un remote;
-	socklen_t remote_sz = sizeof(struct sockaddr_un);
+	socklen_t remote_sz = sizeof(remote);
 	memset((char*)&remote, 0, remote_sz);
 
 	int conn = ::accept(_sock, (struct sockaddr*)&remote, &remote_sz);
