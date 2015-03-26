@@ -32,7 +32,7 @@ bool tcp_socket::bind(const socket_address& addr)
 	struct sockaddr_in local;
 	memset((char*)&local, 0, sizeof(local));
 
-	int accept_from = addr.address() == "*"? INADDR_ANY : INADDR_LOOPBACK;
+	int accept_from = addr.address().empty()? INADDR_ANY : INADDR_LOOPBACK;
 	local.sin_addr.s_addr = htonl(accept_from);
 	local.sin_port = htons(addr.port());
 	local.sin_family = AF_INET;

@@ -61,7 +61,7 @@ TEST_CASE( "TcpAcceptorServerTest/testLocalEcho", "[unit]" )
 TEST_CASE( "TcpAcceptorServerTest/testAnyEcho", "[unit]" )
 {
 	PacketHandler handler;
-	StreamSocketAcceptorServer<tcp_socket> server(socket_address("*", 9010), bind(&PacketHandler::onConnect, ref(handler), _1));
+	StreamSocketAcceptorServer<tcp_socket> server(socket_address("", 9010), bind(&PacketHandler::onConnect, ref(handler), _1));
 	assertMsg( server.start(), server.lastError() );
 
 	{
