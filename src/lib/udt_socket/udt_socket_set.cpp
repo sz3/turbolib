@@ -44,7 +44,7 @@ std::set<int> udt_socket_set::wait() const
 	int waiters;
 	if ((waiters = UDT::epoll_wait(_pollSet, &reads, &writeReady, 5000)) < 0)
 	{
-		std::cout << "epoll_wait did an error! :( " << waiters << std::endl;
+		//std::cout << "epoll_wait did an error! :( " << waiters << std::endl;
 		return reads;
 	}
 
