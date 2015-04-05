@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <deque>
+#include <ctime>
 #include <set>
 #include <utility>
 
@@ -14,7 +15,8 @@ public:
 	struct clock
 	{
 		KeyType key;
-		unsigned count;
+		uint64_t time;
+		unsigned short count;
 
 		// for containers
 		bool operator==(const clock& other) const
@@ -30,12 +32,12 @@ public:
 		// for clock comp
 		inline bool clockLessThan(const clock& other) const
 		{
-			return count < other.count;
+			return time < other.time || (time == other.time && count < other.count);
 		}
 
 		inline bool clockLessThanEquals(const clock& other) const
 		{
-			return count <= other.count;
+			return time < other.time || (time == other.time && count <= other.count);
 		}
 	};
 
@@ -56,12 +58,23 @@ public:
 
 	void increment(const KeyType& key)
 	{
+		increment(key, std::time(NULL));
+	}
+
+	void increment(const KeyType& key, uint64_t time)
+	{
 		typename std::deque<clock>::iterator it = std::find( _clocks.begin(), _clocks.end(), clock{key} );
 		if (it == _clocks.end())
-			_clocks.push_front(clock{key, 1});
+			_clocks.push_front(clock{key, time, 0});
 		else
 		{
-			_clocks.push_front(clock{key, it->count+1});
+			unsigned short count = 0;
+			if (time <= it->time)
+			{
+				count = it->count+1;
+				time = it->time;
+			}
+			_clocks.push_front(clock{key, time, count});
 			_clocks.erase(it);
 		}
 		if (_clocks.size() > _limit)

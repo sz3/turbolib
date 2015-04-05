@@ -5,6 +5,7 @@ add_definitions(-std=c++11)
 
 set (SOURCES
 	test.cpp
+	bounded_time_vectorTest.cpp
 	bounded_version_vectorTest.cpp
 )
 
