@@ -4,10 +4,11 @@ project(serialize_test)
 
 set (SOURCES
 	test.cpp
+	base64Test.cpp
+	define_serialize_mapTest.cpp
 	MessagePackTest.cpp
 	strTest.cpp
 	str_joinTest.cpp
-	define_serialize_mapTest.cpp
 )
 
 include_directories(

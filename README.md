@@ -13,7 +13,7 @@ General purpose C++11 support library for turbopump.
 * CATCH unit test library (https://github.com/philsquared/Catch)
 * http-parser (https://github.com/joyent/http-parser)
 * tiger hash implementation from fluks (https://github.com/markuspeloquin/fluks)
-* modified base64 encoding based on René Nyffenegger's code
+* custom base64 encoding (built on René Nyffenegger's small base64 library) with a filesystem-safe, lexicographically ordered character set
 
 ### Library dependencies (aka "what do I need to go get before building")
 

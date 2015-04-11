@@ -10,5 +10,5 @@ TEST_CASE( "tiger_hashTest/testDefault", "[unit]" )
 {
 	tiger_hash hasher;
 	string res = hasher("hello world");
-	assertEquals( "H6yxqi0qwZUmfoLblWUFiqHgDYBd5dn1", base64::encode(res) );
+	assertEquals( "J8yxqi2qw_WmfoNblYWHiqJgF^Dd7dn3", base64::encode(res) );
 }

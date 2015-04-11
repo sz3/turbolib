@@ -1,9 +1,8 @@
 /*
  * This is an altered source version of the base64.cpp file, and should be considered plainly marked as such.
  * Under no circumstances should this be misrepresented as being the original source code.
- * Also, what kind of silly license is this!? Freaking Switzerland, man...
  *
- * -Stephen Zimmerman
+ * Stephen Zimmerman
 */
 
 /* 
@@ -36,24 +35,27 @@
 #include "base64.h"
 #include <iostream>
 
+// standard base64 encoding, just in case you were wondering
 /*static const std::string base64_chars =
              "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
              "abcdefghijklmnopqrstuvwxyz"
 			 "0123456789+/";*/
 
-// non-standard base64 encoding to preserve lexicographical ordering:
-// yeah, you've stepped in it now.
+// non-standard base64 encoding to preserve lexicographical ordering
+// and to work as a valid file path on basically all filesystems.
+// lexicographical sort only works if you pad to the same number of characters,
+// obviously (or not so obviously)
 static const std::string base64_chars =
-			 "+/0123456789"
-			 "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+			 "0123456789"
+			 "ABCDEFGHIJKLMNOPQRSTUVWXYZ^_"
 			 "abcdefghijklmnopqrstuvwxyz";
 
 
 static inline bool is_base64(unsigned char c) {
-  return (isalnum(c) || (c == '+') || (c == '/'));
+  return (isalnum(c) || (c == '^') || (c == '_'));
 }
 
-// wrapper function -sz
+// wrapper function -SZ
 std::string base64::encode(const std::string& to_encode)
 {
 	return encode(reinterpret_cast<unsigned char const*>(to_encode.data()), to_encode.size());
