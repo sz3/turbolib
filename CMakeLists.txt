@@ -38,6 +38,7 @@ set (PROJECTS
    src/lib/consistent_hashing
    src/lib/merkle_tree
    src/lib/vector_clock
+   src/third_party_lib/cppformat
    src/third_party_lib/crypto_base
 )
 
