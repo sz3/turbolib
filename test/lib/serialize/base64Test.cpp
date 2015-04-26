@@ -20,3 +20,19 @@ TEST_CASE( "base64Test/testToFrom", "[unit]" )
 	encoded = base64::encode(value);
 	assertEquals( value, base64::decode(encoded) );
 }
+
+TEST_CASE( "base64Test/testToFromInt", "[unit]" )
+{
+	string encoded = base64::encode_bin(12345);
+	assertEquals( "EJ0000==", encoded );
+	assertEquals( 12345, base64::decode_as<unsigned>(encoded) );
+
+	encoded = base64::encode_bin(0x1234567812345678ULL);
+	assertEquals( 0x1234567812345678ULL, base64::decode_as<unsigned long long>(encoded) );
+
+	for (int i = 0; i < 100; ++i)
+	{
+		encoded = base64::encode_bin(i);
+		assertEquals( i, base64::decode_as<unsigned>(encoded) );
+	}
+}
