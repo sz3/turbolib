@@ -2,13 +2,16 @@
 #pragma once
 
 #include "stopwatch.h"
-#include "command_line/CommandLine.h"
-#include <exception>
-#include <iostream>
+#include <chrono>
+#include <functional>
+#include <regex>
+#include <string>
+#include <thread>
 
 #define wait_for(s,msg,fun) assertMsg(turbo::WaitFor(s,fun).result(), msg)
 
 namespace turbo {
+
 class WaitFor
 {
 public:
@@ -24,7 +27,7 @@ public:
 				break;
 			if (t.millis() >= seconds*1000)
 				break;
-			CommandLine::run("sleep 1");
+			std::this_thread::sleep_for(std::chrono::seconds(1));
 		}
 	}
 
@@ -36,4 +39,29 @@ public:
 protected:
 	bool _result;
 };
+
+inline void wait_for_equal(unsigned seconds, std::string expected, std::function<std::string()> fun)
+{
+	std::string result;
+	wait_for(seconds, expected + " != " + result, [&]()
+	{
+		result = fun();
+		return expected == result;
+	});
+}
+
+inline std::string wait_for_match(unsigned seconds, std::string pattern, std::function<std::string()> fun)
+{
+	std::string result;
+	std::smatch matches;
+	wait_for(seconds, pattern + " != " + result, [&]()
+	{
+		result = fun();
+		return std::regex_match(result, matches, std::regex(pattern));
+	});
+	if (matches.empty())
+		return "";
+	return matches[matches.size()-1];
+}
+
 } // namespace turbo
