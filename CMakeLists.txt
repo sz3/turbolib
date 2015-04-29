@@ -18,6 +18,8 @@ endif()
 set (PROJECTS
    src/lib/command_line
    test/lib/command_line
+   src/lib/concurrent
+   test/lib/concurrent
    src/lib/crypto
    test/lib/crypto
    src/lib/event

@@ -1,30 +1,27 @@
 cmake_minimum_required(VERSION 2.6)
 
-project(event_test)
+project(concurrent_test)
 
 set (SOURCES
 	test.cpp
-	EventTest.cpp
-	MultiThreadedExecutorTest.cpp
+	deadline_threadTest.cpp
 )
 
 include_directories(
 	${turbolib_SOURCE_DIR}/test
 	${turbolib_SOURCE_DIR}/test/lib
-	${turbolib_SOURCE_DIR}/src/lib/event
+	${turbolib_SOURCE_DIR}/src/lib/concurrent
 )
 
 add_executable (
-	event_test
+	concurrent_test
 	${SOURCES}
 )
 
-add_test(event_test event_test)
+add_test(concurrent_test concurrent_test)
 
-target_link_libraries(event_test
-	event
+target_link_libraries(concurrent_test
 
 	pthread
-	tbb
 )
 
