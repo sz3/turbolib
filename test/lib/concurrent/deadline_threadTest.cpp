@@ -23,12 +23,12 @@ TEST_CASE( "deadline_threadTest/testSchedule", "default" )
 	monitor midway;
 	monitor finished;
 
-	scheduler.schedule( bind(&monitor::notify_all, &finished), 150 );
+	scheduler.schedule( bind(&monitor::signal_all, &finished), 150 );
 	scheduler.schedule( [&] () { results.push_back(5); }, 5 );
 	scheduler.schedule( [&] () { timing.push_back(time.millis()); }, 5 );
 	scheduler.schedule( [&] () { results.push_back(50); }, 50 );
 	scheduler.schedule( [&] () { timing.push_back(time.millis()); }, 50 );
-	scheduler.schedule( bind(&monitor::notify_all, &midway), 70 );
+	scheduler.schedule( bind(&monitor::signal_all, &midway), 70 );
 	scheduler.schedule( [&] () { results.push_back(100); }, 100 );
 	scheduler.schedule( [&] () { timing.push_back(time.millis()); }, 100 );
 
@@ -59,7 +59,7 @@ TEST_CASE( "deadline_threadTest/testPeriodic", "default" )
 	vector<unsigned> timing;
 	monitor finished;
 
-	scheduler.schedule( bind(&monitor::notify_all, &finished), 100 );
+	scheduler.schedule( bind(&monitor::signal_all, &finished), 100 );
 
 	scheduler.schedule_repeat( [&] () { results.push_back(30); }, 30 );
 	scheduler.schedule_repeat( [&] () { timing.push_back(time.millis()); }, 30 );

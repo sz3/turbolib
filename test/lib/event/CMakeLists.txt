@@ -5,7 +5,6 @@ project(event_test)
 set (SOURCES
 	test.cpp
 	EventTest.cpp
-	MultiThreadedExecutorTest.cpp
 )
 
 include_directories(
@@ -25,6 +24,5 @@ target_link_libraries(event_test
 	event
 
 	pthread
-	tbb
 )
 

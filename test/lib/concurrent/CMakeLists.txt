@@ -5,6 +5,7 @@ project(concurrent_test)
 set (SOURCES
 	test.cpp
 	deadline_threadTest.cpp
+	thread_poolTest.cpp
 )
 
 include_directories(
@@ -23,5 +24,6 @@ add_test(concurrent_test concurrent_test)
 target_link_libraries(concurrent_test
 
 	pthread
+	tbb
 )
 

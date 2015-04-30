@@ -1,23 +1,23 @@
 /* This code is subject to the terms of the Mozilla Public License, v.2.0. http://mozilla.org/MPL/2.0/. */
 #include "unittest.h"
 
-#include "MultiThreadedExecutor.h"
+#include "thread_pool.h"
 
-#include "Event.h"
-#include "time/stopwatch.h"
+#include "mutex/monitor.h"
 #include "serialize/str_join.h"
-
+#include "time/stopwatch.h"
 #include <algorithm>
 #include <iostream>
 #include <mutex>
 #include <vector>
 using std::lock_guard;
 using std::mutex;
+using turbo::monitor;
 using turbo::stopwatch;
 
-TEST_CASE( "MultiThreadedExecutorTest/testDefault", "[unit]" )
+TEST_CASE( "thread_poolTest/testDefault", "[unit]" )
 {
-	MultiThreadedExecutor threads(5);
+	turbo::thread_pool threads(5);
 	assertTrue( threads.start() );
 
 	stopwatch t;
@@ -25,11 +25,11 @@ TEST_CASE( "MultiThreadedExecutorTest/testDefault", "[unit]" )
 	std::vector<unsigned> results;
 	std::vector<unsigned> times;
 	for (unsigned i = 0; i < 10; ++i)
-		threads.execute( [&, i] () { lock_guard<mutex> myLock(myMutex); results.push_back(i); times.push_back(t.micros()); } );
+		threads.execute( [&, i] () { lock_guard<mutex> lock(myMutex); results.push_back(i); times.push_back(t.micros()); } );
 
-	Event event;
-	threads.execute( [&event] () { event.shutdown(); } );
-	assertTrue( event.wait(1000) );
+	monitor m;
+	threads.execute( [&m] () { m.signal_all(); } );
+	assertTrue( m.wait_for(1000) );
 
 	while (results.size() < 10)
 		std::cout << threads.queued() << std::endl;

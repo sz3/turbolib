@@ -6,8 +6,6 @@ set(SOURCES
 	Event.cpp
 	Event.h
 	IExecutor.h
-	MultiThreadedExecutor.cpp
-	MultiThreadedExecutor.h
 	SimpleExecutor.h
 	ThreadSpawningExecutor.h
 )
