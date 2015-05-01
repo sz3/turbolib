@@ -2,13 +2,12 @@
 #pragma once
 
 #include "stopwatch.h"
+#include "serialize/str.h"
 #include <chrono>
 #include <functional>
 #include <regex>
 #include <string>
 #include <thread>
-
-#define wait_for(s,msg,fun) assertMsg(turbo::WaitFor(s,fun).result(), msg)
 
 namespace turbo {
 
@@ -40,10 +39,17 @@ protected:
 	bool _result;
 };
 
-inline void wait_for_equal(unsigned seconds, std::string expected, std::function<std::string()> fun)
+template <typename Funct>
+inline void wait_for(unsigned seconds, std::string msg, Funct fun)
 {
-	std::string result;
-	wait_for(seconds, expected + " != " + result, [&]()
+	assertMsg(turbo::WaitFor(seconds, fun).result(), msg);
+}
+
+template <typename CompType, typename Funct>
+inline void wait_for_equal(unsigned seconds, CompType expected, Funct fun)
+{
+	CompType result;
+	wait_for(seconds, str::str(expected) + " != " + str::str(result), [&]()
 	{
 		result = fun();
 		return expected == result;

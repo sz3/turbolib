@@ -17,6 +17,7 @@ using namespace std;
 using namespace std::placeholders;
 using turbo::monitor;
 using turbo::str::str;
+using turbo::wait_for_equal;
 
 namespace {
 	class PacketHandler
@@ -167,9 +168,9 @@ TEST_CASE( "PooledSocketServerTest/testLargeBlockingSend", "[unit]" )
 		assertEquals( 56, client.send(packet.data(), packet.size()) );
 
 	unsigned expected = 56*100000;
-	wait_for(2, str(expected) + " != " + str(bytesRecv), [&]()
+	wait_for_equal(2, expected, [&]()
 	{
-		return expected == bytesRecv;
+		return bytesRecv;
 	});
 }
 
@@ -197,15 +198,15 @@ TEST_CASE( "PooledSocketServerTest/testNonBlockingSend", "[unit]" )
 		{
 			std::cout << " write(" << i << ") failed, res " << res << std::endl;
 			server.waitForWriter(client->handle());
-			readyForWrite.wait(); //wait_for(5000);
+			readyForWrite.wait_for(5000);
 		}
 		else
 			++i;
 	}
 
 	unsigned expected = 56*100000;
-	wait_for(2, str(expected) + " != " + str(bytesRecv), [&]()
+	wait_for_equal(2, expected, [&]()
 	{
-		return expected == bytesRecv;
+		return bytesRecv;
 	});
 }
