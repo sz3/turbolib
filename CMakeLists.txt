@@ -22,8 +22,6 @@ set (PROJECTS
    test/lib/concurrent
    src/lib/crypto
    test/lib/crypto
-   src/lib/event
-   test/lib/event
    src/lib/file
    test/lib/file
    src/lib/mutex

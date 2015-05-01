@@ -6,7 +6,7 @@
 #include "UdtScope.h"
 #include "socket/PooledSocketServer.h"
 
-#include "event/Event.h"
+#include "mutex/monitor.h"
 #include "socket/ISocketWriter.h"
 #include "socket/socket_address.h"
 #include "time/wait_for.h"
@@ -15,6 +15,7 @@
 #include <memory>
 using namespace std;
 using namespace std::placeholders;
+using turbo::monitor;
 using turbo::str::str;
 
 namespace {
@@ -176,10 +177,10 @@ TEST_CASE( "PooledSocketServerTest/testNonBlockingSend", "[unit]" )
 {
 	UdtScope udt;
 
-	Event readyForWrite;
+	monitor readyForWrite;
 	unsigned bytesRecv = 0;
 	auto readFun = [&bytesRecv] (ISocketWriter& writer, const char* buff, unsigned size) { bytesRecv += size; };
-	auto writeFun = [&readyForWrite] (int) { readyForWrite.signal(); return true; };
+	auto writeFun = [&readyForWrite] (int) { readyForWrite.signal_all(); return true; };
 
 	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), readFun, writeFun);
 	assertMsg( server.start(), server.lastError() );
@@ -196,7 +197,7 @@ TEST_CASE( "PooledSocketServerTest/testNonBlockingSend", "[unit]" )
 		{
 			std::cout << " write(" << i << ") failed, res " << res << std::endl;
 			server.waitForWriter(client->handle());
-			readyForWrite.wait(5000);
+			readyForWrite.wait(); //wait_for(5000);
 		}
 		else
 			++i;

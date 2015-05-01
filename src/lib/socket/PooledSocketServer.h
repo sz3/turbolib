@@ -8,7 +8,7 @@
 #include "ISocketPool.h"
 #include "SimplePool.h"
 #include "SocketWriter.h"
-#include "event/Event.h"
+#include "mutex/monitor.h"
 #include "serialize/str.h"
 
 #include "tbb/concurrent_unordered_map.h"
@@ -56,7 +56,7 @@ protected:
 	std::function<bool(int)> _onWriteReady;
 	unsigned _maxReadSize;
 
-	Event _started;
+	turbo::monitor _started;
 	unsigned _numReaders;
 	std::deque<std::thread> _runners;
 	std::thread _acceptor;
@@ -152,7 +152,7 @@ bool PooledSocketServer<Socket,SocketSet>::stop()
 template <typename Socket, typename SocketSet>
 void PooledSocketServer<Socket,SocketSet>::accept()
 {
-	_started.shutdown();
+	_started.signal_all();
 	while (_running)
 	{
 		Socket conn = _sock.accept();

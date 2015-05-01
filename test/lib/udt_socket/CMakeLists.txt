@@ -25,7 +25,6 @@ target_link_libraries(udt_socket_test
 	udt_socket
 
 	command_line
-	event
 	socket
 
 	pthread

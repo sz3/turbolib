@@ -30,7 +30,6 @@ target_link_libraries(socket_test
 	socket
 
 	command_line
-	event
 
 	pthread
 	tbb
