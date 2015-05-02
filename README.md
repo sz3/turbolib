@@ -21,6 +21,5 @@ General purpose C++11 support library for turbopump.
 
 * intel's TBB library (libtbb)
 * UDT (libudt)
-* boost::uuid
 
 
