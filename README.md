@@ -11,13 +11,14 @@ General purpose C++11 support library for turbopump.
 ### Bundled dependencies (aka "what's included")
 
 * CATCH unit test library (https://github.com/philsquared/Catch)
+* ezOptionParser (http://ezoptionparser.sourceforge.net/)
 * http-parser (https://github.com/joyent/http-parser)
+* libmsgpack (https://github.com/msgpack/msgpack-c)
 * tiger hash implementation from fluks (https://github.com/markuspeloquin/fluks)
 * custom base64 encoding (built on René Nyffenegger's small base64 library) with a filesystem-safe, lexicographically ordered character set
 
 ### Library dependencies (aka "what do I need to go get before building")
 
-* libmsgpack (https://github.com/msgpack/msgpack-c)
 * intel's TBB library (libtbb)
 * UDT (libudt)
 * boost::uuid
