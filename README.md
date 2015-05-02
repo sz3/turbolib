@@ -15,11 +15,12 @@ General purpose C++11 support library for turbopump.
 * http-parser (https://github.com/joyent/http-parser)
 * libmsgpack (https://github.com/msgpack/msgpack-c)
 * tiger hash implementation from fluks (https://github.com/markuspeloquin/fluks)
-* custom base64 encoding (built on René Nyffenegger's small base64 library) with a filesystem-safe, lexicographically ordered character set
+* custom base64 encoding with a filesystem name-safe, lexicographically ordered character set
 
 ### Library dependencies (aka "what do I need to go get before building")
 
-* intel's TBB library (libtbb)
-* UDT (libudt)
+Your package manager (apt, rpm) hopefully will have reasonably up-to-date versions of these.
+* libtbb, intel's TBB library (https://www.threadingbuildingblocks.org/)
+* libudt (http://udt.sourceforge.net/)
 
 
