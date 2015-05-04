@@ -21,7 +21,6 @@ set (PROJECTS
    test/lib/crypto
    src/lib/file
    test/lib/file
-   src/lib/mutex
    src/lib/serialize
    test/lib/serialize
    src/lib/socket

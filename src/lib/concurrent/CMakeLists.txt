@@ -1,8 +1,12 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
+	conditional_lock_guard.h
 	deadline_thread.h
+	monitor.h
 	thread_pool.h
+	unlock_guard.h
+
 	DeadlineScheduler.h
 	IExecutor.h
 	IScheduler.h
