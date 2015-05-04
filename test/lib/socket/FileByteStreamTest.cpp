@@ -4,7 +4,7 @@
 #include "FileByteStream.h"
 #include "LocalStreamSocketServer.h"
 #include "socket_address.h"
-#include "command_line/CommandLine.h"
+#include "system/popen.h"
 
 #include <functional>
 #include <iostream>
@@ -33,12 +33,12 @@ TEST_CASE( "FileByteStreamTest/testWithServer", "default" )
 	assertMsg( server.start(), server.lastError() );
 
 	{
-		string response = CommandLine::run("echo 'stfu' | nc -U /tmp/iamthebestserver");
+		string response = turbo::popen("echo 'stfu' | nc -U /tmp/iamthebestserver").read();
 		assertEquals( response, "back at you: stfu\n" );
 	}
 
 	{
-		string response = CommandLine::run("echo 'again' | nc -U /tmp/iamthebestserver");
+		string response = turbo::popen("echo 'again' | nc -U /tmp/iamthebestserver").read();
 		assertEquals( response, "back at you: again\n" );
 	}
 

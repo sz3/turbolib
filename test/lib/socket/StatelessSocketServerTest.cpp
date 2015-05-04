@@ -5,7 +5,7 @@
 
 #include "socket_address.h"
 #include "udp_socket.h"
-#include "command_line/CommandLine.h"
+#include "system/popen.h"
 #include "util/CallHistory.h"
 using namespace std;
 using namespace std::placeholders;
@@ -62,6 +62,6 @@ TEST_CASE( "StatelessSocketServerTest/testSendFromOtherProcess", "default" )
 	assertMsg( server.start(), server.lastError() );
 
 	// -w 0 option makes nc exit immediately.
-	CommandLine::run("echo 'hello' | nc -u 127.0.0.1 8487 -w 0");
+	turbo::popen("echo 'hello' | nc -u 127.0.0.1 8487 -w 0");
 	assertEquals( "onRead(hello\n)", handler.calls() );
 }

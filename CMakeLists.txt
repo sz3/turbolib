@@ -15,8 +15,6 @@ if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 endif()
 
 set (PROJECTS
-   src/lib/command_line
-   test/lib/command_line
    src/lib/concurrent
    test/lib/concurrent
    src/lib/crypto
@@ -28,6 +26,8 @@ set (PROJECTS
    test/lib/serialize
    src/lib/socket
    test/lib/socket
+   src/lib/system
+   test/lib/system
    src/lib/time
    src/lib/udt_socket
    test/lib/udt_socket

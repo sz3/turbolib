@@ -24,7 +24,6 @@ add_test(udt_socket_test udt_socket_test)
 target_link_libraries(udt_socket_test
 	udt_socket
 
-	command_line
 	socket
 
 	pthread

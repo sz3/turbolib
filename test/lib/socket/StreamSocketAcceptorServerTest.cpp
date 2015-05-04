@@ -5,7 +5,7 @@
 
 #include "local_stream_socket.h"
 #include "socket_address.h"
-#include "command_line/CommandLine.h"
+#include "system/popen.h"
 #include "util/CallHistory.h"
 using namespace std;
 using namespace std::placeholders;
@@ -46,13 +46,13 @@ TEST_CASE( "StreamSocketAcceptorServerTest/testEcho", "[unit]" )
 	assertMsg( server.start(), server.lastError() );
 
 	{
-		string response = CommandLine::run("echo 'hello' | nc -U /tmp/testdomainsocketserver");
+		string response = turbo::popen("echo 'hello' | nc -U /tmp/testdomainsocketserver").read();
 		assertEquals( "onConnect()|recv(hello\n)", handler.calls() );
 		assertEquals( "hello\n", response );
 	}
 
 	{
-		string response = CommandLine::run("echo 'again' | nc -U /tmp/testdomainsocketserver");
+		string response = turbo::popen("echo 'again' | nc -U /tmp/testdomainsocketserver").read();
 		assertEquals( "onConnect()|recv(hello\n)|onConnect()|recv(again\n)", handler.calls() );
 		assertEquals( "again\n", response );
 	}

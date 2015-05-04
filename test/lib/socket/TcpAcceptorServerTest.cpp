@@ -5,7 +5,7 @@
 
 #include "tcp_socket.h"
 #include "socket_address.h"
-#include "command_line/CommandLine.h"
+#include "system/popen.h"
 #include "util/CallHistory.h"
 using namespace std;
 using namespace std::placeholders;
@@ -46,13 +46,13 @@ TEST_CASE( "TcpAcceptorServerTest/testLocalEcho", "[unit]" )
 	assertMsg( server.start(), server.lastError() );
 
 	{
-		string response = CommandLine::run("echo 'hello' | nc localhost 9010");
+		string response = turbo::popen("echo 'hello' | nc localhost 9010").read();
 		assertEquals( "onConnect()|recv(hello\n)", handler.calls() );
 		assertEquals( "hello\n", response );
 	}
 
 	{
-		string response = CommandLine::run("echo 'again' | nc localhost 9010");
+		string response = turbo::popen("echo 'again' | nc localhost 9010").read();
 		assertEquals( "onConnect()|recv(hello\n)|onConnect()|recv(again\n)", handler.calls() );
 		assertEquals( "again\n", response );
 	}
@@ -65,13 +65,13 @@ TEST_CASE( "TcpAcceptorServerTest/testAnyEcho", "[unit]" )
 	assertMsg( server.start(), server.lastError() );
 
 	{
-		string response = CommandLine::run("echo 'hello' | nc localhost 9010");
+		string response = turbo::popen("echo 'hello' | nc localhost 9010").read();
 		assertEquals( "onConnect()|recv(hello\n)", handler.calls() );
 		assertEquals( "hello\n", response );
 	}
 
 	{
-		string response = CommandLine::run("echo 'again' | nc localhost 9010");
+		string response = turbo::popen("echo 'again' | nc localhost 9010").read();
 		assertEquals( "onConnect()|recv(hello\n)|onConnect()|recv(again\n)", handler.calls() );
 		assertEquals( "again\n", response );
 	}
