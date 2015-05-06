@@ -11,6 +11,7 @@ General purpose C++11 support library for turbopump.
 ### Bundled dependencies (aka "what's included")
 
 * CATCH unit test library (https://github.com/philsquared/Catch)
+* cppformat (https://github.com/cppformat/cppformat)
 * ezOptionParser (http://ezoptionparser.sourceforge.net/)
 * http-parser (https://github.com/joyent/http-parser)
 * libmsgpack (https://github.com/msgpack/msgpack-c)
