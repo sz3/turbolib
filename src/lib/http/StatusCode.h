@@ -16,6 +16,7 @@ public:
 		BadRequest = 400,
 		FileNotFound = 404,
 		NotAcceptable = 406,
+		RequestURITooLong = 414,
 		InternalServerError = 500,
 	};
 

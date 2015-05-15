@@ -9,7 +9,7 @@ set(EXTRA_INCLUDE_DIRS "" CACHE STRING "any extra directories you want on the in
 if("${CMAKE_BUILD_TYPE}" STREQUAL "")
 	set(CMAKE_BUILD_TYPE "RelWithDebInfo")
 	set(CMAKE_C_FLAGS "${CFLAGS} -Wall -std=c99")
-	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2 -fPIC -std=c++11")
+	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-g -O2 -fpic -std=c++11")
 	# -ftime-report
 	# -ffast-math
 endif()
@@ -36,7 +36,6 @@ set (PROJECTS
    src/lib/consistent_hashing
    src/lib/merkle_tree
    src/lib/vector_clock
-   src/third_party_lib/cppformat
    src/third_party_lib/crypto_base
 )
 
