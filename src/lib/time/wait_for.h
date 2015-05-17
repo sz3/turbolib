@@ -11,38 +11,27 @@
 
 namespace turbo {
 
-class WaitFor
+template <typename Funct>
+inline bool _wait_for(unsigned seconds, Funct fun)
 {
-public:
-	template <typename Funct>
-	WaitFor(unsigned seconds, Funct fun)
+	bool result = false;
+	stopwatch t;
+	while (1)
 	{
-		_result = false;
-		stopwatch t;
-		while (1)
-		{
-			_result = fun();
-			if (_result)
-				break;
-			if (t.millis() >= seconds*1000)
-				break;
-			std::this_thread::sleep_for(std::chrono::seconds(1));
-		}
+		result = fun();
+		if (result)
+			break;
+		if (t.millis() >= seconds*1000)
+			break;
+		std::this_thread::sleep_for(std::chrono::seconds(1));
 	}
-
-	bool result() const
-	{
-		return _result;
-	}
-
-protected:
-	bool _result;
-};
+	return result;
+}
 
 template <typename Funct>
 inline void wait_for(unsigned seconds, std::string msg, Funct fun)
 {
-	assertMsg(turbo::WaitFor(seconds, fun).result(), msg);
+	assertMsg(_wait_for(seconds, fun), msg);
 }
 
 template <typename CompType, typename Funct>
