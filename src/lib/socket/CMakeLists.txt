@@ -21,7 +21,6 @@ set(SOURCES
 	local_stream_socket.cpp
 	local_stream_socket.h
 	mock_socket.h
-	socket_address.cpp
 	socket_address.h
 	tcp_socket.cpp
 	tcp_socket.h
