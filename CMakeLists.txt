@@ -34,6 +34,7 @@ set (PROJECTS
    test/lib/util
 
    src/lib/consistent_hashing
+   src/lib/kademlia
    src/lib/merkle_tree
    src/lib/vector_clock
    src/third_party_lib/crypto_base
