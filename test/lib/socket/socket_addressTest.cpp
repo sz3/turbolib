@@ -51,3 +51,17 @@ TEST_CASE( "socket_addressTest/testFromString", "[unit]" )
 	assertEquals( 20, addr.port() );
 }
 
+TEST_CASE( "socket_addressTest/testEquals", "[unit]" )
+{
+	socket_address one("1.2.3.4", 5);
+	socket_address two("2.2.2.2", 2);
+
+	assertTrue( one == one );
+	assertTrue( one == socket_address("1.2.3.4", 5) );
+	assertFalse( one == socket_address("1.2.3.5", 5) );
+	assertFalse( one == socket_address("1.2.3.4", 1) );
+	assertFalse( one == two );
+	assertFalse( two == one );
+	assertTrue( two == two );
+}
+

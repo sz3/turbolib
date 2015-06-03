@@ -14,6 +14,7 @@ public:
 	const std::string& address() const;
 	unsigned short port() const;
 
+	bool operator==(const socket_address& other) const;
 	std::string toString() const;
 	bool fromString(const std::string& str);
 
@@ -47,6 +48,11 @@ inline const std::string& socket_address::address() const
 inline unsigned short socket_address::port() const
 {
 	return _port;
+}
+
+inline bool socket_address::operator==(const socket_address& other) const
+{
+	return _address == other._address && _port == other._port;
 }
 
 inline std::string socket_address::toString() const
