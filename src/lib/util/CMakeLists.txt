@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.6)
 
 set(SOURCES
+	CallHistory.h
 	cstrfun.h
 	function_chain.h
-	CallHistory.h
-	Random.h
+	random.h
 )
 
 include_directories(

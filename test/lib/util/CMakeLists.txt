@@ -6,7 +6,7 @@ set (SOURCES
 	test.cpp
 	CallHistoryTest.cpp
 	function_chainTest.cpp
-	RandomTest.cpp
+	randomTest.cpp
 )
 
 include_directories(
