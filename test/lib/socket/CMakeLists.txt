@@ -30,6 +30,5 @@ target_link_libraries(socket_test
 	socket
 
 	pthread
-	tbb
 )
 

@@ -143,7 +143,7 @@ std::shared_ptr<ISocketWriter> StatelessSocketServer<Socket>::getWriter(const so
 	sock.setEndpoint(endpoint);
 
 	// try to add it
-	_pool.add(sock, writer);
+	_pool.insert(sock, writer);
 	return writer;
 }
 

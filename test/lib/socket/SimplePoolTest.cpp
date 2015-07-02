@@ -15,19 +15,25 @@ namespace {
 	};
 }
 
-TEST_CASE( "SimplePoolTest/testAdd", "[test]" )
+TEST_CASE( "SimplePoolTest/testInsert", "[test]" )
 {
 	TestableSimplePool pool;
 	assertEquals( 0, pool._connections.size() );
 
-	assertTrue( pool.add(udp_socket(socket_address("10.1.2.3:2"))) );
+	assertTrue( !!pool.insert(udp_socket(socket_address("10.1.2.3:2"))) );
 	assertEquals( 1, pool._connections.size() );
 
-	assertFalse( pool.add(udp_socket(socket_address("10.1.2.3:2"))) );
-	assertEquals( 1, pool._connections.size() );
+	{
+		shared_ptr<ISocketWriter> writer;
+		assertFalse( pool.insert(udp_socket(socket_address("10.1.2.3:2")), writer) );
+		assertEquals( 1, pool._connections.size() );
+		assertTrue( !!writer );
+	}
 
-	shared_ptr<ISocketWriter> writer;
-	assertFalse( pool.add(udp_socket(socket_address("10.1.2.3:2")), writer) );
-	assertEquals( 1, pool._connections.size() );
-	assertTrue( !!writer );
+	{
+		shared_ptr<ISocketWriter> writer;
+		assertFalse( pool.insert(udp_socket(socket_address("10.1.2.3:2")), writer) );
+		assertEquals( 1, pool._connections.size() );
+		assertTrue( !!writer );
+	}
 }

@@ -6,4 +6,3 @@
 /Makefile
 /*.cmake
 /*.cbp
-/src/lib/http/http_parser/

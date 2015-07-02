@@ -73,3 +73,14 @@ inline bool socket_address::fromString(const std::string& str)
 	return true;
 }
 
+namespace std {
+	template <>
+	struct hash<socket_address>
+	{
+		std::size_t operator()(const socket_address& addr) const
+		{
+			using std::string;
+			return hash<string>()(addr.address()) xor hash<unsigned short>()(addr.port());
+		}
+	};
+}

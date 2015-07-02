@@ -158,7 +158,7 @@ void PooledSocketServer<Socket,SocketSet>::accept()
 		if (!conn.good())
 			continue;
 
-		if (!_pool.add(conn))
+		if (!_pool.insert(conn))
 			continue;
 		if (!_readSet.add(conn.handle()))
 			std::cout << "couldn't add socket to socket_set." << std::endl;
@@ -185,7 +185,7 @@ void PooledSocketServer<Socket,SocketSet>::run()
 				continue;
 			}
 
-			std::shared_ptr<ISocketWriter> writer = _pool.find_or_add(sock);
+			std::shared_ptr<ISocketWriter> writer = _pool.insert(sock);
 			_onRead(*writer, &buffer[0], bytesRead);
 		}
 	}
@@ -243,7 +243,7 @@ std::shared_ptr<ISocketWriter> PooledSocketServer<Socket,SocketSet>::getWriter(c
 	}
 
 	// try to add it
-	if (!_pool.add(sock, writer))
+	if (!_pool.insert(sock, writer))
 		sock.close(); // welp, race condition... or bad peer. Either way, this new socket we made isn't needed.
 	else if (!_readSet.add(sock.handle()))
 	{
