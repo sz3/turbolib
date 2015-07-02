@@ -21,7 +21,6 @@ General purpose C++11 support library for turbopump.
 
 Your package manager (apt, rpm) hopefully will have reasonably up-to-date versions of these.
 * libmsgpack (https://github.com/msgpack/msgpack-c)
-* libtbb, intel's TBB library (https://www.threadingbuildingblocks.org/)
 * libudt (http://udt.sourceforge.net/)
 
 

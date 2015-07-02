@@ -2,7 +2,7 @@
 #pragma once
 
 #include "concurrent/monitor.h"
-#include "tbb/concurrent_queue.h"
+#include "concurrentqueue/concurrentqueue.h"
 #include <atomic>
 #include <list>
 #include <thread>
@@ -30,7 +30,7 @@ protected:
 
 	turbo::monitor _notifyRunning;
 	turbo::monitor _notifyWork;
-	tbb::concurrent_queue< std::function<void()> > _queue;
+	moodycamel::ConcurrentQueue< std::function<void()> > _queue;
 };
 
 inline thread_pool::thread_pool(unsigned numThreads)
@@ -69,13 +69,13 @@ inline void thread_pool::stop()
 
 inline void thread_pool::execute(std::function<void()> fun)
 {
-	_queue.push(fun);
+	_queue.enqueue(fun);
 	_notifyWork.notify_one();
 }
 
 inline size_t thread_pool::queued() const
 {
-	return _queue.unsafe_size();
+	return _queue.size_approx();
 }
 
 inline void thread_pool::run()
@@ -89,7 +89,7 @@ inline void thread_pool::run()
 			break;
 
 		std::function<void()> fun;
-		while (_queue.try_pop(fun))
+		while (_queue.try_dequeue(fun))
 			fun();
 	}
 }

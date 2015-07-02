@@ -24,6 +24,5 @@ add_test(concurrent_test concurrent_test)
 target_link_libraries(concurrent_test
 
 	pthread
-	tbb
 )
 
