@@ -13,6 +13,7 @@ public:
 	int handle() const;
 	bool good() const;
 
+	bool connect(const socket_address& addr);
 	bool bind(const socket_address& addr);
 	bool listen(int seconds);
 	local_stream_socket accept();

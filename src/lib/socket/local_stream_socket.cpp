@@ -28,6 +28,18 @@ bool local_stream_socket::good() const
 	return _sock != -1;
 }
 
+bool local_stream_socket::connect(const socket_address& addr)
+{
+	std::string filename = addr.address();
+
+	struct sockaddr_un remote;
+	memset((char*) &remote, 0, sizeof(remote));
+
+	remote.sun_family = AF_UNIX;
+	strncpy(remote.sun_path, filename.c_str(), filename.size()+1);
+	return ::connect(_sock, (struct sockaddr*)&remote, sizeof(remote)) == 0;
+}
+
 bool local_stream_socket::bind(const socket_address& addr)
 {
 	std::string filename = addr.address();
