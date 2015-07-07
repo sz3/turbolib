@@ -3,7 +3,8 @@
 #include "ISocketPool.h"
 #include "SocketWriter.h"
 #include "socket_address.h"
-#include "libcuckoo/libcuckoo/cuckoohash_map.hh"
+
+#include "libcuckoo/cuckoohash_map.hh"
 #include <memory>
 
 template <typename Socket>
