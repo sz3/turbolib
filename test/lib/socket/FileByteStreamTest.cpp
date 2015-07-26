@@ -12,18 +12,19 @@
 using namespace std;
 
 namespace {
-	void onConnect(int handle)
+	void onConnect(local_stream_socket sock)
 	{
 		const int buflen = 1024;
 		char buf[buflen];
 
-		FileByteStream stream(handle);
+		FileByteStream stream(sock.handle());
 		int bytesRead = stream.read(buf, buflen);
 		if (bytesRead >= 0)
 		{
 			string message = "back at you: " + string(buf, bytesRead);
 			stream.write(message.data(), message.size());
 		}
+		sock.close();
 	}
 }
 

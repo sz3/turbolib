@@ -1,6 +1,6 @@
 # turbolib
 
-General purpose C++11 support library for turbopump.
+General purpose C++11 support library for [turbopump](https://github.com/sz3/turbopump).
 
 ### Build dependencies
 

@@ -27,6 +27,7 @@ namespace {
 				_history.call("recv", string(buff.data(), bytesRead));
 				sock.send(buff.data(), bytesRead);
 			}
+			sock.close();
 		}
 
 		std::string calls()

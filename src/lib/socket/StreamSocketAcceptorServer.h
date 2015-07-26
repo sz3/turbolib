@@ -11,7 +11,7 @@ template <typename Socket>
 class StreamSocketAcceptorServer : public ISocketServer
 {
 public:
-	StreamSocketAcceptorServer(const socket_address& addr, const std::function<void(int)>& onConnect, unsigned numAcceptors=1);
+	StreamSocketAcceptorServer(const socket_address& addr, const std::function<void(Socket)>& onConnect, unsigned numAcceptors=1);
 	~StreamSocketAcceptorServer();
 
 	bool start();
@@ -32,14 +32,14 @@ protected:
 	bool _running;
 	socket_address _addr;
 
-	std::function<void(int)> _onConnect;
+	std::function<void(Socket)> _onConnect;
 	unsigned _numAcceptors;
 	std::deque<std::thread> _acceptors;
 	std::string _lastError;
 };
 
 template <typename Socket>
-StreamSocketAcceptorServer<Socket>::StreamSocketAcceptorServer(const socket_address& addr, const std::function<void(int)>& onConnect, unsigned numAcceptors)
+StreamSocketAcceptorServer<Socket>::StreamSocketAcceptorServer(const socket_address& addr, const std::function<void(Socket)>& onConnect, unsigned numAcceptors)
 	: _running(false)
 	, _addr(addr)
 	, _onConnect(onConnect)
@@ -104,8 +104,7 @@ void StreamSocketAcceptorServer<Socket>::run()
 	Socket connection;
 	while (_running && (connection = _sock.accept()).good())
 	{
-		_onConnect(connection.handle());
-		connection.close();
+		_onConnect(connection);
 	}
 }
 
