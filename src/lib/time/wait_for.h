@@ -9,17 +9,39 @@
 #include <string>
 #include <thread>
 
+#define wait_for_true(s,msg,fun) assertMsg(turbo::_wait_for_equal(s,true,fun), msg)
+
+#define wait_for_equal(s,expected,fun) \
+{ \
+	auto wait_res = turbo::_wait_for_equal(s, expected, fun); \
+	assertEquals(expected, wait_res); \
+}
+
+#define wait_for_match(s,pattern,fun) [&]() \
+{ \
+	std::string result; \
+	std::smatch matches; \
+	wait_for_true(s, pattern + " \n doesn't match\n" + result, [&]() \
+	{ \
+		result = fun(); \
+		return std::regex_match(result, matches, std::regex(pattern)); \
+	}); \
+	if (matches.empty()) \
+		return std::string(); \
+	return (std::string)matches[matches.size()-1]; \
+}()
+
 namespace turbo {
 
-template <typename Funct>
-inline bool _wait_for(unsigned seconds, Funct fun)
+template <typename CompType, typename Funct>
+inline CompType _wait_for_equal(unsigned seconds, CompType expected, Funct fun)
 {
-	bool result = false;
+	CompType result;
 	stopwatch t;
 	while (1)
 	{
 		result = fun();
-		if (result)
+		if (result == expected)
 			break;
 		if (t.millis() >= seconds*1000)
 			break;
@@ -28,35 +50,5 @@ inline bool _wait_for(unsigned seconds, Funct fun)
 	return result;
 }
 
-template <typename Funct>
-inline void wait_for(unsigned seconds, std::string msg, Funct fun)
-{
-	assertMsg(_wait_for(seconds, fun), msg);
-}
-
-template <typename CompType, typename Funct>
-inline void wait_for_equal(unsigned seconds, CompType expected, Funct fun)
-{
-	CompType result;
-	wait_for(seconds, str::str(expected) + " != " + str::str(result), [&]()
-	{
-		result = fun();
-		return expected == result;
-	});
-}
-
-inline std::string wait_for_match(unsigned seconds, std::string pattern, std::function<std::string()> fun)
-{
-	std::string result;
-	std::smatch matches;
-	wait_for(seconds, pattern + " != " + result, [&]()
-	{
-		result = fun();
-		return std::regex_match(result, matches, std::regex(pattern));
-	});
-	if (matches.empty())
-		return "";
-	return matches[matches.size()-1];
-}
-
 } // namespace turbo
+

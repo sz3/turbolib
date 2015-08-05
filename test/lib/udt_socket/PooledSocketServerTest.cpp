@@ -17,7 +17,6 @@ using namespace std;
 using namespace std::placeholders;
 using turbo::monitor;
 using turbo::str::str;
-using turbo::wait_for_equal;
 
 namespace {
 	class PacketHandler
