@@ -38,7 +38,7 @@ TEST_CASE( "merkle_treeTest/testAddRemoveTreeWalk", "[unit]" )
 {
 	merkle_tree<unsigned, unsigned long long> tree;
 
-	assertEquals( 2, tree.insert(1337, 1337) );
+	assertTrue( tree.insert(1337, 1337) );
 	assertTrue( tree.contains(1337) );
 	{
 		merkle_tree<unsigned, unsigned long long>::pair pear = tree.lower_bound(1337);
@@ -46,16 +46,17 @@ TEST_CASE( "merkle_treeTest/testAddRemoveTreeWalk", "[unit]" )
 		assertEquals( 1337, std::get<0>(pear.second()) );
 	}
 
-	assertEquals(2, tree.insert(2048, 2048) );
+	assertTrue( tree.insert(2048, 2048) );
 	assertTrue( tree.contains(2048) );
 	assertEquals( 2048, std::get<0>(tree.lower_bound(2048).second()) );
 
-	assertEquals(2, tree.insert(42, 42) );
+	assertTrue( tree.insert(42, 42) );
 	assertTrue( tree.contains(42) );
 	assertEquals( 42, std::get<0>(tree.lower_bound(42).second()) );
 
-	assertEquals(1, tree.insert(1337, 15) );
+	assertTrue( tree.insert(1337, 15) );
 	assertTrue( tree.contains(1337) );
+	assertEquals( 1337, std::get<0>(tree.find(1337).second()) );
 	assertEquals(1, tree.remove(1337) );
 	assertFalse( tree.contains(1337) );
 
@@ -71,7 +72,7 @@ TEST_CASE( "merkle_treeTest/testHeavyLoad", "[unit]" )
 	for (int i = 0xFF; i > 0; --i)
 	{
 		//std::cout << "insert of element " << i << std::endl;
-		assertEquals( 2, tree.insert(i, i*i) );
+		assertTrue( tree.insert(i, i*i) );
 
 		merkle_tree<unsigned, unsigned long long>::pair pear = tree.lower_bound(i);
 		assertTrue( pear );

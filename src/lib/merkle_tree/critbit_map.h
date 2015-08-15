@@ -57,11 +57,6 @@ public:
 			return _val->first;
 		}
 
-		Key& first()
-		{
-			return _val->first;
-		}
-
 		const Value& second() const
 		{
 			return _val->second;
@@ -77,7 +72,7 @@ public:
 	};
 
 public:
-	int insert(const Pair&& val)
+	pair insert(const Pair&& val)
 	{
 		return _tree.insert(val);
 	}

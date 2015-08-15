@@ -33,13 +33,17 @@ TEST_CASE( "critbit_treeTest/testInsertLookup", "[unit]" )
 	std::cout << "find? " << (unsigned long long)tree.lower_bound("one") << std::endl;
 	std::cout << "contains? " << tree.contains("one") << std::endl;
 
-	assertEquals(2, tree.insert("two") );
+	bool is_new;
+	assertEquals( string("two"), tree.insert("two", is_new) );
+	assertTrue( is_new );
 	assertTrue( tree.contains("two") );
 
-	assertEquals(2, tree.insert("forty-seven") );
+	assertEquals( string("forty-seven"), tree.insert("forty-seven", is_new) );
+	assertTrue( is_new );
 	assertTrue( tree.contains("forty-seven") );
 
-	assertEquals(1, tree.insert("one") );
+	assertEquals( string("one"), tree.insert("one", is_new) );
+	assertFalse( is_new );
 	assertTrue( tree.contains("one") );
 
 	assertFalse(tree.empty());
@@ -55,7 +59,9 @@ TEST_CASE( "critbit_treeTest/testManyInserts", "[unit]" )
 	{
 		std::stringstream ss;
 		ss << i;
-		assertEquals( 2, tree.insert(ss.str().c_str()) );
+		bool is_new;
+		assertEquals( ss.str(), tree.insert(ss.str().c_str(), is_new) );
+		assertTrue( is_new );
 		assertTrue( tree.contains(ss.str().c_str()) );
 	}
 }
@@ -68,11 +74,11 @@ TEST_CASE( "critbit_treeTest/testRemove", "[unit]" )
 	{
 		std::stringstream ss;
 		ss << i;
-		assertEquals( 2, tree.insert(ss.str().c_str()) );
+		assertEquals( ss.str(), tree.insert(ss.str().c_str()) );
 		assertTrue( tree.contains(ss.str().c_str()) );
 	}
 
-	assertEquals( 2, tree.insert("banana") );
+	assertNotNull( tree.insert("banana") );
 	assertTrue( tree.contains("banana") );
 	assertEquals( 1, tree.remove("banana") );
 	assertFalse( tree.contains("banana") );
@@ -109,10 +115,10 @@ TEST_CASE( "critbit_treeTest/testPrefixLookup", "[unit]" )
 {
 	critbit_tree<char, const char*> tree;
 
-	assertEquals(2, tree.insert("two") );
-	assertEquals(2, tree.insert("forty-two") );
-	assertEquals(2, tree.insert("forty-seven") );
-	assertEquals(2, tree.insert("one") );
+	assertNotNull( tree.insert("two") );
+	assertNotNull( tree.insert("forty-two") );
+	assertNotNull( tree.insert("forty-seven") );
+	assertNotNull( tree.insert("one") );
 
 	/*
 	 * for review:
@@ -191,10 +197,10 @@ TEST_CASE( "critbit_treeTest/testPrefixLookup.Nonsense", "[unit]" )
 
 	critbit_tree<char, const char*> tree;
 
-	assertEquals(2, tree.insert("two") );
-	assertEquals(2, tree.insert("forty-two") );
-	assertEquals(2, tree.insert("forty-seven") );
-	assertEquals(2, tree.insert("one") );
+	assertNotNull( tree.insert("two") );
+	assertNotNull( tree.insert("forty-two") );
+	assertNotNull( tree.insert("forty-seven") );
+	assertNotNull( tree.insert("one") );
 
 	/*
 	 * for review:
@@ -252,9 +258,9 @@ TEST_CASE( "critbit_treeTest/testBegin", "[unit]" )
 {
 	critbit_tree<char, const char*> tree;
 
-	assertEquals(2, tree.insert("one") );
-	assertEquals(2, tree.insert("five") );
-	assertEquals(2, tree.insert("one-hundred") );
+	assertNotNull( tree.insert("one") );
+	assertNotNull( tree.insert("five") );
+	assertNotNull( tree.insert("one-hundred") );
 
 	const char* leaf = tree.begin();
 	assertStringsEqual( "five", leaf );
@@ -269,11 +275,11 @@ TEST_CASE( "critbit_treeTest/testEnumerate", "[unit]" )
 {
 	critbit_tree<char, const char*> tree;
 
-	assertEquals(2, tree.insert("two") );
-	assertEquals(2, tree.insert("forty-two") );
-	assertEquals(2, tree.insert("forty-seven") );
-	assertEquals(2, tree.insert("one") );
-	assertEquals(2, tree.insert("uno") );
+	assertNotNull( tree.insert("two") );
+	assertNotNull( tree.insert("forty-two") );
+	assertNotNull( tree.insert("forty-seven") );
+	assertNotNull( tree.insert("one") );
+	assertNotNull( tree.insert("uno") );
 
 	/*
 	 * for review:
@@ -426,10 +432,10 @@ TEST_CASE( "critbit_treeTest/testEnumerate.FunctionSaysStop", "[unit]" )
 {
 	critbit_tree<char, const char*> tree;
 
-	assertEquals(2, tree.insert("two") );
-	assertEquals(2, tree.insert("forty-two") );
-	assertEquals(2, tree.insert("forty-seven") );
-	assertEquals(2, tree.insert("one") );
+	assertNotNull( tree.insert("two") );
+	assertNotNull( tree.insert("forty-two") );
+	assertNotNull( tree.insert("forty-seven") );
+	assertNotNull( tree.insert("one") );
 
 	/*
 	 * for review:
@@ -474,10 +480,10 @@ TEST_CASE( "critbit_treeTest/testEnumerateNode", "[unit]" )
 {
 	critbit_tree<char, const char*> tree;
 
-	assertEquals(2, tree.insert("two") );
-	assertEquals(2, tree.insert("forty-two") );
-	assertEquals(2, tree.insert("forty-seven") );
-	assertEquals(2, tree.insert("one") );
+	assertNotNull( tree.insert("two") );
+	assertNotNull( tree.insert("forty-two") );
+	assertNotNull( tree.insert("forty-seven") );
+	assertNotNull( tree.insert("one") );
 
 	// the alternative version of enumerate, for those who know what they're doing
 	using node_ptr = critbit_node_ptr<char, critbit_branch>;
@@ -526,19 +532,24 @@ TEST_CASE( "critbit_treeTest/testClassKeyCstr", "[unit]" )
 {
 	critbit_tree<KeyString> tree;
 
-	assertEquals( 2, tree.insert(KeyString("turtle", "banana")) );
+	bool is_new;
+	assertEquals( KeyString("turtle"), *tree.insert(KeyString("turtle", "banana"), is_new) );
+	assertTrue( is_new );
 	assertTrue( tree.contains(KeyString("turtle")) );
 	assertEquals( "banana", tree.lower_bound(KeyString("turtle"))->_payload );
 
-	assertEquals(2, tree.insert(KeyString("monkey", "orange")) );
+	assertEquals( KeyString("monkey"), *tree.insert(KeyString("monkey", "orange"), is_new) );
+	assertTrue( is_new );
 	assertTrue( tree.contains(KeyString("monkey")) );
 	assertEquals( "orange", tree.lower_bound(KeyString("monkey"))->_payload );
 
-	assertEquals(2, tree.insert(KeyString("forty-seven", "rocketship")) );
+	assertEquals( KeyString("forty-seven"), *tree.insert(KeyString("forty-seven", "rocketship"), is_new) );
+	assertTrue( is_new );
 	assertTrue( tree.contains(KeyString("forty-seven")) );
 	assertEquals( "rocketship", tree.lower_bound(KeyString("forty-seven"))->_payload );
 
-	assertEquals(1, tree.insert(KeyString("turtle")) );
+	assertEquals(KeyString("turtle"), *tree.insert(KeyString("turtle"), is_new) );
+	assertFalse( is_new );
 	assertTrue( tree.contains(KeyString("turtle")) );
 	assertEquals(1, tree.remove(KeyString("turtle")) );
 	assertFalse( tree.contains(KeyString("turtle")) );
@@ -556,9 +567,9 @@ TEST_CASE( "critbit_treeTest/testClassKeyCstr_Load", "[unit]" )
 	{
 		std::stringstream ss;
 		ss << i;
-		assertEquals( 2, tree.insert(KeyString(ss.str(), "banana")) );
-		KeyString* internalNode = tree.lower_bound(ss.str());
+		KeyString* internalNode = tree.insert(KeyString(ss.str(), "banana"));
 		assertNotNull(internalNode);
+		assertEquals( internalNode, tree.lower_bound(ss.str()) );
 		assertEquals( ss.str(), internalNode->_str );
 		assertEquals( "banana", internalNode->_payload );
 	}
@@ -574,7 +585,7 @@ TEST_CASE( "critbit_treeTest/testClassKeyCstr_Random", "[unit]" )
 	std::shuffle(words.begin(), words.end(), generator);
 
 	for (const string& word : words)
-		assertEquals(2, tree.insert(KeyString(word, word)) );
+		assertNotNull( tree.insert(KeyString(word, word)) );
 
 	for (const string& word : words)
 	{
@@ -618,19 +629,32 @@ TEST_CASE( "critbit_treeTest/testClassKeyInt", "[unit]" )
 {
 	critbit_tree<KeyInt> tree;
 
-	assertEquals( 2, tree.insert(KeyInt(10, "banana")) );
+	bool is_new;
+	KeyInt* elem = tree.insert(KeyInt(10, "banana"), is_new);
+	assertNotNull( elem );
+	assertTrue( is_new );
 	assertTrue( tree.contains(10) );
-	assertEquals( "banana", tree.lower_bound(10)->_payload );
+	assertEquals( elem, tree.lower_bound(10) );
+	assertEquals( "banana", elem->_payload );
 
-	assertEquals(2, tree.insert(KeyInt(20, "orange")) );
+	elem = tree.insert(KeyInt(20, "orange"), is_new);
+	assertNotNull( elem );
+	assertTrue( is_new );
 	assertTrue( tree.contains(20) );
-	assertEquals( "orange", tree.lower_bound(20)->_payload );
+	assertEquals( elem, tree.lower_bound(20) );
+	assertEquals( "orange", elem->_payload );
 
-	assertEquals(2, tree.insert(KeyInt(47, "rocketship")) );
+	elem = tree.insert(KeyInt(47, "rocketship"), is_new);
+	assertNotNull( elem );
+	assertTrue( is_new );
 	assertTrue( tree.contains(47) );
-	assertEquals( "rocketship", tree.lower_bound(47)->_payload );
+	assertEquals( elem, tree.lower_bound(47) );
+	assertEquals( "rocketship", elem->_payload );
 
-	assertEquals(1, tree.insert(10) );
+	elem = tree.insert(10, is_new);
+	assertNotNull( elem );
+	assertFalse( is_new );
+	assertEquals( "banana", elem->_payload );
 	assertTrue( tree.contains(10) );
 	assertEquals(1, tree.remove(10) );
 	assertFalse( tree.contains(10) );
@@ -646,10 +670,9 @@ TEST_CASE( "critbit_treeTest/testClassKeyInt_Load", "[unit]" )
 
 	for (int i = 0xFF; i > 0; --i)
 	{
-		assertEquals( 2, tree.insert(KeyInt(i, "banana")) );
-
-		KeyInt* internalNode = tree.lower_bound(i);
+		KeyInt* internalNode = tree.insert(KeyInt(i, "banana"));
 		assertNotNull( internalNode );
+		assertEquals( internalNode, tree.lower_bound(i) );
 		assertEquals( i, internalNode->_key );
 		assertEquals( "banana", internalNode->_payload );
 	}

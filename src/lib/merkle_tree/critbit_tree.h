@@ -352,38 +352,50 @@ public:
 		return p;
 	}
 
-	// 0 == oom
-	// 1 == u already exists
-	// 2 == added u
-	int insert(ExternalType val)
+	ValType* insert(ExternalType val)
+	{
+		bool is_new;
+		return insert(val, is_new);
+	}
+
+	// return NULL == oom
+	// is_new == if false, we didn't do anything (the element exists)
+	ValType* insert(ExternalType val, bool& is_new)
 	{
 		const size_t ulen = critbit_elem_ops<ValType>::size(val);
 		if (empty())
+		{
+			is_new = true;
 			return insertIntoEmptyTree(val, ulen);
+		}
 
 		const uint8_t* keybytes = (const uint8_t*)val;
 		const size_t keylen = critbit_elem_ops<ValType>::key_size(val);
 
-		ExternalType bestMember = critbit_elem_ops<ValType>::downcast(walkTreeForBestMember(_root, keybytes, keylen));
-		const uint8_t* p = (const uint8_t*)bestMember;
-		const size_t plen = critbit_elem_ops<ValType>::key_size(bestMember);
+		ValType* closest = walkTreeForBestMember(_root, keybytes, keylen);
+		ExternalType extClosest = critbit_elem_ops<ValType>::downcast(closest);
+		const uint8_t* p = (const uint8_t*)extClosest;
+		const size_t plen = critbit_elem_ops<ValType>::key_size(extClosest);
 
 		uint32_t newbyte;
 		uint32_t newotherbits;
 		int newdirection;
 		if (!findCriticalBit(p, plen, keybytes, keylen, newbyte, newotherbits, newdirection))
-			return 1;
-		// TODO: _ext.onchange() for in-place updates
+		{
+			is_new = false;
+			return closest;
+		}
+		// TODO: _ext.onchange() for in-place updates?
 
 		// allocate node
 		Branch* newnode;
 		if (posix_memalign((void**)&newnode, sizeof(void*), sizeof(Branch)) != 0)
-			return 0;
+			return NULL;
 		ValType* x;
 		if (posix_memalign((void**)&x, sizeof(void*), ulen) != 0)
 		{
 			free(newnode);
-			return 0;
+			return NULL;
 		}
 		critbit_elem_ops<ValType>::construct(x, val, ulen);
 		newnode->byte = newbyte;
@@ -411,7 +423,8 @@ public:
 		_ext.push_change(newnode);
 		_ext.onchange();
 
-		return 2;
+		is_new = true;
+		return x;
 	}
 
 	// 0 if no changes
@@ -514,14 +527,14 @@ private:
 		return (1 + (bits | c)) >> 8;
 	}
 
-	int insertIntoEmptyTree(ExternalType val, size_t bytes)
+	ValType* insertIntoEmptyTree(ExternalType val, size_t bytes)
 	{
 		ValType* x;
 		if (posix_memalign((void**)&x, sizeof(void*), bytes) != 0)
-			return 0;
+			return NULL;
 		critbit_elem_ops<ValType>::construct(x, val, bytes);
 		_root = x;
-		return 2;
+		return x;
 	}
 
 	bool findCriticalBit(const uint8_t* p, size_t plen, const uint8_t* keybytes, size_t keylen, uint32_t& newbyte, uint32_t& newotherbits, int& newdirection) const
