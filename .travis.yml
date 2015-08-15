@@ -1,0 +1,37 @@
+language: cpp
+sudo: false
+
+compiler:
+  - clang
+  - gcc
+
+addons:
+  apt:
+    sources:
+    - ubuntu-toolchain-r/test
+    - ppa:h-rayflood/llvm
+  apt:
+    packages:
+    - gcc-4.9
+    - g++-4.9
+    - clang-3.4
+    - cmake
+    - libmsgpack-dev
+    - libudt-dev
+
+install:
+  - if [ "$CC" = "gcc" ]; then
+      export CC="gcc-4.9" &&
+      export CXX="g++-4.9";
+    fi
+
+  - if [ "$CC" == "clang" ]; then
+      export CC="clang-3.4" &&
+      export CXX="clang++-3.4";
+    fi
+
+script:
+   - cmake .
+   - make
+   - make install
+   - ctest --output-on-failure
