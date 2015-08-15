@@ -1,31 +1,27 @@
 language: cpp
-sudo: false
 
 compiler:
   - clang
   - gcc
 
-addons:
-  apt:
-    sources:
-    - ubuntu-toolchain-r/test
-    - ppa:h-rayflood/llvm
-  apt:
-    packages:
-    - gcc-4.9
-    - g++-4.9
-    - clang-3.4
-    - cmake
-    - libmsgpack-dev
-    - libudt-dev
+before_install:
+  # gcc-4.9
+  - sudo add-apt-repository -y ppa:ubuntu-toolchain-r/test
+  # clang 3.4
+  - if [ "$CC" == "clang" ]; then sudo add-apt-repository -y ppa:h-rayflood/llvm; fi
+  - sudo apt-get update -qq
 
 install:
+  - sudo apt-get install -qq cmake g++-4.9
+  - sudo apt-get install -qq libmsgpack-dev libudt-dev 
+
   - if [ "$CC" = "gcc" ]; then
       export CC="gcc-4.9" &&
       export CXX="g++-4.9";
     fi
 
   - if [ "$CC" == "clang" ]; then
+      sudo apt-get install --allow-unauthenticated -qq clang-3.4 &&
       export CC="clang-3.4" &&
       export CXX="clang++-3.4";
     fi
@@ -33,5 +29,4 @@ install:
 script:
    - cmake .
    - make
-   - make install
    - ctest --output-on-failure
