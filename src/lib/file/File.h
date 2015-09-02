@@ -11,5 +11,7 @@ namespace File
 	bool rename(const std::string& src, const std::string& dest);
 	bool exists(const std::string& filename);
 	unsigned long long size(const std::string& filename);
+	time_t modified_time(const std::string& filename);
+	bool set_modified_time(const std::string& filename, time_t time);
 }
 

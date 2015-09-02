@@ -5,7 +5,9 @@
 #include <fstream>
 #include <fcntl.h>
 #include <unistd.h>
+#include <utime.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 using std::string;
 
 namespace {
@@ -84,8 +86,24 @@ bool File::exists(const std::string& filename)
 
 unsigned long long File::size(const std::string& filename)
 {
-	struct stat stat_buf;
-	if (::stat(filename.c_str(), &stat_buf) != 0)
-		return -1;
-	return stat_buf.st_size;
+	struct stat attr;
+	if (::stat(filename.c_str(), &attr) != 0)
+		return 0;
+	return attr.st_size;
+}
+
+time_t File::modified_time(const std::string& filename)
+{
+	struct stat attr;
+	if (::stat(filename.c_str(), &attr) != 0)
+		return 0;
+	return attr.st_mtim.tv_sec;
+}
+
+bool File::set_modified_time(const std::string& filename, time_t time)
+{
+	struct utimbuf toset;
+	toset.actime = time;
+	toset.modtime = time;
+	return utime(filename.c_str(), &toset) == 0;
 }
