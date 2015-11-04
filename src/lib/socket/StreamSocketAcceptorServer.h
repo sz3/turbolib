@@ -14,7 +14,7 @@ public:
 	StreamSocketAcceptorServer(const socket_address& addr, const std::function<void(Socket)>& onConnect, unsigned numAcceptors=1);
 	~StreamSocketAcceptorServer();
 
-	bool start();
+	bool start(std::function<void(ISocketWriter&, const char*, unsigned)> onPacket=NULL, std::function<bool(int)> onWriteReady=NULL);
 	bool stop();
 
 	std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint);
@@ -54,7 +54,7 @@ StreamSocketAcceptorServer<Socket>::~StreamSocketAcceptorServer()
 }
 
 template <typename Socket>
-bool StreamSocketAcceptorServer<Socket>::start()
+bool StreamSocketAcceptorServer<Socket>::start(std::function<void(ISocketWriter&, const char*, unsigned)>, std::function<bool(int)>)
 {
 	if (_running)
 		return true;

@@ -20,12 +20,11 @@ template <typename Socket, typename SocketSet>
 class PooledSocketServer : public ISocketServer
 {
 public:
-	PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead,
-					   std::function<bool(int)> onWriteReady, ISocketPool<Socket>* pool=NULL,
-					   unsigned numReaders=1, unsigned maxReadSize=1472);
+	PooledSocketServer(const socket_address& addr, ISocketPool<Socket>* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1472);
 	~PooledSocketServer();
 
-	bool start();
+	bool start(std::function<void(ISocketWriter&, const char*, unsigned)> onRead,
+			   std::function<bool(int)> onWriteReady);
 	bool stop();
 
 	std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint);
@@ -64,15 +63,12 @@ protected:
 };
 
 template <typename Socket, typename SocketSet>
-PooledSocketServer<Socket,SocketSet>::PooledSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead,
-														 std::function<bool(int)> onWriteReady, ISocketPool<Socket>* pool,
+PooledSocketServer<Socket,SocketSet>::PooledSocketServer(const socket_address& addr, ISocketPool<Socket>* pool,
 														 unsigned numReaders, unsigned maxReadSize)
 	: _running(false)
 	, _addr(addr)
 	, _readSet(SocketSet::READS)
 	, _writeSet(SocketSet::WRITES)
-	, _onRead(onRead)
-	, _onWriteReady(onWriteReady)
 	, _numReaders(numReaders)
 	, _maxReadSize(maxReadSize)
 	, _poolPtr(pool == NULL? new SimplePool<Socket>() : pool)
@@ -88,10 +84,16 @@ PooledSocketServer<Socket,SocketSet>::~PooledSocketServer()
 }
 
 template <typename Socket, typename SocketSet>
-bool PooledSocketServer<Socket,SocketSet>::start()
+bool PooledSocketServer<Socket,SocketSet>::start(std::function<void(ISocketWriter&, const char*, unsigned)> onRead,
+												 std::function<bool(int)> onWriteReady)
 {
 	if (_running)
 		return true;
+
+	if (!onRead || !onWriteReady)
+		return false;
+	_onRead = onRead;
+	_onWriteReady = onWriteReady;
 
 	_running = true;
 	if (!_sock.good())

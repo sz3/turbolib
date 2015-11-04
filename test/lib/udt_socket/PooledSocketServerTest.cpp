@@ -67,8 +67,8 @@ TEST_CASE( "PooledSocketServerTest/testAcceptAndReply", "[unit]" )
 	UdtScope udt;
 
 	PacketHandler handler;
-	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), handler.readFun(), handler.writeFun());
-	assertMsg( server.start(), server.lastError() );
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487));
+	assertMsg( server.start(handler.readFun(), handler.writeFun()), server.lastError() );
 
 	udt_socket client(socket_address("127.0.0.1", 8487));
 	assertTrue( client.good() );
@@ -93,8 +93,8 @@ TEST_CASE( "PooledSocketServerTest/testNoContact", "[unit]" )
 	UdtScope udt;
 
 	PacketHandler handler;
-	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), handler.readFun(), handler.writeFun());
-	assertMsg( server.start(), server.lastError() );
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487));
+	assertMsg( server.start(handler.readFun(), handler.writeFun()), server.lastError() );
 
 	server.stop();
 	server.stop();
@@ -105,11 +105,11 @@ TEST_CASE( "PooledSocketServerTest/testServerCrosstalk", "[unit]" )
 	UdtScope udt;
 
 	PacketHandler handler;
-	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), handler.readFun(), handler.writeFun());
-	assertMsg( server.start(), server.lastError() );
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487));
+	assertMsg( server.start(handler.readFun(), handler.writeFun()), server.lastError() );
 
-	PooledSocketServer<udt_socket, udt_socket_set> other(socket_address("", 8488), handler.readFun(), handler.writeFun());
-	assertMsg( other.start(), other.lastError() );
+	PooledSocketServer<udt_socket, udt_socket_set> other(socket_address("", 8488));
+	assertMsg( other.start(handler.readFun(), handler.writeFun()), other.lastError() );
 
 	{
 		shared_ptr<ISocketWriter> writer( other.getWriter(socket_address("127.0.0.1", 8487)) );
@@ -156,8 +156,8 @@ TEST_CASE( "PooledSocketServerTest/testLargeBlockingSend", "[unit]" )
 	auto readFun = [&bytesRecv] (ISocketWriter& writer, const char* buff, unsigned size) { bytesRecv += size; };
 	auto writeFun = [] (int) { return true; };
 
-	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), readFun, writeFun);
-	assertMsg( server.start(), server.lastError() );
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487));
+	assertMsg( server.start(readFun, writeFun), server.lastError() );
 
 	udt_socket client(socket_address("127.0.0.1", 8487));
 	assertTrue( client.good() );
@@ -182,8 +182,8 @@ TEST_CASE( "PooledSocketServerTest/testNonBlockingSend", "[unit]" )
 	auto readFun = [&bytesRecv] (ISocketWriter& writer, const char* buff, unsigned size) { bytesRecv += size; };
 	auto writeFun = [&readyForWrite] (int) { readyForWrite.signal_all(); return true; };
 
-	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487), readFun, writeFun);
-	assertMsg( server.start(), server.lastError() );
+	PooledSocketServer<udt_socket, udt_socket_set> server(socket_address("", 8487));
+	assertMsg( server.start(readFun, writeFun), server.lastError() );
 
 	shared_ptr<ISocketWriter> client = server.getWriter(socket_address("127.0.0.1", 8487));
 	assertTrue( !!client );

@@ -33,8 +33,8 @@ namespace {
 TEST_CASE( "StatelessSocketServerTest/testDefault", "default" )
 {
 	PacketHandler handler;
-	StatelessSocketServer<udp_socket> server(socket_address("", 8487), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
-	assertMsg( server.start(), server.lastError() );
+	StatelessSocketServer<udp_socket> server(socket_address("", 8487));
+	assertMsg( server.start(bind(&PacketHandler::onRead, ref(handler), _1, _2, _3)), server.lastError() );
 
 	udp_socket client(socket_address("127.0.0.1", 8487));
 	assertTrue( client.good() );
@@ -58,8 +58,8 @@ TEST_CASE( "StatelessSocketServerTest/testDefault", "default" )
 TEST_CASE( "StatelessSocketServerTest/testSendFromOtherProcess", "default" )
 {
 	PacketHandler handler;
-	StatelessSocketServer<udp_socket> server(socket_address("", 8487), bind(&PacketHandler::onRead, ref(handler), _1, _2, _3));
-	assertMsg( server.start(), server.lastError() );
+	StatelessSocketServer<udp_socket> server(socket_address("", 8487));
+	assertMsg( server.start(bind(&PacketHandler::onRead, ref(handler), _1, _2, _3)), server.lastError() );
 
 	// -w 0 option makes nc exit immediately.
 	turbo::popen("echo 'hello' | nc -u 127.0.0.1 8487 -w 0");

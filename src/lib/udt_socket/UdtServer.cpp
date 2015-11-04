@@ -5,14 +5,14 @@
 #include "udt_socket_set.h"
 #include "socket/PooledSocketServer.h"
 
-UdtServer::UdtServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, std::function<bool(int)> onWriteReady, ISocketPool<udt_socket>* pool, unsigned numReaders, unsigned maxReadSize)
-	: _pimpl(new PooledSocketServer<udt_socket, udt_socket_set>(addr, onRead, onWriteReady, pool, numReaders, maxReadSize))
+UdtServer::UdtServer(const socket_address& addr, ISocketPool<udt_socket>* pool, unsigned numReaders, unsigned maxReadSize)
+	: _pimpl(new PooledSocketServer<udt_socket, udt_socket_set>(addr, pool, numReaders, maxReadSize))
 {
 }
 
-bool UdtServer::start()
+bool UdtServer::start(std::function<void(ISocketWriter&, const char*, unsigned)> onRead, std::function<bool(int)> onWriteReady)
 {
-	return _pimpl->start();
+	return _pimpl->start(onRead, onWriteReady);
 }
 
 bool UdtServer::stop()

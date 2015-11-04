@@ -16,10 +16,10 @@ template <typename Socket>
 class StatelessSocketServer : public ISocketServer
 {
 public:
-	StatelessSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, ISocketPool<Socket>* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1472);
+	StatelessSocketServer(const socket_address& addr, ISocketPool<Socket>* pool=NULL, unsigned numReaders=1, unsigned maxReadSize=1472);
 	~StatelessSocketServer();
 
-	bool start();
+	bool start(std::function<void(ISocketWriter&, const char*, unsigned)> onRead, std::function<bool(int)> onWriteReady=NULL);
 	bool stop();
 
 	std::shared_ptr<ISocketWriter> getWriter(const socket_address& endpoint);
@@ -50,10 +50,9 @@ protected:
 };
 
 template <typename Socket>
-StatelessSocketServer<Socket>::StatelessSocketServer(const socket_address& addr, std::function<void(ISocketWriter&, const char*, unsigned)> onRead, ISocketPool<Socket>* pool, unsigned numReaders, unsigned maxReadSize)
+StatelessSocketServer<Socket>::StatelessSocketServer(const socket_address& addr, ISocketPool<Socket>* pool, unsigned numReaders, unsigned maxReadSize)
 	: _running(false)
 	, _addr(addr)
-	, _onRead(onRead)
 	, _numReaders(numReaders)
 	, _maxReadSize(maxReadSize)
 	, _poolPtr(pool == NULL? new SimplePool<Socket>() : pool)
@@ -69,10 +68,14 @@ StatelessSocketServer<Socket>::~StatelessSocketServer()
 }
 
 template <typename Socket>
-bool StatelessSocketServer<Socket>::start()
+bool StatelessSocketServer<Socket>::start(std::function<void(ISocketWriter&, const char*, unsigned)> onRead, std::function<bool(int)>)
 {
 	if (_running)
 		return true;
+
+	if (!onRead)
+		return false;
+	_onRead = onRead;
 
 	_running = true;
 	if (!_sock.good())

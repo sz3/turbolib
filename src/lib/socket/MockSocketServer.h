@@ -9,7 +9,7 @@
 class MockSocketServer : public ISocketServer
 {
 public:
-	bool start()
+	bool start(std::function<void(ISocketWriter&, const char*, unsigned)> onPacket, std::function<bool(int)> onWriteReady)
 	{
 		_history.call("start");
 		return true;

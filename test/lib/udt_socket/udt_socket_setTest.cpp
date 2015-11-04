@@ -25,8 +25,8 @@ TEST_CASE( "udt_socket_setTest/testWriteWait", "default" )
 	udt_socket_set epoll(udt_socket_set::WRITES);
 
 	UdtScope udt;
-	UdtServer server(socket_address("", 8487), &onRead, &onWriteReady);
-	assertMsg( server.start(), server.lastError() );
+	UdtServer server(socket_address("", 8487));
+	assertMsg( server.start(&onRead, &onWriteReady), server.lastError() );
 
 	udt_socket one(socket_address("127.0.0.1", 8487));
 	udt_socket two(socket_address("127.0.0.1", 8487));
@@ -43,8 +43,8 @@ TEST_CASE( "udt_socket_setTest/testOverloadWriteWait", "default" )
 	udt_socket_set epoll(udt_socket_set::WRITES);
 
 	UdtScope udt;
-	UdtServer server(socket_address("", 8487), &onRead, &onWriteReady);
-	assertMsg( server.start(), server.lastError() );
+	UdtServer server(socket_address("", 8487));
+	assertMsg( server.start(&onRead, &onWriteReady), server.lastError() );
 
 	udt_socket client(socket_address("127.0.0.1", 8487));
 	while (client.try_send("hello world", 11) == 11)
