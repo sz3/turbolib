@@ -17,6 +17,9 @@ public:
 	std::string queryString() const;
 	std::unordered_map<std::string,std::string> params() const;
 
+	static std::string decode(const std::string& text);
+	static std::string encode(const std::string& text);
+
 protected:
 	std::string _url;
 };

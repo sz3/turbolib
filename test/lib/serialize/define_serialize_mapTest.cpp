@@ -38,13 +38,13 @@ TEST_CASE( "define_serialize_mapTest/testRicherLoad", "[unit]" )
 	std::unordered_map<std::string,std::string> vals;
 	vals["foo"] = "55";
 	vals["bar"] = "5.5";
-	vals["welp"] = "onoes";
+	vals["welp"] = "onoes this has spaces!";
 
 	BarClass bar;
 	bar.load(vals);
 	assertEquals(55, bar.foo);
 	assertEquals(5.5, bar.bar);
-	assertEquals("onoes", bar.welp);
+	assertEquals("onoes this has spaces!", bar.welp);
 }
 
 TEST_CASE( "define_serialize_mapTest/testSave", "[unit]" )

@@ -35,3 +35,21 @@ TEST_CASE( "UrlTest/testTokenize", "[unit]" )
 	assertEquals( "thing=hi&sport=football", url.queryString() );
 	assertEquals( "sport=football thing=hi", turbo::str::join(url.params()) );
 }
+
+TEST_CASE( "UrlTest/testEncode", "[unit]" )
+{
+	assertEquals( "foobar", Url::encode("foobar") );
+	assertEquals( "foo%2fbar", Url::encode("foo/bar") );
+}
+
+TEST_CASE( "UrlTest/testDecode", "[unit]" )
+{
+	assertEquals( "foobar", Url::decode("foobar") );
+	assertEquals( "foo/bar", Url::decode("foo%2Fbar") );
+	assertEquals( "foo bar%", Url::decode("foo%20bar%25") );
+
+	// the mean cases
+	assertEquals( "foobar%", Url::decode("foobar%") );
+	assertEquals( "foobar%%", Url::decode("foobar%%") );
+	assertEquals( "foobar%%%", Url::decode("foobar%%%") );
+}

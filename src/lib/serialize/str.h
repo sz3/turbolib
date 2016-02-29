@@ -41,6 +41,13 @@ namespace str
 		return !!ss;
 	}
 
+	template <>
+	inline bool fromStr(std::string& var, const std::string& str)
+	{
+		var = str;
+		return true;
+	}
+
 	inline std::vector<std::string> split(const std::string& input, char delim=' ', bool ignoreEmpty=false)
 	{
 		std::vector<std::string> tokens;
