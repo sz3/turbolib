@@ -40,6 +40,7 @@ TEST_CASE( "UrlTest/testEncode", "[unit]" )
 {
 	assertEquals( "foobar", Url::encode("foobar") );
 	assertEquals( "foo%2fbar", Url::encode("foo/bar") );
+	assertEquals( "1%40too%20OP%3f%5b%5d", Url::encode("1@too OP?[]") );
 }
 
 TEST_CASE( "UrlTest/testDecode", "[unit]" )
@@ -47,6 +48,7 @@ TEST_CASE( "UrlTest/testDecode", "[unit]" )
 	assertEquals( "foobar", Url::decode("foobar") );
 	assertEquals( "foo/bar", Url::decode("foo%2Fbar") );
 	assertEquals( "foo bar%", Url::decode("foo%20bar%25") );
+	assertEquals( "1@too OP?[]", Url::decode("1%40too%20OP%3f%5b%5d") );
 
 	// the mean cases
 	assertEquals( "foobar%", Url::decode("foobar%") );

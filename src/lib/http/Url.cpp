@@ -22,13 +22,11 @@ std::string Url::encode(const std::string& text)
 		switch (c >> 4)
 		{
 			case 5:  // [P, _]
-				if (c != '[' && c != ']')
+			case 4:  // [@, O]
+				if (c != '@' && c != '[' && c != ']')
 					break;
 			case 3:  // [0, ?]
 				if (c < ':')
-					break;
-			case 4:  // [@, O]
-				if (c != '@')
 					break;
 			case 2:  // [space, /]
 
