@@ -8,6 +8,7 @@ class IScheduler
 public:
 	virtual ~IScheduler() {}
 
+	virtual void execute(const std::function<void()>& fun) = 0;
 	virtual void schedule(const std::function<void()>& fun, unsigned ms) = 0;
 	virtual void schedule_repeat(const std::function<void()>& fun, unsigned ms) = 0;
 };

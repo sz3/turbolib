@@ -7,6 +7,11 @@
 class DeadlineScheduler : public IScheduler, public turbo::deadline_thread
 {
 public:
+	void execute(const std::function<void()>& fun)
+	{
+		schedule(fun, 0);
+	}
+
 	void schedule(const std::function<void()>& fun, unsigned ms)
 	{
 		deadline_thread::schedule(fun, ms);
