@@ -7,6 +7,19 @@
 namespace turbo {
 namespace random
 {
+	inline std::string bytes(unsigned howmany)
+	{
+		std::random_device rd;
+		std::string res;
+		for (int i = 0; i < howmany; i += sizeof(unsigned int))
+		{
+			unsigned int entropy = rd();
+			for (int b = 0; b < sizeof(unsigned int); ++b)
+				res += *(reinterpret_cast<char*>(&entropy) + b);
+		}
+		return res;
+	}
+
 	template <typename Iter>
 	Iter select(Iter begin, size_t size)
 	{

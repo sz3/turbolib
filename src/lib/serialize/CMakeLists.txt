@@ -4,6 +4,7 @@ set(SOURCES
 	base64.cpp
 	base64.h
 	define_serialize_map.h
+	format.h
 	str.h
 	str_join.h
 )
