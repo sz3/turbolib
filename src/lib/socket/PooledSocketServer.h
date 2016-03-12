@@ -183,6 +183,8 @@ void PooledSocketServer<Socket,SocketSet>::run()
 			if (bytesRead <= 0)
 			{
 				_readSet.remove(*it);
+				SocketWriter<Socket> writer(sock);
+				_onRead(writer, NULL, 0); // notification that the party's over
 				_pool.close(sock);
 				continue;
 			}
