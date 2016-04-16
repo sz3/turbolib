@@ -156,7 +156,7 @@ public:
 	 *  6) branch diff, keybits !=. 2 hashes. If my keybits < than query, other party is missing said info
 	 *  7) branch diff, keybits ==. 2 hashes. Recurse to right, left sides.
 	 */
-	std::deque< merkle_point<KeyType, HashType> > diff(const merkle_location<KeyType>& location, const HashType& hash) const
+	std::deque< merkle_point<KeyType, HashType> > diff(const merkle_point<KeyType, HashType>& point) const
 	{
 		std::deque< merkle_point<KeyType, HashType> > diffs;
 		if (_tree.empty())
@@ -166,18 +166,18 @@ public:
 		}
 
 		HashType myhash;
-		typename tree_type::node_ptr nodep = nearest_subtree(location);
+		typename tree_type::node_ptr nodep = nearest_subtree(point.location);
 		if (nodep.isNull())
 		{
 			merkle_point<KeyType,HashType> nothing;
-			nothing.location = location;
+			nothing.location = point.location;
 			nothing.hash = 0;
 			diffs.push_back(nothing);
 			return diffs;
 		}
 
 		getHash(nodep, myhash);
-		if (hash == myhash)
+		if (point.hash == myhash)
 			return diffs; // no differences
 
 		// case 3: leaf
@@ -195,14 +195,14 @@ public:
 		unsigned branchKeybits = keybits(branch.byte, branch.otherbits xor 0xFF)-1;
 
 		// case 4: branch, but the location parameter seemed to expect a branch sooner
-		if (branchKeybits > location.keybits)
+		if (branchKeybits > point.location.keybits)
 		{
 			merkle_point<KeyType,HashType> missing;
 			missing.location.key = leftLeaf.first();
-			missing.location.keybits = location.keybits+1;
+			missing.location.keybits = point.location.keybits+1;
 
-			unsigned expectedBranchByte = location.keybits / 8;
-			unsigned char expectedBranchBits = location.keybits % 8;
+			unsigned expectedBranchByte = point.location.keybits / 8;
+			unsigned char expectedBranchBits = point.location.keybits % 8;
 			((uint8_t*)&missing.location.key)[expectedBranchByte] ^= (1 << (7-expectedBranchBits));
 			diffs.push_back(missing);
 			return diffs;
@@ -224,7 +224,7 @@ public:
 		// and passed in loc with disagreement hash as 3rd element
 		{
 			merkle_point<KeyType,HashType> current;
-			current.location = location;
+			current.location = point.location;
 			current.hash = myhash;
 			diffs.push_back(current);
 		}
