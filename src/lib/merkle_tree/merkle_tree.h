@@ -2,7 +2,6 @@
 #pragma once
 
 #include "critbit_map.h"
-#include "merkle_point.h"
 #include "util/unpack_tuple.h"
 #include <deque>
 #include <functional>
@@ -153,7 +152,7 @@ public:
 			return !_missing && leaf();
 		}
 
-		std::deque<location>& points() const
+		std::deque<location>& points()
 		{
 			return _points;
 		}
