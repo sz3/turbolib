@@ -8,8 +8,6 @@
 #include <string>
 #include <vector>
 using std::string;
-using turbo::merkle_diff;
-using turbo::merkle_point;
 using turbo::merkle_tree;
 
 namespace {
@@ -169,23 +167,23 @@ TEST_CASE( "merkle_treeTest/testCalcKeybits", "[unit]" )
 
 TEST_CASE( "merkle_treeTest/testTop", "[unit]" )
 {
-	using mpoint = merkle_point<unsigned, unsigned long long>;
+	using mloc = merkle_tree<unsigned, unsigned long long>::location;
 	merkle_tree<unsigned, unsigned long long> tree;
 
-	mpoint nulltop = tree.top();
+	mloc nulltop = tree.top();
 	assertEquals( 0, nulltop.key );
 	assertEquals( 65535, nulltop.keybits );
 	assertEquals( 0, nulltop.hash );
-	assertTrue( nulltop == mpoint::null() );
+	assertTrue( nulltop == mloc::null() );
 
 	tree.insert(45, 45);
 	tree.insert(2048, 2048);
 
-	mpoint top = tree.top();
+	mloc top = tree.top();
 	assertEquals( 0, top.key );
 	assertEquals( 2, top.keybits );
 	assertEquals( (2048 xor 45), top.hash );
-	assertFalse( top == mpoint::null() );
+	assertFalse( top == mloc::null() );
 }
 
 TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
@@ -193,9 +191,9 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	merkle_tree<unsigned, unsigned long long> tree;
 
 	// empty tree
-	merkle_diff<unsigned, unsigned long long> results = tree.diff({ 0, 0, 0 });
+	merkle_tree<unsigned, unsigned long long>::diff_result results = tree.diff({ 0, 0, 0 });
 	assertEquals( 1, results.size() );
-	assertEquals( results[0], (merkle_point<unsigned, unsigned long long>::null()) );
+	assertEquals( results[0], (merkle_tree<unsigned, unsigned long long>::location::null()) );
 
 	tree.insert(32810, 32810);
 	tree.insert(2048, 2048);
@@ -360,8 +358,8 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 
 TEST_CASE( "merkle_treeTest/testDiffTraverse", "[unit]" )
 {
-	using mpoint = merkle_point<unsigned, unsigned long long>;
-	using mdiff = merkle_diff<unsigned, unsigned long long>;
+	using mloc = merkle_tree<unsigned, unsigned long long>::location;
+	using mdiff = merkle_tree<unsigned, unsigned long long>::diff_result;
 	merkle_tree<unsigned, unsigned long long> tree;
 
 	tree.insert(45, 45);
@@ -385,7 +383,7 @@ TEST_CASE( "merkle_treeTest/testDiffTraverse", "[unit]" )
 	 *               42       45
 	 **/
 
-	mpoint top = tree.top();
+	mloc top = tree.top();
 	assertEquals( 0, top.key );
 	assertEquals( 1, top.keybits );
 	assertEquals( (2048 xor 45 xor 42 xor 64), top.hash );
@@ -395,21 +393,21 @@ TEST_CASE( "merkle_treeTest/testDiffTraverse", "[unit]" )
 	results = tree.diff( top.copy(0xF00) );
 	assertEquals( 3, results.size() );
 
-	mpoint leftAtBit2 = results[0];
+	mloc leftAtBit2 = results[0];
 	results = tree.diff( leftAtBit2 );
 	assertEquals( 0, results.size() );
 	results = tree.diff( leftAtBit2.copy(0xF00) );
 	assertEquals( 3, results.size() );
 
-	mpoint rightAtBit3 = results[1];
+	mloc rightAtBit3 = results[1];
 	results = tree.diff( rightAtBit3 );
 	assertEquals( 0, results.size() );
 	results = tree.diff( rightAtBit3.copy(0xF00) );
 	assertEquals( 3, results.size() );
 
-	mpoint leaf42 = results[0];
+	mloc leaf42 = results[0];
 	assertEquals( 42, leaf42.hash );
-	mpoint leaf45 = results[1];
+	mloc leaf45 = results[1];
 	assertEquals( 45, leaf45.hash );
 }
 
@@ -420,7 +418,7 @@ TEST_CASE( "merkle_treeTest/testWithPayload", "[unit]" )
 	tree.insert(1, 10, "one");
 	tree.insert(2, 20, "two");
 
-	merkle_point<unsigned, unsigned long long> top = tree.top();
+	merkle_tree<unsigned, unsigned long long, string>::location top = tree.top();
 	assertEquals( (10 xor 20), top.hash );
 
 	merkle_tree<unsigned, unsigned long long, string>::pair elem1 = tree.lower_bound(1);

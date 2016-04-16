@@ -3,7 +3,6 @@ cmake_minimum_required(VERSION 2.6)
 set(SOURCES
 	critbit_map.h
 	critbit_tree.h
-	merkle_point.h
 	merkle_tree.h
 )
 

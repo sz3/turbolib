@@ -69,6 +69,110 @@ protected:
 public:
 	using pair = typename map_type::pair;
 
+	struct location
+	{
+		HashType hash;
+		KeyType key;
+		uint16_t keybits;
+
+		static constexpr uint16_t MAX_KEYBITS = sizeof(KeyType)*8;
+
+		static location null()
+		{
+			static location nullStatic = [] ()
+			{
+				location temp(0, KeyType(0), ~0);
+				return temp;
+			}();
+			return nullStatic;
+		}
+
+		location() {}
+
+		location(const HashType& hash, const KeyType& key)
+			: hash(hash)
+			, key(key)
+			, keybits(MAX_KEYBITS)
+		{}
+
+		location(const HashType& hash, const KeyType& key, uint16_t keybits)
+			: hash(hash)
+			, key(key)
+			, keybits(keybits)
+		{}
+
+		bool operator==(const location& other) const
+		{
+			return key == other.key && keybits == other.keybits && hash == other.hash;
+		}
+
+		location copy(const HashType& newhash) const
+		{
+			return location(newhash, key, keybits);
+		}
+	};
+
+	class diff_result
+	{
+	private:
+		using listype = std::deque<location>;
+
+		inline bool leaf() const
+		{
+			return _points.size() == 1;
+		}
+
+	public:
+		diff_result(const listype& points, bool missing=false)
+			: _points(points)
+			, _missing(missing)
+		{}
+
+		bool no_difference() const
+		{
+			return _points.empty();
+		}
+
+		bool traverse() const
+		{
+			return _points.size() >= 2;
+		}
+
+		bool need_range() const
+		{
+			return _missing && leaf() && _points.front() == location::null();
+		}
+
+		bool need_partial_range() const
+		{
+			return _missing && leaf() && !(_points.front() == location::null());
+		}
+
+		bool need_exchange() const
+		{
+			return !_missing && leaf();
+		}
+
+		std::deque<location>& points() const
+		{
+			return _points;
+		}
+
+		size_t size() const
+		{
+			return _points.size();
+		}
+
+		const location& operator[](unsigned i) const
+		{
+			return _points[i];
+		}
+
+	protected:
+		listype _points;
+		bool _missing;
+	};
+
 protected:
 	typename tree_type::node_ptr nearest_subtree(KeyType key, uint16_t keybits) const
 	{
@@ -96,7 +200,7 @@ protected:
 		return false;
 	}
 
-	merkle_point<KeyType, HashType> getPoint(const KeyType& key, const typename tree_type::node_ptr& node_ptr) const
+	location getPoint(const KeyType& key, const typename tree_type::node_ptr& node_ptr) const
 	{
 		if (node_ptr.isBranch())
 		{
@@ -135,11 +239,11 @@ public:
 		return getHash(node_ptr, hash);
 	}
 
-	merkle_point<KeyType, HashType> top() const
+	location top() const
 	{
 		typename tree_type::node_ptr node_ptr = nearest_subtree(0, 0);
 		if (node_ptr.isNull())
-			return merkle_point<KeyType, HashType>::null();
+			return location::null();
 		return getPoint(0, node_ptr);
 	}
 
@@ -153,19 +257,19 @@ public:
 	 *  6) branch diff, keybits !=. 2 hashes. If my keybits < than query, other party is missing said info
 	 *  7) branch diff, keybits ==. 2 hashes. Recurse to right, left sides.
 	 */
-	merkle_diff<KeyType, HashType> diff(const merkle_point<KeyType, HashType>& point) const
+	diff_result diff(const location& point) const
 	{
-		std::deque< merkle_point<KeyType, HashType> > diffs;
+		std::deque<location> diffs;
 		if (_tree.empty())
 		{
-			diffs.push_back(merkle_point<KeyType, HashType>::null());
+			diffs.push_back(location::null());
 			return {diffs, true};
 		}
 
 		typename tree_type::node_ptr nodep = nearest_subtree(point.key, point.keybits);
 		if (nodep.isNull())
 		{
-			diffs.push_back(merkle_point<KeyType, HashType>::null());
+			diffs.push_back(location::null());
 			return {diffs, true};
 		}
 
@@ -177,7 +281,7 @@ public:
 		// case 3: leaf
 		if (nodep.isLeaf())
 		{
-			merkle_point<KeyType,HashType> current(myhash, nodep.leaf()->first);
+			location current(myhash, nodep.leaf()->first);
 			diffs.push_back(current);
 			bool is_missing = current.key != point.key || current.keybits != point.keybits;
 			return {diffs, is_missing};
@@ -190,7 +294,7 @@ public:
 		// case 4: branch, but the location parameter seemed to expect a branch sooner
 		if (branchKeybits > point.keybits)
 		{
-			merkle_point<KeyType,HashType> missing;
+			location missing;
 			missing.hash = branch.hash;
 			missing.key = leftLeaf.first();
 			missing.keybits = branchKeybits;
@@ -202,18 +306,18 @@ public:
 		// push children into diffs
 		{
 			typename tree_type::node_ptr left = branch.child[0];
-			merkle_point<KeyType, HashType> diff = getPoint(leftLeaf.first(), left);
+			location diff = getPoint(leftLeaf.first(), left);
 			diffs.push_back(diff);
 		}
 		{
 			typename tree_type::node_ptr right = branch.child[1];
 			pair rightLeaf( _tree.begin(right) );
-			merkle_point<KeyType, HashType> diff = getPoint(rightLeaf.first(), right);
+			location diff = getPoint(rightLeaf.first(), right);
 			diffs.push_back(diff);
 		}
 		// and passed in loc with disagreement hash as 3rd element
 		{
-			merkle_point<KeyType,HashType> current = point.copy(myhash);
+			location current = point.copy(myhash);
 			diffs.push_back(current);
 		}
 
