@@ -2,7 +2,7 @@
 #pragma once
 
 #include "critbit_map.h"
-#include "merkle_location.h"
+#include "merkle_point.h"
 #include "util/unpack_tuple.h"
 #include <deque>
 #include <functional>
@@ -70,16 +70,16 @@ public:
 	using pair = typename map_type::pair;
 
 protected:
-	typename tree_type::node_ptr nearest_subtree(const merkle_location<KeyType>& location) const
+	typename tree_type::node_ptr nearest_subtree(KeyType key, uint16_t keybits) const
 	{
-		unsigned keylen = location.keybits/8;
-		unsigned char bitmask = location.keybits%8;
+		unsigned keylen = keybits/8;
+		unsigned char bitmask = keybits%8;
 		if (bitmask != 0)
 		{
 			++keylen;
 			bitmask = (1 << (8-bitmask)) - 1;
 		}
-		return _tree.nearest_subtree(internal_pair(location.key), bitmask, keylen);
+		return _tree.nearest_subtree(internal_pair(key), bitmask, keylen);
 	}
 
 	bool getHash(const typename tree_type::node_ptr& node_ptr, HashType& hash) const
@@ -98,24 +98,21 @@ protected:
 
 	merkle_point<KeyType, HashType> getPoint(const KeyType& key, const typename tree_type::node_ptr& node_ptr) const
 	{
-		merkle_point<KeyType, HashType> point;
 		if (node_ptr.isBranch())
 		{
 			merkle_branch<HashType>& node = node_ptr.branch();
-			point.hash = node.hash;
-			point.location = merkle_location<KeyType>( key, keybits(node.byte, node.otherbits xor 0xFF)-1 );
+			uint16_t kb = keybits(node.byte, node.otherbits xor 0xFF) - 1;
+			return {node.hash, key, kb};
 		}
 		else
 		{
 			pair twopull( node_ptr.leaf() );
-			point.hash = std::get<0>(twopull.second());
-			point.location = merkle_location<KeyType>( twopull.first() );
+			return {std::get<0>(twopull.second()), twopull.first()};
 		}
-		return point;
 	}
 
 public:
-	static unsigned keybits(uint32_t byte, uint8_t otherbits)
+	static uint16_t keybits(uint32_t byte, uint8_t otherbits)
 	{
 		// http://graphics.stanford.edu/~seander/bithacks.html#ZerosOnRightMultLookup
 		static const int MultiplyDeBruijnBitPosition[32] =
@@ -127,9 +124,9 @@ public:
 	}
 
 	// returns whether true if we found a node, false if we found a leaf
-	bool hash_lookup(const merkle_location<KeyType>& location, HashType& hash) const
+	bool hash_lookup(KeyType key, unsigned short keybits, HashType& hash) const
 	{
-		typename tree_type::node_ptr node_ptr = nearest_subtree(location);
+		typename tree_type::node_ptr node_ptr = nearest_subtree(key, keybits);
 		if (node_ptr.isNull())
 		{
 			hash = 0;
@@ -140,7 +137,7 @@ public:
 
 	merkle_point<KeyType, HashType> top() const
 	{
-		typename tree_type::node_ptr node_ptr = nearest_subtree(merkle_location<KeyType>(0,0));
+		typename tree_type::node_ptr node_ptr = nearest_subtree(0, 0);
 		if (node_ptr.isNull())
 			return merkle_point<KeyType, HashType>::null();
 		return getPoint(0, node_ptr);
@@ -166,12 +163,10 @@ public:
 		}
 
 		HashType myhash;
-		typename tree_type::node_ptr nodep = nearest_subtree(point.location);
+		typename tree_type::node_ptr nodep = nearest_subtree(point.key, point.keybits);
 		if (nodep.isNull())
 		{
-			merkle_point<KeyType,HashType> nothing;
-			nothing.location = point.location;
-			nothing.hash = 0;
+			merkle_point<KeyType,HashType> nothing = point.copy(0);
 			diffs.push_back(nothing);
 			return diffs;
 		}
@@ -183,27 +178,25 @@ public:
 		// case 3: leaf
 		if (nodep.isLeaf())
 		{
-			merkle_point<KeyType,HashType> current;
-			current.location = merkle_location<KeyType>(nodep.leaf()->first);
-			current.hash = myhash;
+			merkle_point<KeyType,HashType> current(myhash, nodep.leaf()->first);
 			diffs.push_back(current);
 			return diffs;
 		}
 
 		pair leftLeaf( _tree.begin(nodep) );
 		merkle_branch<HashType>& branch = nodep.branch();
-		unsigned branchKeybits = keybits(branch.byte, branch.otherbits xor 0xFF)-1;
+		uint16_t branchKeybits = keybits(branch.byte, branch.otherbits xor 0xFF)-1;
 
 		// case 4: branch, but the location parameter seemed to expect a branch sooner
-		if (branchKeybits > point.location.keybits)
+		if (branchKeybits > point.keybits)
 		{
 			merkle_point<KeyType,HashType> missing;
-			missing.location.key = leftLeaf.first();
-			missing.location.keybits = point.location.keybits+1;
+			missing.key = leftLeaf.first();
+			missing.keybits = point.keybits+1;
 
-			unsigned expectedBranchByte = point.location.keybits / 8;
-			unsigned char expectedBranchBits = point.location.keybits % 8;
-			((uint8_t*)&missing.location.key)[expectedBranchByte] ^= (1 << (7-expectedBranchBits));
+			unsigned expectedBranchByte = point.keybits / 8;
+			unsigned char expectedBranchBits = point.keybits % 8;
+			((uint8_t*)&missing.key)[expectedBranchByte] ^= (1 << (7-expectedBranchBits));
 			diffs.push_back(missing);
 			return diffs;
 		}
@@ -223,9 +216,7 @@ public:
 		}
 		// and passed in loc with disagreement hash as 3rd element
 		{
-			merkle_point<KeyType,HashType> current;
-			current.location = point.location;
-			current.hash = myhash;
+			merkle_point<KeyType,HashType> current = point.copy(myhash);
 			diffs.push_back(current);
 		}
 
