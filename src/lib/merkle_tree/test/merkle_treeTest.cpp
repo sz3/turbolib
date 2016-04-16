@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 using std::string;
+using turbo::merkle_diff;
 using turbo::merkle_point;
 using turbo::merkle_tree;
 
@@ -192,7 +193,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	merkle_tree<unsigned, unsigned long long> tree;
 
 	// empty tree
-	std::deque< merkle_point<unsigned, unsigned long long> > results = tree.diff({ 0, 0, 0 });
+	merkle_diff<unsigned, unsigned long long> results = tree.diff({ 0, 0, 0 });
 	assertEquals( 1, results.size() );
 	assertEquals( results[0], (merkle_point<unsigned, unsigned long long>::null()) );
 
@@ -230,11 +231,13 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	// root
 	results = tree.diff({ (32810 xor 42 xor 2048 xor 128), 0, 0 });
 	assertEquals( 0, results.size() );
+	assertTrue( results.no_difference() );
 
 	{
 		// bad hash at root
 		results = tree.diff({ 0xF00, 0, 0 });
 		assertEquals( 3, results.size() );
+		assertTrue( results.traverse() );
 
 		// left child -- location of next lookup
 		assertEquals( (32810 xor 42 xor 2048), results[0].hash );
@@ -253,22 +256,26 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 	}
 
 	{
-		// bad hash at pre-branch bit -> returns merkle_location of (implied) missing branch
+		// bad hash at pre-branch bit -> returns merkle_location of next branch
+		// need_partial_range() == true
 		results = tree.diff({ 0xF00, 0, 1 });
 		assertEquals( 1, results.size() );
+		assertTrue( results.need_partial_range() );
 
-		assertEquals( 2112, results[0].key ); // 2048 with 2nd bit flipped (xor 64)
+		assertEquals( 2048, results[0].key ); // 2048 with 2nd bit flipped (xor 64)
 		assertEquals( 2, results[0].keybits );
 	}
 
 	// left side
 	results = tree.diff({ (32810 xor 42 xor 2048), 2048, 2 });
 	assertEquals( 0, results.size() );
+	assertTrue( results.no_difference() );
 
 	{
 		// bad hash at branch bit -> we have diffs
 		results = tree.diff({ 0xF00, 2048, 2 });
 		assertEquals( 3, results.size() );
+		assertTrue( results.traverse() );
 
 		// left child
 		assertEquals( 2048, results[0].hash );
@@ -288,11 +295,13 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 
 	results = tree.diff({ 2048, 2048, 3 });
 	assertEquals( 0, results.size() );
+	assertTrue( results.no_difference() );
 
 	{
 		// bad hash on leaf -> one diff.
 		results = tree.diff({ 0xF00, 2048, 3 });
 		assertEquals( 1, results.size() );
+		assertTrue( results.need_partial_range() );
 		assertEquals( 2048, results[0].hash );
 		assertEquals( 2048, results[0].key );
 		assertEquals( 32, results[0].keybits );
@@ -327,8 +336,9 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		// bad hash at pre-branch bit
 		results = tree.diff({ 0xF00, 42, 7 });
 		assertEquals( 1, results.size() );
+		assertTrue( results.need_partial_range() );
 
-		assertEquals( 43, results[0].key ); // 42 with 8th bit flipped (xor 1)
+		assertEquals( 42, results[0].key );
 		assertEquals( 8, results[0].keybits );
 	}
 
@@ -340,6 +350,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 		// leaf bad hash
 		results = tree.diff({ 0xF00, 42, 32 });
 		assertEquals( 1, results.size() );
+		assertTrue( results.need_exchange() );
 
 		assertEquals( 42, results[0].hash );
 		assertEquals( 42, results[0].key );
@@ -350,6 +361,7 @@ TEST_CASE( "merkle_treeTest/testDiffs", "[unit]" )
 TEST_CASE( "merkle_treeTest/testDiffTraverse", "[unit]" )
 {
 	using mpoint = merkle_point<unsigned, unsigned long long>;
+	using mdiff = merkle_diff<unsigned, unsigned long long>;
 	merkle_tree<unsigned, unsigned long long> tree;
 
 	tree.insert(45, 45);
@@ -378,7 +390,7 @@ TEST_CASE( "merkle_treeTest/testDiffTraverse", "[unit]" )
 	assertEquals( 1, top.keybits );
 	assertEquals( (2048 xor 45 xor 42 xor 64), top.hash );
 
-	std::deque<mpoint> results = tree.diff(top);
+	mdiff results = tree.diff(top);
 	assertEquals( 0, results.size() );
 	results = tree.diff( top.copy(0xF00) );
 	assertEquals( 3, results.size() );

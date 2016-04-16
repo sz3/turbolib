@@ -153,24 +153,23 @@ public:
 	 *  6) branch diff, keybits !=. 2 hashes. If my keybits < than query, other party is missing said info
 	 *  7) branch diff, keybits ==. 2 hashes. Recurse to right, left sides.
 	 */
-	std::deque< merkle_point<KeyType, HashType> > diff(const merkle_point<KeyType, HashType>& point) const
+	merkle_diff<KeyType, HashType> diff(const merkle_point<KeyType, HashType>& point) const
 	{
 		std::deque< merkle_point<KeyType, HashType> > diffs;
 		if (_tree.empty())
 		{
 			diffs.push_back(merkle_point<KeyType, HashType>::null());
-			return diffs;
+			return {diffs, true};
 		}
 
-		HashType myhash;
 		typename tree_type::node_ptr nodep = nearest_subtree(point.key, point.keybits);
 		if (nodep.isNull())
 		{
-			merkle_point<KeyType,HashType> nothing = point.copy(0);
-			diffs.push_back(nothing);
-			return diffs;
+			diffs.push_back(merkle_point<KeyType, HashType>::null());
+			return {diffs, true};
 		}
 
+		HashType myhash;
 		getHash(nodep, myhash);
 		if (point.hash == myhash)
 			return diffs; // no differences
@@ -180,7 +179,8 @@ public:
 		{
 			merkle_point<KeyType,HashType> current(myhash, nodep.leaf()->first);
 			diffs.push_back(current);
-			return diffs;
+			bool is_missing = current.key != point.key || current.keybits != point.keybits;
+			return {diffs, is_missing};
 		}
 
 		pair leftLeaf( _tree.begin(nodep) );
@@ -191,14 +191,11 @@ public:
 		if (branchKeybits > point.keybits)
 		{
 			merkle_point<KeyType,HashType> missing;
+			missing.hash = branch.hash;
 			missing.key = leftLeaf.first();
-			missing.keybits = point.keybits+1;
-
-			unsigned expectedBranchByte = point.keybits / 8;
-			unsigned char expectedBranchBits = point.keybits % 8;
-			((uint8_t*)&missing.key)[expectedBranchByte] ^= (1 << (7-expectedBranchBits));
+			missing.keybits = branchKeybits;
 			diffs.push_back(missing);
-			return diffs;
+			return {diffs, true};
 		}
 
 		// case 5,6
