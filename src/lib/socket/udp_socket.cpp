@@ -82,6 +82,7 @@ bool udp_socket::shutdown()
 
 int udp_socket::try_send(const char* buffer, unsigned size)
 {
+	// if sendto explodes on dead connection, set _sock to -1?
 	return ::sendto(_sock, buffer, size, MSG_DONTWAIT, (const sockaddr*)&_endpoint, sizeof(_endpoint));
 }
 

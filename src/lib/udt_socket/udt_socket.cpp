@@ -120,6 +120,7 @@ udt_socket udt_socket::accept()
 bool udt_socket::close()
 {
 	UDT::close(_sock);
+	_sock = UDT::INVALID_SOCK;
 	return true;
 }
 
@@ -131,7 +132,10 @@ bool udt_socket::shutdown()
 
 int udt_socket::try_send(const char* buffer, unsigned size)
 {
-	return UDT::sendmsg(_sock, buffer, size, -1, true);
+	int res = UDT::sendmsg(_sock, buffer, size, -1, true);
+	if (res < 0 && UDT::getlasterror_code() != CUDTException::EASYNCSND)
+		shutdown();
+	return res;
 }
 
 int udt_socket::try_send(const std::string& buffer)
