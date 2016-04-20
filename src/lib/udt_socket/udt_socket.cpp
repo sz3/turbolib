@@ -133,7 +133,7 @@ bool udt_socket::shutdown()
 int udt_socket::try_send(const char* buffer, unsigned size)
 {
 	int res = UDT::sendmsg(_sock, buffer, size, -1, true);
-	if (res < 0 && UDT::getlasterror_code() != CUDTException::EASYNCSND)
+	if (res < 0 && UDT::getlasterror().getErrorCode() != CUDTException::EASYNCSND)
 		shutdown();
 	return res;
 }
