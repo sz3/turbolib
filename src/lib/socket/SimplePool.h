@@ -68,7 +68,10 @@ void SimplePool<Socket>::close(Socket& sock)
 template <typename Socket>
 void SimplePool<Socket>::close_all()
 {
-	for (map_type::iterator conn = _connections.begin(); !conn.is_end(); ++conn)
-		Socket(conn->second).close();
+	{
+		auto lock = _connections.lock_table();
+		for (const auto& conn : lock)
+			Socket(conn.second).close();
+	}
 	_connections.clear();
 }
