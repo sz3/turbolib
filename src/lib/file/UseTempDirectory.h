@@ -20,7 +20,8 @@ public:
 	~UseTempDirectory()
 	{
 		auto _ = ::chdir(_original.c_str());
-		boost::filesystem::remove_all(_temp);
+		boost::system::error_code ec;
+		boost::filesystem::remove_all(_temp, ec);
 	}
 
 	std::string location() const

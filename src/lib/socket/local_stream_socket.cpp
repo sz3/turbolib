@@ -82,7 +82,7 @@ bool local_stream_socket::shutdown()
 
 int local_stream_socket::send(const char* buffer, unsigned size)
 {
-	int bytes = ::send(_sock, buffer, size, 0);
+	int bytes = ::send(_sock, buffer, size, MSG_NOSIGNAL);
 	if (bytes < 0)
 		perror("send");
 	return bytes;
