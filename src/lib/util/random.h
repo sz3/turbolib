@@ -7,13 +7,22 @@
 namespace turbo {
 namespace random
 {
+	inline unsigned int seed()
+	{
+#ifdef DIET_RANDOM
+		return ::rand();
+#else
+		static std::random_device rd;
+		return rd();
+#endif
+	}
+
 	inline std::string bytes(unsigned howmany)
 	{
-		std::random_device rd;
 		std::string res;
 		for (int i = 0; i < howmany; i += sizeof(unsigned int))
 		{
-			unsigned int entropy = rd();
+			unsigned int entropy = seed();
 			for (int b = 0; b < sizeof(unsigned int); ++b)
 				res += *(reinterpret_cast<char*>(&entropy) + b);
 		}
@@ -25,8 +34,7 @@ namespace random
 	{
 		if (size <= 1)
 			return begin;
-		static std::random_device rd;
-		static std::mt19937 gen(rd());
+		static std::mt19937 gen(seed());
 
 		std::uniform_int_distribution<> dis(0, size-1);
 		std::advance(begin, dis(gen));

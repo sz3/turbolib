@@ -31,7 +31,7 @@ public:
 		if (_flag)
 		{
 			_flag = false;
-			return true;
+			return !_cancelled;
 		}
 		return _cv.wait_for(lock, std::chrono::milliseconds(ms)) != std::cv_status::timeout && !_cancelled;
 	}
