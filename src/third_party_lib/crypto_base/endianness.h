@@ -16,6 +16,7 @@
 #define FLUKS_ENDIAN_H
 
 #define __USE_BSD
+#define __USE_MISC
 #include <endian.h>
 
 #ifdef __cplusplus
