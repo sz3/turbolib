@@ -4,6 +4,7 @@
 #include "concurrent/monitor.h"
 #include "concurrentqueue/concurrentqueue.h"
 #include <atomic>
+#include <functional>
 #include <list>
 #include <thread>
 

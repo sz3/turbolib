@@ -14,7 +14,7 @@ namespace {
 	public:
 		virtual ~BaseClass() {}
 
-		virtual void msgpack_unpack(msgpack::object) = 0;
+		virtual void msgpack_unpack(msgpack::object const&) = 0;
 	};
 
 	class CoolClass : public BaseClass
@@ -57,19 +57,18 @@ namespace {
 
 TEST_CASE( "MessagePackTest/testDefault", "[unit]" )
 {
-	std::vector<std::string> target;
-	target.push_back("Hello,");
-	target.push_back("World!");
+	std::vector<std::string> datums;
+	datums.push_back("Hello,");
+	datums.push_back("World!");
 
 	// Serialize
 	msgpack::sbuffer sbuf;
-	msgpack::pack(&sbuf, target);
+	msgpack::pack(&sbuf, datums);
 
 	// Deserialize
-	msgpack::unpacked msg;
-	msgpack::unpack(&msg, sbuf.data(), sbuf.size());
+	msgpack::object_handle oh = msgpack::unpack(sbuf.data(), sbuf.size());
 	std::vector<std::string> result;
-	msg.get().convert(&result);
+	oh.get().convert(result);
 
 	assertEquals( "Hello, World!", turbo::str::join(result) );
 }
@@ -83,10 +82,9 @@ TEST_CASE( "MessagePackTest/testClass", "[unit]" )
 	msgpack::pack(&sbuf, cool);
 
 	// Deserialize
-	msgpack::unpacked msg;
-	msgpack::unpack(&msg, sbuf.data(), sbuf.size());
+	msgpack::object_handle oh = msgpack::unpack(sbuf.data(), sbuf.size());
 	CoolClass result;
-	msg.get().convert(&result);
+	oh.get().convert(result);
 
 	assertEquals( "foo", result.foo() );
 	assertEquals( 1.5, result.bar() );
@@ -102,12 +100,11 @@ TEST_CASE( "MessagePackTest/testDeserialzeBaseClass", "[unit]" )
 	msgpack::pack(&sbuf, cool);
 
 	// Deserialize
-	msgpack::unpacked msg;
-	msgpack::unpack(&msg, sbuf.data(), sbuf.size());
+	msgpack::object_handle oh = msgpack::unpack(sbuf.data(), sbuf.size());
 	CoolClass result;
 
 	BaseClass* base(&result);
-	msg.get().convert(base);
+	oh.get().convert(*base);
 
 	assertEquals( "foo", result.foo() );
 	assertEquals( 1.5, result.bar() );

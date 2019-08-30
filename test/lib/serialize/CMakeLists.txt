@@ -26,6 +26,6 @@ add_test(serialize_test serialize_test)
 target_link_libraries(serialize_test
 	serialize
 
-	msgpack
+	msgpackc
 )
 
