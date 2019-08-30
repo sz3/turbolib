@@ -2,8 +2,9 @@
 #pragma once
 
 #include <algorithm>
-#include <deque>
+#include <cstdint>
 #include <ctime>
+#include <deque>
 #include <set>
 #include <utility>
 
